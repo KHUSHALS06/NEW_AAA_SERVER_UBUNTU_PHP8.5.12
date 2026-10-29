@@ -1,0 +1,110 @@
+<?php
+
+$config = array(
+    'Application' => array(
+        'name' => 'WiFonic WiFi HotSpot Service',
+        'version' => 'v0.7',
+        'status' => 1,
+        'maintenance' => 0,
+        'wf_admin' => 'wf admin',
+        'wf_noc' => 'wf noc',
+        'wf_account' => 'wf accounts',
+        'wf_engineer' => 'wf engineer',
+        'admin' => 'admin',
+        'gold' => 'gold',
+        'platinum' => 'platinum',
+        'silver' => 'silver',
+        'front office' => 'front office',
+        'account' => 'accounts',
+        'wifonicGroups' => array('wf admin', 'wf noc', 'wf accounts', 'wf engineer'),
+        'clientGroups' => array('admin', 'accounts', 'front office'),
+        'userGroups' => array('accounts', 'front office'),
+        'specialBillingPlan' => array('wf admin', 'wf noc', 'wf accounts', 'wf engineer'),
+        'wifonicAddress' => "WiFonic Technologies Pvt. Ltd. \n238, 2nd Floor, IJMIMA Commercial Complex \nOff Link Road, Malad (West)\nMumbai-400064 \n Tel: 022-66077300 \n email: info@wifonic.com\n ",
+        'projectPath'=>'HotSpotAdmin'
+    ),
+    'Meta' => array(
+        'title' => 'WiFonic HotSpot Admin',
+        'description' => 'Control Panel for WiFonic Hotspot',
+        'keywords' => 'wifonic,hotspot,control,panel,dashboard',
+    ),
+    'Google' => array(
+        'analytics' => '',
+    ),
+    'Email' => array(
+        'from_email' => 'admin@wifonic.com', //array('{{from_name}}' => '{{from_email}}'),
+        'cc_email' => 'admin@wifonic.com',
+        'contact_mail' => array('{{contact_name}}' => '{{contact_mail}}')
+    ),
+    'DefaultBillingPlans' => array(
+        '0' => array(
+            'name_bp' => 'One Hour',
+            'time_bp' => '360',
+            'price_bp' => '100',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '360',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '360',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 0,
+            'cat_bp' => 'normal',
+            'urrency_bp' => 'INR',
+            'login_display' => 0
+        ),
+        '1' => array(
+            'name_bp' => 'Two Hour',
+            'time_bp' => '360',
+            'price_bp' => '100',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '360',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '360',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 0,
+            'cat_bp' => 'normal',
+            'urrency_bp' => 'INR',
+            'login_display' => 0
+        ),
+        '2' => array(
+            'name_bp' => 'One Day',
+            'time_bp' => '360',
+            'price_bp' => '100',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '360',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '360',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 0,
+            'cat_bp' => 'normal',
+            'urrency_bp' => 'INR',
+            'login_display' => 0
+        ),
+        '3' => array(
+            'name_bp' => 'One Week',
+            'time_bp' => '360',
+            'price_bp' => '100',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '360',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '360',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 0,
+            'cat_bp' => 'normal',
+            'urrency_bp' => 'INR',
+            'login_display' => 0
+        )
+    )
+);
+?>

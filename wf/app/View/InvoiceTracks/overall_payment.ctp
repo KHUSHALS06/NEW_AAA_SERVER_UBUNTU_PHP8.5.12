@@ -1,0 +1,348 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@gmail.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        $('#UserAddForm').bootstrapValidator()
+        
+        $('#AddUserModal').on('shown.bs.modal', function() {
+            //$('#UserAddForm').bootstrapValidator('resetForm', true);
+        });
+        
+        $('#view').click(function(){
+            $(this).submit();
+        });
+        
+        var numberOfColumns = document.getElementById('overallPaymentTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan',numberOfColumns);
+        //alert()
+    });
+   
+</script>
+<script type="text/javascript">
+    $(function() {
+        $('#monthYear').datepicker( {
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '2007:'+(new Date).getFullYear(),         
+            showButtonPanel: true,
+            showOn: "button",
+            buttonImage: "../img/datepicker.png",
+            buttonImageOnly: true,
+            dateFormat: 'MM yy',
+            onClose: function(dateText, inst) { 
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).datepicker('setDate', new Date(year, month, 1));
+            }
+        });
+        
+    });
+</script>
+<style type="text/css">   
+
+    .ui-datepicker-calendar {
+        display: none;
+    }
+    div.ui-datepicker{
+        line-height: 11px;
+        font-size:12px;
+        position:fixed
+    }
+</style>
+<?php
+//echo $this->Html->script('bootstrap-editable.min');
+//echo $this->Html->css('bootstrap-editable');
+echo $this->Html->css('menubar');
+//echo $this->Html->script('lib/jquery', array('inline'=>false));
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'before' => $this->Js->get('#spinner')->effect(
+            'fadeIn', array('buffer' => false)
+    ),
+    'complete' => $this->Js->get('#spinner')->effect(
+            'fadeOut', array('buffer' => false)
+    ),
+    'evalScripts' => TRUE
+));
+?>
+
+
+<?php //echo $this->element('locations_list') ?>
+
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Payment',
+        'link' => '/users'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo __('Users')                                 ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        //echo $this->Html->link(__('Add User'), '/users/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px')) 
+        ?>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php echo $this->Paginator->options(array('url' => $this->passedArgs)); ?>
+        <hr>
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>'))));  ?>
+        <!--hr-->
+        <?php //echo $this->element('search_table', array('columnName', 'username'))  ?>
+
+        <?php //pr($this->passedArgs);  ?>
+
+        <div class="col-md-3">
+            <?php echo $this->Form->input('month', array('label' => false,'type' => 'text', 'class' => 'date-picker', 'id' => 'monthYear')) ?>
+        </div>
+<div class="table-responsive">
+        <table id="overallPaymentTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('location_id', array(
+                            'asc' => __('Location Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Location Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th ><?php
+                        echo $this->Paginator->sort('previous_due', array(
+                            'asc' => __('Prev Due') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Prev Due') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('current', array(
+                            'asc' => __('Current') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Current') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('total_payable', array(
+                            'asc' => __('Total Payable') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Total Payable') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('service_tax', array(
+                            'asc' => __('Service Tax') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Service Tax') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('payed', array(
+                            'asc' => __('Paid') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Paid') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('previous_due', array(
+                            'asc' => __('Due') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Due') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('pay_date', array(
+                            'asc' => __('Pay Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Pay Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('paid_by', array(
+                            'asc' => __('Pay Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Pay Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('instrument', array(
+                            'asc' => __('Invoice#') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Invoice#') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($overallPaymentDatas)) { ?>
+
+                    <?php foreach ($overallPaymentDatas as $overallPaymentData) { ?>
+                        <tr>
+                            <!--td width="50px"><?php //echo $user['User']['id']                                       ?></td-->
+                            <!-- inline edit javascript code written in the end -->
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['location_id'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['previous_due'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['current'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['total_payable'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['service_tax'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['payed'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['previous_due'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['pay_date'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['paid_by'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['instrument'] ?></td>
+
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+            <?php } ?>
+        </table>
+</div>
+        <div class="paginator row col-md-12 col-lg-12">
+            <div class="pull-left">
+                <?php echo $this->Paginator->numbers(); ?>
+            </div>
+            <div class=" pull-right">
+                <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+            </div> 
+        </div>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+
+<div class="modal fade" id="UsersModalDeactivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Deactivate user') ?></h4>
+            </div>
+            <div class="modal-body">
+                <?php //echo $user['User']['id']   ?>
+                <p><?php echo __('Are you sure you want to deactivate the user ') ?><span class="label-uname strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+
+                <?php
+                echo $this->Form->create('User', array('action' => 'deactivate'));
+                echo $this->Form->input('id', array('id' => 'userIdForDeactivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('name', array('id' => 'userNameForDeactivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                echo $this->Form->end('Deactivate', array('class' => 'btn btn-danger pull-left'));
+                ?>
+
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+            </div>
+            <?php //echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link'))   ?>
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="UsersModalActivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Activate user') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to activate the user ') ?><span class="label-uname strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+
+                <?php
+                echo $this->Form->create('User', array('action' => 'activate'), array('class' => 'btn btn-danger'));
+                echo $this->Form->input('id', array('id' => 'userIdForActivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('name', array('id' => 'userNameForActivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                echo $this->Form->end('Activate', array('class' => 'btn btn-primary pull-left'));
+                ?>
+
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+
+                <?php //echo $this->Html->link(__('Activate'), "/users/activate/#{uid}", array('class' => 'btn btn-primary activate-user-link'))  ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="AddUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Add User</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- The form is placed inside the body of modal -->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        var newURL = window.location.protocol + "//" + window.location.host + "" + window.location.pathname;
+        //alert(newURL+'/update_username');
+        //http://localhost/HotSpotAdmin/users
+        $.fn.editable.defaults.mode = 'inline'; 
+        $('.editUserName').editable({
+            url: newURL+'/update_username'
+        });
+        $('.editAlias').editable({
+            url: newURL+'/update_alias',
+            /*validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }*/
+        });
+        $('.editEmail').editable({
+            url: 'http://localhost/HotSpotAdmin/users/update_email'
+        });
+        $('.group').editable({
+            url: newURL+'/update_group',
+            title: 'Select group'
+        });
+    });
+    
+</script>
+
+

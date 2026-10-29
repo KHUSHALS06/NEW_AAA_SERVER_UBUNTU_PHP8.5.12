@@ -1,0 +1,235 @@
+<?php
+/**
+ * This is the default page which displays the list of commission challans
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@gmail.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        
+        // Get the number of columns in a table and assign it to colspan attribute
+        var numberOfColumns = document.getElementById('agentsTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan',numberOfColumns);
+        
+    });
+</script>
+
+<?php
+echo $this->Html->css('menubar');
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+
+<?php echo $this->element('locations_list') ?>
+
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Commission',
+        'link' => '/commission_challans'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo __('Users')                                     ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        if ((AuthComponent::user('Group.name') == Configure::read('Application.wf_admin')) || (AuthComponent::user('Group.name') == Configure::read('Application.admin')) || (AuthComponent::user('Group.name') == Configure::read('Application.gold')) || (AuthComponent::user('Group.name') == Configure::read('Application.silver')) || (AuthComponent::user('Group.name') == Configure::read('Application.platinum'))) {
+            echo $this->Html->link(__('Create Challan'), array('controller' => 'commission_challans', 'action' => 'add'), array('class' => 'btn btn-default pull-right'));
+        } else {
+            
+        }
+        //echo $this->Html->link(__('Add User'), '/users/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px')) 
+        ?>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php echo $this->Paginator->options(array('url' => $this->passedArgs)); ?>
+        <!--hr-->
+        <hr>
+        <?php //echo $this->element('search_table', array('columnName', 'username')) ?>
+
+        <table id="agentsTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('from', array(
+                            'asc' => __('From') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('From') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('to', array(
+                            'asc' => __('To') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('To') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+
+                    <th ><?php
+                        echo $this->Paginator->sort('amount', array(
+                            'asc' => __('Amount') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Amount') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+
+
+                    <th><?php
+                        echo $this->Paginator->sort('challan', array(
+                            'asc' => __('Challan') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Challan') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th style="color: #428BCA"><?php echo __('Action') ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?php echo $this->element('search', array('columnName' => 'from')) ?></td>
+                    <td><?php echo $this->element('search', array('columnName' => 'to')) ?></td>
+                    <td><?php echo $this->element('search', array('columnName' => 'amount')) ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'role'))   ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))         ?></td>
+                </tr>
+                <?php if (count($commissionChallans)>0) { ?>
+                    <?php foreach ($commissionChallans as $commissionChallan) { ?>
+                        <tr>
+                            <!-- inline edit javascript code written in the end -->
+                            <td><div class ="editFirstName" data-type="text" data-pk="<?php echo $commissionChallan['CommissionChallan']['id'] ?>" data-name="first_name"><?php echo __($commissionChallan['CommissionChallan']['from']) ?></div></td>
+                            <td><div class ="editLastName" data-type="text" data-pk="<?php echo $commissionChallan['CommissionChallan']['id'] ?>" data-name="last_name"><?php echo __($commissionChallan['CommissionChallan']['to']) ?></div></td>
+                            <td><div class ="editEmail" data-type="text" data-pk="<?php echo $commissionChallan['CommissionChallan']['id'] ?>" data-name="email"><?php echo __($commissionChallan['CommissionChallan']['amount']) ?></div></td>
+                            <td>
+                                <?php
+                                echo $this->Html->link($commissionChallan['CommissionChallan']['challan_name'], array('controller' => 'commission_challans', 'action' => 'printChallan', $commissionChallan['CommissionChallan']['id']), array('class' => ''));
+                                ?>
+                            </td>
+                        <!--td><div class ="editAlias" data-type="text" data-pk="<?php //echo $user['User']['id']       ?>" data-name="alias"><?php //echo $user['User']['alias']       ?></div></td-->
+                            <td width="120px">
+                                <div class="row col-md-12 action-column action-link">
+                                    <div class="col-md-1 action-column">
+                                        <?php
+                                        echo $this->Form->create('CommissionChallan', array('action' => 'view'));
+                                        echo $this->Form->input('id', array('type' => 'hidden', 'value' => $commissionChallan['CommissionChallan']['id']));
+                                        //echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                                        //echo $this->Form->end('View', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/view_20by20.png'));
+                                        echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button'));
+                                        ?>
+                                        </form>
+                                    </div>
+                                    <div class="col-md-1 action-column"></div>
+                                    <!-- Edit commission challan -->
+                                    <!--div class="col-md-1 action-column">
+                                    <?php /* echo $this->Form->create('CommissionChallan', array('action' => 'edit'));
+                                      echo $this->Form->input('id', array('type' => 'hidden', 'value' => $commissionChallan['CommissionChallan']['id']));
+                                      //echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                                      //echo $this->Form->end('Edit', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/edit_20by20.png'));
+                                      echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'action-button'));
+                                     */ ?>
+                                        </form>
+
+                                    </div-->
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+            <?php } ?>
+        </table>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+        </div>
+        <br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+
+<div class="modal fade" id="AgentsModalDeactivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Deactivate commission agent') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to deactivate the commission agent ') ?>
+                    <span class="label-fname strong"></span><?php echo __(' ') ?><span class="label-lname strong"></span> 
+                    ?</p>
+            </div>
+            <div class="modal-footer">
+                <?php
+                echo $this->Form->create('CommissionAgent', array('action' => 'deactivate'));
+                echo $this->Form->input('id', array('id' => 'commissionAgentIdForDeactivate', 'type' => 'hidden', 'value' => ''));
+                //echo $this->Form->input('room_no', array('id' => 'commissionAgent', 'type' => 'hidden', 'value' => ''));
+                //echo $this->Form->input('title', array('id' => 'checkInTitleForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('first_name', array('id' => 'commissionAgentFirstNameForDeactivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('last_name', array('id' => 'commissionAgentLastNameForDeactivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->end('Deactivate', array('class' => 'btn btn-danger pull-left'));
+                ?>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php //echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link'))  ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="AgentsModalActivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Activate commission agent') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to activate the commission agent ') ?>
+                    <span class="label-fname strong"></span><?php echo __(' ') ?><span class="label-lname strong"></span> 
+                    ?</p>
+            </div>
+            <div class="modal-footer">
+                <?php
+                echo $this->Form->create('CommissionAgent', array('action' => 'activate'));
+                echo $this->Form->input('id', array('id' => 'commissionAgentIdForActivate', 'type' => 'hidden', 'value' => ''));
+                //echo $this->Form->input('room_no', array('id' => 'commissionAgent', 'type' => 'hidden', 'value' => ''));
+                //echo $this->Form->input('title', array('id' => 'checkInTitleForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('first_name', array('id' => 'commissionAgentFirstNameForActivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('last_name', array('id' => 'commissionAgentLastNameForActivate', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->end('Activate', array('class' => 'btn btn-default pull-left'));
+                ?>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php //echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link'))  ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+

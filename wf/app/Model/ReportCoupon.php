@@ -1,0 +1,29 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of ReportCoupon
+ *
+ * @author dev3
+ */
+class ReportCoupon extends AppModel {
+    //put your code here
+    public $belongsTo = array(
+        'Location' => array(
+            'className' => 'Location',
+            'foreignKey' => 'location_id',
+            'fields' => array('id', 'location_name', 'revenue_percent', 'monthly_fixed', 'revenue_share', 'committed_revenue', 'live', 'installation_city', 'live_date', 'one_time_cost', 'amc'),
+            'order' => ''
+        )
+    );
+    public $virtualFields = array(
+        'client_share' => 'IF((ReportCoupon.total_price - ROUND((ReportCoupon.total_price*Location.revenue_percent)/100))>Location.committed_revenue,(ROUND((ReportCoupon.total_price*Location.revenue_percent)/100)),ROUND(ReportCoupon.total_price))',
+        //'wifonic_share' => 'IF((ReportCoupon.total_price - ROUND((ReportCoupon.total_price*Location.revenue_percent)/100))>Location.committed_revenue,(ReportCoupon.total_price - ROUND((ReportCoupon.total_price*Location.revenue_percent)/100)),ROUND(Location.committed_revenue))',
+        'wifonic_share' => 'IF(Location.revenue_share = 1,IF((ReportCoupon.total_price - ROUND((ReportCoupon.total_price*Location.revenue_percent)/100))>Location.committed_revenue,(ReportCoupon.total_price - ROUND((ReportCoupon.total_price*Location.revenue_percent)/100)),ROUND(Location.committed_revenue)),Location.monthly_fixed)',
+    );
+}

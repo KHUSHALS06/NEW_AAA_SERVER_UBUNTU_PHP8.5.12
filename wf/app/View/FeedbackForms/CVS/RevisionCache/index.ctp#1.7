@@ -1,0 +1,253 @@
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $('.actionEdit').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Edit"
+        });
+
+        $('.actionDelete').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Delete"
+        });
+        $('.actionMoveUp').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Up"
+        });
+
+        $('.actionMoveDown').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Down"
+        });
+
+    });
+
+</script>
+<?php
+echo $this->element('locations_list');
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+$breadcrumb = array(
+    array(
+        'label' => 'Feedback',
+        'link' => '/feedback_forms'
+    ),
+    array(
+        'label' => 'add'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb)); //$breadcrumb
+//echo $this->Fck->fckeditor(array('Model', 'field'), $html->base, $yourContentVariable);
+echo $this->Session->flash();
+if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+    //pr($feedbacks);
+    ?>
+    <div class="row">
+        <div class="col-md-10"><!--h3><?php //echo __('Billing Plan')           ?></h3--></div>
+        
+        <div class="col-md-2">
+            
+            <?php
+            echo $this->Html->link(__('Add New Title'), '/feedback_forms/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px')) 
+            //echo $this->Html->link(__('Add New Title'), array('controller' => 'FeedbackForms', 'action' => 'add'), array('class' => 'btn btn-default pull-right'));
+            
+            ?>
+        </div>
+    </div>
+    <div class="row">
+        
+        <div class="col-12">
+            <?php echo $this->Session->flash() ?>
+
+            <!--hr-->
+            <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+            <hr>
+            <?php
+            //echo $this->Html->link(__('Preview'), array('controller' => 'FeedbackForms', 'action' => 'feedback'));
+            ?>
+            <table id="billingPlansTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <!--th><?php //echo $this->Paginator->sort('id', '#')                  ?></th-->
+                        <th>
+                            <?php
+                            echo $this->Paginator->sort('name', array(
+                                'asc' => __('Title') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Title') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?>
+                        </th>
+                        <th>
+                            <?php
+                            echo 'Header'
+                            /*echo $this->Paginator->sort('header_id', array(
+                                //'asc' => __('Header') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                //'desc' => __('Type') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                             * 
+                             */
+                            ?>
+                        </th>
+                        <th>
+                            <?php
+                            echo 'Type';
+                            /*
+                            echo $this->Paginator->sort('type', array(
+                                //'asc' => __('Type') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                //'desc' => __('Type') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                             * 
+                             */
+                            ?>
+                        </th>
+                        <th>
+                            <?php
+                            echo $this->Paginator->sort('value', array(
+                                'asc' => __('Values') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Values') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?>
+                        </th>
+                        <th style="color: #428BCA"><?php echo __('Actions') ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($feedbacks) > 0) { ?>
+                        <!--<tr>
+                            <td><?php //echo $this->element('search', array('columnName' => 'name_bp')) ?></td>
+                            <td><?php //echo $this->element('search', array('columnName' => 'time_bp'))           ?></td>
+                            <td><?php //echo $this->element('search', array('columnName' => 'price_bp'))           ?></td>
+                            <td><?php //echo $this->element('search', array('columnName' => 'type_bp'))           ?></td>
+                        </tr>-->
+                        <?php foreach ($feedbacks as $feedback) { ?>
+                            <tr>
+                                <!--td width="50px"><?php //echo $feedback['BillingPlan']['id']                  ?></td-->
+                                <!-- inline edit javascript code written in the end -->
+                                <td><div class ="editBPName" data-type="text" data-pk="<?php echo $feedback['FeedbackForm']['id'] ?>" data-name="name_bp"><?php echo $feedback['FeedbackForm']['name'] ?></div></td>
+                                <td><div class ="editBPTime" data-type="text" data-pk="<?php echo $feedback['FeedbackForm']['id'] ?>" data-name="time_bp"><?php echo $feedback['FeedbackHeader']['title'] ?></div></td>
+                                <td><div class ="editBPTime" data-type="text" data-pk="<?php echo $feedback['FeedbackForm']['id'] ?>" data-name="time_bp"><?php echo $feedback['ElementType']['name'] ?></div></td>
+                                <?php
+                                $valueString = '';
+                                if ($feedback['FeedbackForm']['value'] != '') {
+                                    $values = unserialize($feedback['FeedbackForm']['value']);
+                                    if (count($values) > 0) {
+                                        foreach ($values as $value) {
+                                            if ($valueString == '') {
+                                                $valueString = $value;
+                                            } else {
+                                                $valueString = $valueString . ', ' . $value;
+                                            }
+                                        }
+                                        unset($values);
+                                    }
+                                }
+                                ?>
+                                <td><div class ="editBPPrice" data-type="text" data-pk="<?php echo $feedback['FeedbackForm']['id'] ?>" data-name="price_bp"><?php echo $valueString ?></div></td>
+                                <td>
+                                    <div class="row col-md-12 action-column" style="padding-top: -5px; padding-bottom: -5px">
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Form->create('FeedbackForm', array('action' => 'changePriority'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['id']));
+                                            echo $this->Form->input('order_priority', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['order_priority']));
+                                            echo $this->Form->input('location_id', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['location_id']));
+                                            echo $this->Form->input('move', array('type' => 'hidden', 'value' => 'up'));
+                                            echo $this->Form->end('move_up.png', array('div' => false, 'class' => 'action-button actionMoveUp'));
+                                            ?>
+                                        </div>
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Form->create('FeedbackForm', array('action' => 'changePriority'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['id']));
+                                            echo $this->Form->input('order_priority', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['order_priority']));
+                                            echo $this->Form->input('location_id', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['location_id']));
+                                            echo $this->Form->input('move', array('type' => 'hidden', 'value' => 'down'));
+                                            echo $this->Form->end('move_down.png', array('div' => false, 'class' => 'action-button actionMoveDown'));
+                                            ?>
+                                            <!-- </form>-->
+                                        </div>
+                                        <div class="col-md-1 action-column"></div>
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Form->create('FeedbackForm', array('action' => 'editFeedbackQuestion'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['id']));
+                                            echo $this->Form->input('location_id', array('type' => 'hidden', 'value' => $feedback['FeedbackForm']['location_id']));
+                                            echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'action-button actionEdit'));
+                                            ?>
+                                            <!-- </form>-->
+
+                                        </div>
+                                        <div class="col-md-1 action-column"></div>
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Html->link(
+                                                    $this->Html->image('crossout.png'), '#feedbackDelete', array(
+                                                    'class' => 'btn-deleteFeedbackField-modal actionDelete',
+                                                    'data-toggle' => 'modal',
+                                                    'role' => 'button',
+                                                    'data-fid' => $feedback['FeedbackForm']['id'],
+                                                    'data-lid' => $feedback['FeedbackForm']['location_id'],
+                                                    'data-title' => $feedback['FeedbackForm']['name'],
+                                                    'escape' => false), false);
+                                            ?>
+
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                <?php } else { ?>
+                    <tr><td id="emptyTableMessage" colspan="5" style="background:#E9E8E8" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+                <?php } ?>
+            </table>
+            <div class="paginator">
+                <?php echo $this->Paginator->numbers(); ?>
+            </div> 
+            <br/>
+            <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+            <?php echo $this->Js->writeBuffer(); ?>
+
+        </div>
+    </div>
+    <div class="modal fade" id="feedbackDelete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 id="myModalLabel"><?php echo __('Delete Feedback Field') ?></h4>
+                </div>
+                <div class="modal-body">
+                    <p><?php echo __('Are you sure you want to delete this feedback field?')?></p>
+                </div>
+                <div class="modal-footer">
+                    <?php
+                    echo $this->Form->create('FeedbackForm', array('action' => 'deleteFeedbackQuestion'));
+                    echo $this->Form->input('id', array('id' => 'feedbackQId', 'type' => 'hidden', 'value' => ''));
+                    echo $this->Form->input('location_id', array('id' => 'feedbackLId', 'type' => 'hidden', 'value' => ''));
+                    echo $this->Form->input('title', array('id' => 'feedbackName', 'type' => 'hidden', 'value' => ''));
+                    echo $this->Form->end('Delete', array('class' => 'btn btn-danger pull-left'));
+                    ?>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                    <?php //echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link'))  ?>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <?php
+}
+?>

@@ -1,0 +1,129 @@
+<?php
+
+/** InvoiceExtrasController class
+ * 
+ * This class consists of methods for invoice extra details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class InvoiceExtrasController extends AppController {
+
+    public $helpers = array('Js'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+        $this->Auth->allow('logout');
+    }
+
+    /**
+     * This is the default method for the InvoiceExtras controller.
+     * If a particular location is set then it fetches the invoice extra details of that particular location.
+     * @return void
+     */
+    public function index() {
+         if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+         
+        if ($this->request->is('POST') && isset($this->request->data['invoice_extras']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['invoice_extras']['locations_id']);
+        }
+        $condition = array();
+        if ($this->Session->check('choosed_location_id') && ($this->Session->read('choosed_location_id') != '')) {
+            $condition[] = array('InvoiceExtra.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('InvoiceExtra.location_id' => '');
+        }
+        # Search
+        if (count($this->passedArgs) == 0) {
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+            if ($this->request->is('post') && isset($this->request->data['search']) && ($this->request->data['search'] != '') && ($this->request->data[$this->request->data['search']] != '')) {
+                if ($this->request->data['search'] == 'group_id') {
+                    $condition[] = array('InvoiceExtra.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                } else {
+                    $condition[] = array('InvoiceExtra.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                }
+            }
+            $this->Session->write('search_conditions', $condition);
+        }
+
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+            $condition = $this->Session->read('search_conditions');
+        }
+        if ($this->Session->read('choosed_location_id') == '') {//No location is set 
+            $this->Paginator->settings = array(
+                'conditions' => $condition,
+                'limit' => Configure::read('Application.rowLimit'),//Limit of records 
+                'order' => array('InvoiceExtra.id' => 'DESC')
+            );
+        } else {//Location is set
+            $this->Paginator->settings = array(
+                'limit' => Configure::read('Application.rowLimit'),//Limit of records 
+                'order' => array('InvoiceExtra.id' => 'ASC'),
+                'conditions' => $condition,
+            );
+        }
+        $this->set('invoiceExtraDatas', $this->paginate('InvoiceExtra'));
+        $this->Session->write('link', 'invoiceExtra');
+    }
+
+    /**
+     * Add the invoice extra details
+     * 
+     * @return void
+     */
+    public function add_invoice_extra() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+         
+        $month = $this->enumToSelectField('InvoiceExtra', 'invoice_extras', 'month');
+        $this->set('month', $month);
+        $title = $this->enumToSelectField('InvoiceExtra', 'invoice_extras', 'title');
+        $this->set('title', $title);
+        $internet_payment = $this->enumToSelectField('InvoiceExtra', 'invoice_extras', 'internet_payment');
+        $this->set('internet_payment', $internet_payment);
+
+        if (count($this->request->data) > 0 && ($this->Session->read('choosed_location_id') == '')) {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+        }
+        if ($this->request->is('post') && isset($this->request->data['invoice_extras']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['invoice_extras']['locations_id']);
+            if ($this->request->data['invoice_extras']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            }
+        } else {
+            if ($this->request->is('post') && count($this->request->data) > 0 && count($this->request->data['InvoiceExtra']) > 1) {
+                if ($this->Session->read('choosed_location_id') != '') {
+                    $this->request->data['InvoiceExtra']['location_id'] = $this->Session->read('choosed_location_id');
+                    if ($this->InvoiceExtra->save($this->request->data)) {
+                        $this->log("Invoice extra details added for location ID: " . $this->request->data['invoice_extras']['locations_id'], 'info');
+                        $this->Session->setFlash(__('Invoice extra details added successfully'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+                }
+            } else {
+                if ($this->Session->check('choosed_location_id') && ($this->Session->read('choosed_location_id') == '')) {
+                    $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+                }
+            }
+        }
+        $this->set('breadcrumbLabel', 'Add Invoice Extra');
+        $this->Session->write('link', 'addInvoiceExtra');
+    }
+}
+?>

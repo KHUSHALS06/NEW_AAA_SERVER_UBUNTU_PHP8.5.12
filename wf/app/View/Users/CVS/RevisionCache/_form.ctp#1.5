@@ -1,0 +1,107 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+ ?>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        $('#UserEditForm').bootstrapValidator();
+        
+    });
+   
+</script>
+<div class="row">
+    <?php
+    // $breadcrumbLabel;
+    $breadcrumb = array(
+        array(
+            'label' => 'Users',
+            'link' => '/users'
+        ),
+        array(
+            'label' => $breadcrumbLabel
+        )
+    );
+    echo $this->element('breadcrumb', array('links' => $breadcrumb));
+    ?>
+    <div class="col-lg-4 col-lg-offset-4">
+
+        <?php
+        echo $this->Form->create('User', array('data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+        <div class="center">
+            <h2><?php echo $label ?></h2>
+        </div>
+
+        <hr>
+        <?php
+        echo $this->Form->input('username', array(
+            'label' => __('Username'),
+            'data-bv-notempty' => true,
+            'data-bv-notempty-message' => __('Username is required'),
+            'data-bv-regexp' => "true",
+            'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+            'data-bv-regexp-message' => "Username can only consist of alphabets",
+            'value' => ($user['username']!='') ? $user['username'] : ''));
+        ?>
+
+        <?php
+        echo $this->Form->input('alias', array(
+            'label' => __('Name'),
+            'value' => ($user['alias']!='') ? $user['alias'] : ''));
+        ?>
+
+        <?php
+        echo $this->Form->input('email', array(
+            'label' => __('Email'),
+            'value' => ($user['email']!='') ? $user['email'] : ''));
+        ?>
+
+        <?php
+        echo $this->Form->input('password', array(
+            'label' => __('Password'),
+            'value' => false));
+        ?>
+
+        <?php
+        //echo $this->Form->input();
+        ?>
+
+        <?php if (AuthComponent::user('group_id') == '1') { ?>
+            <?php
+            echo $this->Form->input('group_id', array(
+                'label' => __('Group'),
+                'options' => $groups,
+                'selected' => ($user['group_id']!='') ? $user['group_id'] : '',
+                    //'onclick' => 'return hello()'
+            ));
+            ?>
+        <?php } ?>
+
+        <?php if (AuthComponent::user('group_id') == '1') { ?>
+            <?php
+            echo $this->Form->input('location_id', array(
+                'label' => __('Location'),
+                'options' => $locations,
+                'selected' => ($user['location_id']!='') ? $user['location_id'] : '',
+                    //'onclick' => 'return hello()'
+            ));
+            ?>
+<?php } ?>
+
+
+
+<?php echo $this->Form->end(__("Submit")); ?>
+    </div>
+</div>

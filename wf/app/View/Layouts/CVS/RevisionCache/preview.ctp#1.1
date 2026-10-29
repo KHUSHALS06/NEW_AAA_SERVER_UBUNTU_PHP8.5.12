@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title><?php echo $this->fetch('title'); ?></title>
+        <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+        <!-- Include external files and scripts here (See HTML helper for more info.) -->
+        <?php echo $this->Html->css('wfwow/animate'); ?>
+        <?php echo $this->Html->css('bootstrap'); ?>
+        <?php echo $this->Html->css('bootstrap-responsive'); ?>
+        <?php echo $this->Html->css('wfwow/site'); ?>
+        <?php echo $this->Html->script('wfwow/wow.min') ?>
+        <?php echo $this->Html->script('lib/jquery') ?>
+
+    </head>
+    <body onload="setheight()">
+
+        <!-- If you'd like some sort of menu to
+        show up on all of your views, include it here -->
+        <!--<div id="header">-->
+            <!--<div id="menu"></div>-->
+        <!--</div>-->
+            <!-- Here's where I want my views to be displayed -->
+            <?php echo $this->fetch('content'); ?>
+
+            <!-- Add a footer to each displayed page -->
+
+        <!--<div id="footer"></div>-->
+
+    </body>
+</html>

@@ -1,0 +1,121 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $('#LocationAddLocation0Form').bootstrapValidator();
+
+    });
+
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Location Details'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('Location', array('action' => 'addLocation0',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"
+        ));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php //echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+            <?php
+            echo $this->Form->input('location_name', array(
+                'label' => __('Location Name*'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The location name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9]{1,}[\.]{0,1}[A-Za-z0-9]{0,}$",
+                'data-bv-regexp-message' => "The location name can only consist of alphanumeric characters, with no white space"
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('username_length', array(
+                'label' => __('Username Length'),
+                'type' => 'select',
+                'options' => array('16'=>'16', '4'=>'4'),
+                'selected' => array('16'=>'16')
+                ));
+            ?>
+            <?php
+            echo $this->Form->input('location_state', array(
+                'label' => __('State*'),
+                'autocomplete' => 'off',
+                'value' => 'MH'));
+            ?>
+
+            <?php
+            echo $this->Form->input('location_city', array(
+                'label' => __('City*'),
+                'autocomplete' => 'off',
+                'value' => 'Mumbai'));
+            ?> 
+
+            <?php
+            echo $this->Form->input('location_street', array(
+                'label' => __('Street'),
+                'autocomplete' => 'off',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]*$",
+                'data-bv-regexp-message' => "The location name can only consist of alphabets and numbers",
+                'value' => 'Link Road'));
+            ?>
+
+            <?php
+            echo $this->Form->input('location_country', array(
+                'label' => __('Country*'),
+                'autocomplete' => 'off',
+                'value' => 'IN'));
+            ?>
+
+            <?php
+            echo $this->Form->input('location_organisation', array(
+                'label' => __('Organisation'),
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                'data-bv-regexp-message' => "The location organisation can only consist of alphabets"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('location_server_name', array(
+                'label' => __('Server Name'),
+                'autocomplete' => 'off',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]*$",
+                'data-bv-regexp-message' => "The location name can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <div class="row">
+                <div class="col-xs-3"><?php echo $this->Form->end(__("Save and Continue")); ?></div>
+                <div class="col-xs-3"><?php //echo $this->Html->link('Skip', array('controller' => 'locations', 'action' => 'add_location1'), array('class' => 'btn btn-default'));    ?></div>
+            </div>
+        </div>
+    </div>
+</div>

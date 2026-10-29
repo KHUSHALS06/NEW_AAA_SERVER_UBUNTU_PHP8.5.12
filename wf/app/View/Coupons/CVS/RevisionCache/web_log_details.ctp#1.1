@@ -1,0 +1,177 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $("#view").click(function() {
+            $("#viewForm").submit();
+        });
+        $("#sessionDetails").click(function() {
+            $("#sessionDetailsForm").submit();
+        });
+    });
+</script>
+<?php echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Coupons',
+        'link' => '/coupons'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<br>
+<div class="row">
+    <div class="container">
+        <ul class="nav nav-tabs">
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li>
+                    <a href="#" id="view"><i class="fa fa-money"></i> View</a>
+                    <form method="post" action="view" id="view">
+                        <input name="data[Coupon][coupon_id]" type="hidden" value="<?php echo $coupon['Coupon']['id'] ?>">
+                    </form>
+
+                </li>
+            <?php } ?>
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li>
+                    <a href="#" id="sessionDetails"><i class="fa fa-money"></i> Session Log</a>
+                    <form method="post" action="webLogDetails" id="sessionDetailsForm">
+                        <input name="data[Coupon][coupon_id]" type="hidden" value="<?php echo $coupon['Coupon']['id'] ?>">
+                    </form>
+
+                </li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li class="active"><a href="#" data-toggle="tab"><i class="fa fa-money"></i> Web Log</a></li>
+            <?php } ?>
+
+
+
+
+        </ul>
+        <div class="tab-content">
+
+            <!-- tab 1: tabUserDetails -->
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <div class="tab-pane active in fade" id="tabUserDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Username") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['username'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Type") ?>:</strong></td>
+                                    <td><?php echo 'WEB LOG DETAILS'?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Location") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['location_id'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Creator") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['creator'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Invoice Plan") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['payment_id'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Activate Date") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['active_date'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Creation Date") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['cr_date'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Password") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['password'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Max Session Time") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['duration'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Price") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['price'] ?></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+                </div> <!-- tabUserDetails -->
+
+            <?php } ?>
+
+            <!-- tab 2: tabBillingDetails -->
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <div class="tab-pane" id="tabBillingDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Logged In") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Session Time") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("IP Address") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Upload") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Download") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Server") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Terminate Cause") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Caller ID") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Remove") ?>:</strong></td>
+                                    <td><?php echo $coupon['Coupon']['date_created'] ?></td>
+                                </tr>
+
+                            </table>
+
+                        </div>
+                    </div>
+                </div> <!-- tabBillingDetails -->
+            <?php } ?>
+
+        </div><!-- tab content -->
+    </div><!-- end of container -->
+
+</div><!-- /.row -->

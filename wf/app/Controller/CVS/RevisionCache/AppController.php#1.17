@@ -1,0 +1,189 @@
+<?php
+
+/**
+ * Application level Controller
+ *
+ * This file is application-wide controller file. You can put all
+ * application-wide controller-related methods here.
+ *
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link          http://cakephp.org CakePHP(tm) Project
+ * @package       app.Controller
+ * @since         CakePHP(tm) v 0.2.9
+ * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+App::uses('Controller', 'Controller');
+
+class AppController extends Controller {
+
+    public $uses = array('Location', 'BusinessPlan');
+    //public $theme = 'Sb2';
+
+    public $components = array(
+        'RequestHandler',
+        'Session',
+        'Auth');
+
+
+    public $helpers = array('CakeStrap' => array('className' => 'CakeStrapHtml'),
+        'Html',
+        'Form' => array('className' => 'CakeStrapForm'),
+        'Js',
+        'MenuBuilder.MenuBuilder' => array(
+            'authModel' => 'Group',
+            'authField' => 'name'
+        )
+    );
+
+    public function beforeFilter() {
+        $this->Auth->allow('login', 'any_action', 'build_acl');
+        $user = $this->Auth->user();
+        $this->set(compact('user'));
+        //if (!$this->Session->read('locations_list')) {
+        if (count($this->Auth->user())>0) {
+            try {
+                $this->Location->bindModel(array('hasOne' => array('LocationsUser')), false);
+                $locationData = $this->Location->find('all', array(
+                    'order' => array('Location.location_name' => 'ASC'),
+                    //'fields' => array('Location.id', 'Location.location_name', 'Location.business_plan_id','Business_plan.name'),
+                    'conditions' => array(
+                        'LocationsUser.user_id' => $this->Auth->user('id')
+                    ),
+                    'recursive' => 0,
+                        //'contain' => 'LocationsUser'
+                ));
+                $locationList = array();
+                $locationIdList = array();
+                $businessPlanList = array();
+                $locationCustomerIdList = array();
+                $couponUsernameLengthList = array();
+                $locationDomainList = array();
+                $locationNAS = array();
+                $locationRevenueType = array();
+                $locationScratchCardPrice = array();
+                $locationEmailId = array();
+
+
+                foreach ($locationData as $location) {
+                    $locationList[$location['Location']['id']] = $location['Location']['location_name'];
+                    $locationIdList[$location['Location']['id']] = $location['Location']['id'];
+                    $businessPlanList[$location['Location']['id']] = $location['business_plans']['name'];
+                    $locationCustomerIdList[$location['Location']['id']] = $location['Location']['customer_id'];
+                    $locationDomainList[$location['Location']['id']] = $location['Location']['location_domain'];
+                    $couponUsernameLengthList[$location['Location']['id']] = $location['Location']['username_length'];
+                    //$locationScratchCardPrice[$location['Location']['id']] = $location['Location']['scratch_card_price'];
+                    $locationNAS[$location['Location']['id']] = $location['Location']['nas'];
+                    $locationRevenueType[$location['Location']['id']] = $location['Location']['revenue_share'];
+                    $locationScratchCardPrice[$location['Location']['id']] = $location['Location']['scratch_card_price'];
+                    $locationEmailId[$location['Location']['id']] = $location['Location']['email'];
+                }
+                $this->Session->write('locations_list', $locationList);
+                $this->Session->write('locations_id_list', $locationIdList);
+                $this->Session->write('locations_business_plan_list', $businessPlanList);
+                $this->Session->write('locations_customer_id_list', $locationCustomerIdList);
+                $this->Session->write('locations_domain_list', $locationDomainList);
+                $this->Session->write('coupon_username_length_list', $couponUsernameLengthList);
+                //$this->Session->write('location_scratch_card_price_list', $locationScratchCardPrice);
+                $this->Session->write('location_nas_list', $locationNAS);
+                $this->Session->write('is_revenue_shared', $locationRevenueType);
+                $this->Session->write('location_scratch_card_price', $locationScratchCardPrice);
+                $this->Session->write('location_email_id', $locationEmailId);
+                unset($locationList);
+                unset($locationIdList);
+                unset($businessPlanList);
+                unset($locationCustomerIdList);
+                unset($locationDomainList);
+                unset($couponUsernameLengthList);
+                unset($nas);
+                unset($locationRevenueType);
+                unset($locationScratchCardPrice);
+                unset($locationEmailId);
+            } catch (Exception $e) {
+                //pr($e->getMessage());
+                if ($e->getCode() == '42S22') {
+                    $this->Session->write('locations_list', NULL);
+                    $this->Session->write('locations_id_list', NULL);
+                    $this->Session->write('locations_business_plan_list', NULL);
+                    $this->Session->write('locations_customer_id_list', NULL);
+                    $this->Session->write('locations_domain_list', NULL);
+                    $this->Session->write('coupon_username_length_list', NULL);
+                    $this->Session->write('location_scratch_card_price_list', NULL);
+                    $this->Session->write('location_nas_list', NULL);
+                    $this->Session->write('is_revenue_shared', NULL);
+                    $this->Session->write('location_scratch_card_price', NULL);
+                    $this->Session->write('location_email_id', NULL);
+                }
+            }
+            if (count($locationData) == 1 && !$this->Session->read('choosed_location_id')) {
+                $this->Session->write('choosed_location_id', $locationData[0]['Location']['id']);
+            }
+            //!isset([$this->Session->read('choosed_location_id')]
+            if(array_key_exists($this->Session->read('choosed_location_id'), $this->Session->read('locations_list'))){
+                $this->Session->write('choosed_location_id', NULL);
+            }
+        }
+    }
+
+    public function afterFilter() {
+        parent::afterFilter();
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $lbpl = $this->Session->read('locations_business_plan_list');
+            if ($lbpl[$this->Session->read('choosed_location_id')] == 'silver' && ($this->request->param('controller') == 'check_ins' || $this->request->param('controller') == 'CheckIns')) {
+                $this->Session->setFlash(__('For this service you need to updrade your plan'), 'flash_info');
+                $this->redirect($this->redirect(array('controller' => 'pages', 'action' => 'index')));
+            }
+        } else {
+            //pr('I am empty');
+        }
+    }
+
+    public function __isAuthorized($user) {
+        // Here is where we should verify the role and give access based on role
+
+        return true;
+    }
+
+    public static function detectDevice() {
+        $userAgent = $_SERVER["HTTP_USER_AGENT"];
+        $devicesTypes = array(
+            "computer" => array("msie 10", "msie 9", "msie 8", "windows.*firefox", "windows.*chrome", "x11.*chrome", "x11.*firefox", "macintosh.*chrome", "macintosh.*firefox", "opera"),
+            "tablet" => array("tablet", "android", "ipad", "tablet.*firefox"),
+            "mobile" => array("mobile ", "android.*mobile", "iphone", "ipod", "opera mobi", "opera mini", "mobile.*firefox"),
+            "bot" => array("googlebot", "mediapartners-google", "adsbot-google", "duckduckbot", "msnbot", "bingbot", "ask", "facebook", "yahoo", "addthis")
+        );
+        foreach ($devicesTypes as $deviceType => $devices) {
+            foreach ($devices as $device) {
+                if (preg_match("/" . $device . "/i", $userAgent)) {
+                    $deviceName = $deviceType;
+                }
+            }
+        }
+        return $deviceName;
+    }
+
+    protected function enumToSelectField($model, $tableName, $enumFieldName) {
+        $sql = "SHOW COLUMNS FROM  `$tableName` LIKE '{$enumFieldName}'";
+        $enumData = $this->$model->query($sql);
+        $options = false;
+        $data = array();
+        if (count($enumData)>0) {
+            $patterns = array('enum(', ')', '\'');
+            $enumData = str_replace($patterns, '', $enumData[0]['COLUMNS']['Type']);
+            $options = explode(',', $enumData);
+
+            foreach ($options as $key => $value) {
+                $data[$value] = $value;
+            }
+        }
+        //Cache::write($cacheKey, $options);
+        return($data);
+    }
+
+}

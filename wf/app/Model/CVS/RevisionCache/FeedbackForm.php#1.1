@@ -1,0 +1,21 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of FeedbackForm
+ *
+ * @author dev3
+ */
+class FeedbackForm extends AppModel {
+    public $belongsTo = array(
+        'ElementType' => array(
+            'className' => 'ElementType',
+            'foreignKey' => 'element_type_id'
+        )
+    );
+}

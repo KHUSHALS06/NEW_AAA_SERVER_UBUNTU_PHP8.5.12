@@ -1,0 +1,286 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@gmail.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<?php //echo $this->element('locations_list')   ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Commission Agents',
+        'link' => '/commission_agents'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<!--h3><?php //pr($commissionAgents['CommissionAgent']['id']) ?></h3-->
+<hr>
+<p style="font-style: italic; color: red">(Click on the fields to edit.)</p>
+
+<div class="media">
+    <a class="pull-left" href="#">
+        <img class="media-object" src="https://secure.gravatar.com/avatar/<?php echo md5($user['email']) ?>?s=80&d=mm">
+    </a>
+    <div class="media-body col-lg-6 col-md-5">
+        <h4 class="media-heading"><?php //echo $user['username']    ?></h4>
+        <table class="table table-striped">
+            <tr>
+                <td><strong>First Name: </strong></td>
+                <td><div class ="editFirstName" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="first_name"><?php echo __($commissionAgentsData['CommissionAgent']['first_name']) ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Middle Name: </strong></td>
+                <td><div class ="editMiddleName" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="middle_name"><?php echo $commissionAgentsData['CommissionAgent']['middle_name'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Last Name: </strong></td>
+                <td><div class ="editLastName" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="last_name"><?php echo $commissionAgentsData['CommissionAgent']['last_name'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Address1: </strong></td>
+                <td><div class ="editAddress1" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="address1"><?php echo $commissionAgentsData['CommissionAgent']['address1'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Address2: </strong></td>
+                <td><div class ="editAddress2" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="address2"><?php echo $commissionAgentsData['CommissionAgent']['address2'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>City: </strong></td>
+                <td><div class ="editCity" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="city"><?php echo $commissionAgentsData['CommissionAgent']['city'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Postcode: </strong></td>
+                <td><div class ="editPostcode" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="postcode"><?php echo $commissionAgentsData['CommissionAgent']['postcode'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>State: </strong></td>
+                <td><div class ="editState" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="state"><?php echo $commissionAgentsData['CommissionAgent']['state'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Country: </strong></td>
+                <td><div class ="editCountry" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="country"><?php echo $commissionAgentsData['CommissionAgent']['country'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Bank: </strong></td>
+                <td><div class ="editBank" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="bank"><?php echo $commissionAgentsData['CommissionAgent']['bank'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Branch: </strong></td>
+                <td><div class ="editBranch" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="branch"><?php echo $commissionAgentsData['CommissionAgent']['branch'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Account No.: </strong></td>
+                <td><div class ="editAccountNumber" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="account_number"><?php echo $commissionAgentsData['CommissionAgent']['account_number'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Mobile: </strong></td>
+                <td><div class ="editMobile" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="mobile"><?php echo $commissionAgentsData['CommissionAgent']['mobile'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Phone: </strong></td>
+                <td><div class ="editPhone" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="phone"><?php echo $commissionAgentsData['CommissionAgent']['phone'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Email: </strong></td>
+                <td><div class ="editEmail" data-type="text" data-pk="<?php echo $commissionAgentsData['CommissionAgent']['id'] ?>" data-name="email"><?php echo $commissionAgentsData['CommissionAgent']['email'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Status: </strong></td>
+                <td><?php echo $commissionAgentsData['CommissionAgent']['status'] ?></td>
+            </tr>
+
+        </table>
+
+    </div>
+</div>
+<script>
+    $(function(){
+        var newURL = window.location.protocol + "//" + window.location.host + "" + window.location.pathname;
+        var truncatedURL = newURL.replace("view", "");
+        $.fn.editable.defaults.mode = 'inline'; 
+        
+        $('.editFirstName').editable({
+            url: truncatedURL+'update_first_name',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editMiddleName').editable({
+            url: truncatedURL+'update_middle_name',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editLastName').editable({
+            url: truncatedURL+'update_last_name',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editAddress1').editable({
+            url: truncatedURL+'update_address1'
+            /*validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }*/
+        });
+        $('.editAddress2').editable({
+            url: truncatedURL+'update_address2'
+            /*validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }*/
+        });
+        $('.editCity').editable({
+            url: truncatedURL+'update_city',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editPostcode').editable({
+            url: truncatedURL+'update_postcode',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[0-9]*$/.test(value))){
+                    return 'Only numbers allowed';
+                }
+            }
+        });
+        $('.editState').editable({
+            url: truncatedURL+'update_state',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editCountry').editable({
+            url: truncatedURL+'update_country',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editBank').editable({
+            url: truncatedURL+'update_bank',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editBranch').editable({
+            url: truncatedURL+'update_branch',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editAccountNumber').editable({
+            url: truncatedURL+'update_account_number',
+            /*validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }*/
+        });
+        $('.editMobile').editable({
+            url: truncatedURL+'update_mobile',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^([1-9]{1})([0-9]{9})$/.test(value))){
+                    return 'Only 10 digits allowed';
+                }
+            }
+        });
+        $('.editPhone').editable({
+            url: truncatedURL+'update_phone',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[0-9]*$/.test(value))){
+                    return 'Only 10 digits allowed';
+                }
+            }
+        });
+        $('.editEmail').editable({
+            url: truncatedURL+'update_email',
+            validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^([\w\-\.]+)@((\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4}))$/.test(value))){
+                    return 'Invalid Email';
+                }
+            }
+        });
+        /*$('.editEmail').editable({
+            url: newURL+'update_email'
+        });
+        $('.group').editable({
+            url: newURL+'/update_group',
+            title: 'Select group'
+        });*/
+     
+        
+    });
+</script>

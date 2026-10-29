@@ -1,0 +1,298 @@
+<?php
+/**
+ * This is the default page which displays the list of check-in
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        // Validate the form with Bootstrap validator   
+        $('#UserAddForm').bootstrapValidator()
+
+        // Get the number of columns in a table and assign it to colspan attribute
+        //var numberOfColumns = document.getElementById('checkInsTable').rows[0].cells.length;
+        //$("#emptyTableMessage").attr('colspan', numberOfColumns);
+
+        // Tooltip for view action
+        $('.actionView').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "View"
+        });
+
+        // Tooltip for edit action
+        $('.actionEdit').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Edit"
+        });
+
+        // Tooltip for delete action
+        $('.actionDelete').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Delete"
+        });
+        /*
+         $('.divTd').tooltip({
+         'show': true,
+         'placement': 'bottom',
+         'title': '---' //+ $(selector)
+         });
+         */
+        function getDetails() {
+            return 'What should I return';
+        }
+    });
+
+</script>
+<style>
+    .thumbnail {
+        float: left;
+        width: 100px;
+        height: 100px;
+        margin: 5px;
+    }
+    .thumbnailO {
+        float: left;
+        width: 100px;
+        height: 100px;
+        margin: 5px;
+        border-style: solid;
+        border-color: red;
+    }
+    .thumbnailTable{
+        width: 100px;
+        height: 100px;
+    }
+    .divTdHeight{
+        height: 90px;
+    }
+    .divTdWidth{
+        height: 20px;
+    }
+    .tooltip-inner {
+        white-space:pre-wrap;
+        max-width:none;
+    }
+</style>
+
+<?php
+// Paginator for the table
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'before' => $this->Js->get('#spinner')->effect(
+            'fadeIn', array('buffer' => false)
+    ),
+    'complete' => $this->Js->get('#spinner')->effect(
+            'fadeOut', array('buffer' => false)
+    ),
+    'evalScripts' => TRUE
+));
+?>
+<?php echo $this->element('locations_list') ?>
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Rooms Occupancy'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+//pr($room_details);
+?>
+
+<div class="row">
+    <!--<div class="col-md-2">-->
+    <?php
+    echo $this->Session->flash();
+    if (count($room_details) > 0 && $room_details != '') {
+        foreach ($room_details as $value) {
+            if (count($value['CheckIn']) > 0) {
+                foreach ($value['CheckIn'] as $valueInner) {
+                    ?>
+                    <div class ="<?php echo $valueInner['id'] != '' ? 'thumbnailO' : 'thumbnail' ?>">
+                        <table class="thumbnailTable">
+                            <tr>
+                                <td >
+                                    <div class="divTd" id="room_c<?php echo $valueInner['room_id'] . $valueInner['id'] ?>">
+                                        <?php
+                                        echo $valueInner['room_no'];
+                                        echo '<br>';
+                                        ?>
+                                    </div>
+                                    
+                                    <script type="text/javascript">
+                                        $(document).ready(function() {
+                                            $('#room_c' +<?php echo $valueInner['room_id'] . $valueInner['id']; ?>).tooltip({
+                                                'show': true,
+                                                'placement': 'bottom',
+                                                'title': '<?php echo $valueInner['title'] . ' ' . $valueInner['name'] . ' ' . $valueInner['last_name'] ?>' +'<?php echo ($this->Session->read("room_pin") == 0) ? "\n Pin".$valueInner["pin"] :""; ?>'+ '\n Checkout: ' + '<?php echo $valueInner['created'] != 0 ? date('d-m-Y', strtotime($valueInner['checkout_date'])):''; ?>',
+                                            });
+                                        });
+                                    </script>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="action-column">
+                                        <div class="row col-md-12 action-column action-link">
+                                            <div class="col-md-1 action-column">
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <?php
+                                                            
+                                                                echo $this->Form->create('CheckIn', array('action' => 'view'));
+
+                                                                echo $this->Form->input('id', array('type' => 'hidden', 'value' => $valueInner['id']));
+                                                                echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                                                //}else{
+                                                                //    echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                                                //}
+                                                                ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php
+                                                                echo $this->Form->create('CheckIn', array('action' => 'edit'));
+                                                                echo $this->Form->input('id', array('type' => 'hidden', 'value' => $valueInner['id']));
+                                                                echo $this->Form->input('room_id', array('type' => 'hidden', 'value' => $valueInner['room_id']));
+                                                                echo $this->Form->input('room_no', array('type' => 'hidden', 'value' => $valueInner['room_no']));
+                                                                echo $this->Form->input('calling_page', array('type' => 'hidden', 'value' => $this->request->param('action')));
+                                                                echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'action-button actionEdit'));
+                                                                ?>
+                                                            </td>
+                                                            <td>
+                                                                <?php
+                                                                echo $this->Html->link(
+                                                                        //$this->Html->tag('i', '', array('class' => 'fa fa-times')), '#UsersModalDeactivate', array(
+                                                                        $this->Html->image('crossout.png'), '#CheckInDelete', array(
+                                                                    'class' => 'btn-deleteCheckIn-modal actionDelete',
+                                                                    'data-toggle' => 'modal',
+                                                                    'role' => 'button',
+                                                                    'data-cid' => $valueInner['id'],
+                                                                    'data-room' => $valueInner['room_no'],
+                                                                    'data-title' => $valueInner['title'],
+                                                                    'data-locationId' => $valueInner['location_id'],
+                                                                    'data-lname' => $valueInner['last_name'],
+                                                                    'escape' => false), false);
+                                                            ?>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <?php
+                    //break;
+                }
+            } else {
+                //pr($value);
+                ?>
+                <div class ="<?php echo 'thumbnail' ?>">
+                    <table class="thumbnailTable">
+                        <tr>
+                            <td >
+                                <div class="divTd" id="room_<?php echo $value['Room']['id'] ?>">
+                                    <?php
+                                    //echo $value['Room']['id'];
+                                    //echo '<br>';
+                                    echo $value['Room']['room_no'];
+                                    echo '<br>';
+                                    ?>
+                                </div>
+                                <?php //if ($value['CheckIn']['id'] != '') { ?>
+                                <script type="text/javascript">
+                                    $(document).ready(function() {
+                                        $('#room_' +<?php echo $value['Room']['id'] ?>).tooltip({
+                                            'show': true,
+                                            'placement': 'bottom',
+                                            'title': '<?php echo $value['CheckIn']['title'] . ' ' . $value['CheckIn']['name'] . ' ' . $value['CheckIn']['last_name'] ?>' + '\n Pin:' + '<?php echo $value['CheckIn']['pin'] ?>' + '\n Checkout: ' + '<?php if ($value['CheckIn']['created'] != 0) echo date('d-m-Y', strtotime($value['CheckIn']['checkout_date'])) ?>'
+                                        });
+                                    });
+                                </script>
+                                <?php
+                                //}
+                                ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="action-column">
+                                    <div class="row col-md-12 action-column action-link">
+                                        <div class="col-md-1 action-column">
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <?php
+                                                        echo $this->Form->create('CheckIn', array('action' => 'add'));
+                                                        echo $this->Form->input('calling_page', array('type' => 'hidden', 'value' => 'rooms'));
+                                                        echo $this->Form->input('room_no', array('type' => 'hidden', 'value' => $value['Room']['room_no']));
+                                                        echo $this->Form->input('room_id', array('type' => 'hidden', 'value' => $value['Room']['id']));
+                                                        echo $this->Form->end('plus.png', array('div' => false, 'class' => 'action-button actionAdd'));
+                                                        ?>
+
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <?php
+            }
+        }
+    }
+    ?>
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+
+<div class="modal fade" id="CheckInDelete">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Delete guest check-in details') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to delete the check-in details for ') ?>
+                    <span class="label-gtitle strong"></span><?php echo __('.') ?><span class="label-gname strong"></span> 
+                    <?php echo __(' in Room no. ') ?><span class="label-roomno strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+                <?php
+                echo $this->Form->create('CheckIn', array('action' => 'delete'));
+                echo $this->Form->input('calling_page', array('type' => 'hidden', 'value' => 'rooms'));
+                echo $this->Form->input('id', array('id' => 'checkInIdForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('room_no', array('id' => 'checkInRoomNoForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('title', array('id' => 'checkInTitleForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('location_id', array('id' => 'checkInLocationIdForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('last_name', array('id' => 'checkInLastNameForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->end('Delete', array('class' => 'btn btn-danger pull-left'));
+                ?>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php //echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link')) ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

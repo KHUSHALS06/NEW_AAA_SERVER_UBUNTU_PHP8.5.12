@@ -1,0 +1,329 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        
+        $('#LocationAddLocation3Form').bootstrapValidator();
+        $('#live_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true
+        });
+        
+        $('#live_date').change(function(e) { 
+            $('#LocationAddLocation3Form').bootstrapValidator('revalidateField', 'data[Location][live_date]');
+        });
+        
+        if ($('#LocationRadioButtonYes').is(":checked"))
+        {
+            //alert('chkd');
+            $('#installationAddress').attr('style', 'display: inline');
+            $('#LocationInstallationName').val($('#LocationName').val());
+            $('#LocationInstallationAddress1').val($('#LocationAddress1').val());
+            $('#LocationInstallationAddress2').val($('#LocationAddress2').val());
+            $('#LocationInstallationCity').val($('#LocationCity').val());
+            $('#LocationInstallationState').val($('#LocationState').val());
+            $('#LocationInstallationPostcode').val($('#LocationPostCode').val());
+        } 
+        
+        $('#LocationRadioButtonYes').click(function(){
+            if ($('#LocationRadioButtonYes').is(":checked"))
+            {
+                //alert('chkd');
+                $('#installationAddress').attr('style', 'display: inline');
+                $('#LocationInstallationName').val($('#LocationName').val());
+                $('#LocationInstallationAddress1').val($('#LocationAddress1').val());
+                $('#LocationInstallationAddress2').val($('#LocationAddress2').val());
+                $('#LocationInstallationCity').val($('#LocationCity').val());
+                $('#LocationInstallationState').val($('#LocationState').val());
+                $('#LocationInstallationPostcode').val($('#LocationPostCode').val());
+            } else {
+                //alert('not chkd');
+                $('#LocationInstallationName').val("");
+                $('#LocationInstallationAddress1').val("");
+                $('#LocationInstallationAddress2').val("");
+                $('#LocationInstallationCity').val("");
+                $('#LocationInstallationState').val("");
+                $('#LocationInstallationPostcode').val("");
+            }
+        });
+    
+        
+    });
+    
+    
+   
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Location Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commercial Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Contact Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Billing & Installation Details'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('Location', array('action' => 'addLocation3',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"
+        ));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php //echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id));  ?>
+            <?php
+            echo $this->Form->input('name', array(
+                'label' => __('Name'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "The name can only consist of alphabets and numbers"
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('phone1', array(
+                'label' => __('Phone1'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The phone number is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The phone number can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('phone2', array(
+                'label' => __('Phone2'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "false",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The phone number can only consist of numbers'
+            ));
+            ?> 
+
+            <?php
+            echo $this->Form->input('fax', array(
+                'label' => __('Fax'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "false",
+                //'data-bv-notempty-message' => "The fax is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The fax can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('web', array(
+                'label' => __('Website'),
+                'type' => 'url',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "false",
+                'data-bv-uri-allowlocal' => 'false',
+                'data-bv-uri-message' => "The website address is not valid. Start with http://"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('address1', array(
+                'label' => __('Address'),
+                'type' => 'text',
+                'maxlength' => '50',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The address is required and cannot be empty"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('address2', array(
+                'label' => __('Street'),
+                'type' => 'text',
+                'maxlength' => '50',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The street name is required and cannot be empty"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('state', array(
+                'label' => __('State'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The state is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                'data-bv-regexp-message' => "The state can only consist of alphabets"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('post_code', array(
+                'label' => __('Post Code'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The postal code is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The postal code can only consist of numbers'
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('live', array(
+                'label' => __('Live'),
+                'type' => 'select',
+                'options' => array('0' => 'No', '1' => 'Yes'),
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('live_date', array(
+                'label' => __('Live Date'),
+                'type' => 'text',
+                'id' => 'live_date',
+                'readOnly' => true,
+                'data-bv-date' => 'true',
+                'data-bv-date-format' => 'YYYY-MM-DD',
+                'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD format'
+            ));
+            ?>
+            <p>Is installation address same as billing address?</p>
+            <!--input type="radio" name="checkAddress" id="checkAddressYes" value="yes" checked="checked">
+            <input type="radio" name="checkAddress" id="checkAddressNo" value="no"-->
+
+            <?php
+            /* echo $this->Form->input('radio_button', array(
+              'label' => 'false',
+              'type' => 'radio',
+              'options' => array('yes' => 'Yes', 'no' => 'No'),
+              //'class' => 'form-control',
+              //'selected' => $selected,
+              //'before' => '<div class="testOuterClass">',
+              //'after' => '</div>',
+              )); */
+            ?>
+            <input type="checkbox" name="data[Location][check_button]" id="LocationRadioButtonYes" class="" placeholder="false" value="yes" selected="false" />
+            <label for="LocationRadioButtonYes">Yes</label>
+            <!--input type="radio" name="data[Location][radio_button]" id="LocationRadioButtonNo" class="" placeholder="false" value="no" />
+                <label for="LocationRadioButtonNo">No</label-->
+
+            <div id="installationAddress" style="display: none">
+                <?php
+                echo $this->Form->input('location_city', array(
+                    'type' => 'hidden',
+                    'value' => $location_city,
+                    'id' => 'LocationCity'
+                ));
+                ?>
+                <?php
+                echo $this->Form->input('installation_name', array(
+                    'label' => __('Name'),
+                    'autocomplete' => 'off',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The name is required and cannot be empty",
+                    'data-bv-regexp' => "true",
+                    'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                    'data-bv-regexp-message' => "The name can only consist of alphabets and numbers"
+                ));
+                ?>
+                <?php
+                echo $this->Form->input('installation_address1', array(
+                    'label' => __('Address'),
+                    'type' => 'text',
+                    'maxlength' => '50',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The address is required and cannot be empty"
+                ));
+                ?>
+
+                <?php
+                echo $this->Form->input('installation_address2', array(
+                    'label' => __('Street'),
+                    'type' => 'text',
+                    'maxlength' => '50',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The street name is required and cannot be empty"
+                ));
+                ?>
+
+                <?php
+                echo $this->Form->input('installation_city', array(
+                    'label' => __('City'),
+                    'autocomplete' => 'off',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The state is required and cannot be empty",
+                    'data-bv-regexp' => "true",
+                    'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                    'data-bv-regexp-message' => "The state can only consist of alphabets"
+                ));
+                ?>
+
+                <?php
+                echo $this->Form->input('installation_state', array(
+                    'label' => __('State'),
+                    'autocomplete' => 'off',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The state is required and cannot be empty",
+                    'data-bv-regexp' => "true",
+                    'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                    'data-bv-regexp-message' => "The state can only consist of alphabets"
+                ));
+                ?>
+
+                <?php
+                echo $this->Form->input('installation_postcode', array(
+                    'label' => __('Post Code'),
+                    'type' => 'text',
+                    'autocomplete' => 'off',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The postal code is required and cannot be empty",
+                    'data-bv-numeric' => 'true',
+                    'data-bv-numeric-message' => 'The postal code can only consist of numbers'
+                ));
+                ?>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-8"><?php echo $this->Form->end(__("Save and Continue")); ?></div>
+                <div class="col-xs-2"><?php echo $this->Html->link('Back', array('controller' => 'locations', 'action' => 'addLocation2'), array('class' => 'btn btn-default')); ?></div>
+                <div class="col-xs-2"><?php echo $this->Html->link('Skip', array('controller' => 'locations', 'action' => 'addLocation4'), array('class' => 'btn btn-default')); ?></div>
+            </div>
+        </div>
+    </div>
+</div>
+

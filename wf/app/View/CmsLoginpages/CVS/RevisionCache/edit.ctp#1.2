@@ -1,0 +1,162 @@
+<?php
+/**
+ * This ctp consist of a view to edit the login page (CMS)
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+ ?>
+
+<script type="text/javascript">
+    
+    // Function to move cursor to the next textbox
+    function movetoNext(current, nextFieldID) {
+        if (current.value.length >= current.maxLength) {
+            document.getElementById(nextFieldID).focus();
+        }
+    }
+    $(document).ready(function() {
+        // If a table exists, add class
+        /*
+         * if($('table').length){
+            $('table').addClass('table table-bordered table-striped'); 
+        }
+        */
+        
+        // Validate the form with Bootstrap validator
+        $('#UserEditForm').bootstrapValidator();
+       
+       // Tooltip for edit action
+        $('.actionEdit').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Edit"
+        });
+    });
+   
+</script>
+<?php echo $this->element('locations_list') ?>
+<?php echo $this->Html->link('Upload Background Picture', array('action'=>'uploadBackgroundImage'));?>
+<?php echo $this->Session->flash() ?>
+
+<?php 
+$xdcx= $background;
+pr(Configure::read('Application.projectPath').$xdcx);
+echo '<div style="background-image:url(/'.Configure::read('Application.projectPath').$xdcx.')">';
+?>
+<!-- Header -->
+<div class="row col-md-12 col-xs-18 col table-bordered">
+    <div class="col-md-12" id ="header" style="height: 50px">
+        <?php echo $header; ?>
+        <div id = 'editHeader' <?php if ($emptyLocation == 'true') { ?> style="display: none" <?php } ?>>
+            <?php
+            echo $this->Form->create('CmsLoginpage', array('action' => 'editor'));
+            echo $this->Form->input('content', array('type' => 'hidden', 'value' => $header));
+            echo $this->Form->input('block_title', array('type' => 'hidden', 'value' => 'header'));
+            echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'pull-right action-button actionEdit'));
+            ?>
+        </div>
+    </div>
+</div>
+
+<div class="row col-md-12 col-xs-18 table-bordered" >
+    <!-- Menubar -->
+    <div class="col-md-2 col-xs-3 table-bordered" style="height: 300px" id="menubar"></div>
+    <!-- Tariff Plans -->
+    <div class="col-md-5 col-xs-5 table-bordered" style="height: 300px" id="tariffPlans">
+        <?php echo $tariff; ?>
+        <div id = 'editTariff' <?php if ($emptyLocation == 'true') { ?> style="display: none" <?php } ?>>
+            <?php
+            echo $this->Form->create('CmsLoginpage', array('action' => 'editor'));
+            echo $this->Form->input('content', array('type' => 'hidden', 'value' => $tariff));
+            echo $this->Form->input('block_title', array('type' => 'hidden', 'value' => 'tariff'));
+            echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'pull-right action-button actionEdit'));
+            ?>
+        </div>
+    </div>
+    <!-- Login Box -->
+    <div class="panel-group col-md-3 col-xs-5" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Please log on to use the WiFonic HotSpot service
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <?php echo $this->Session->flash(); ?>
+                    <?php
+                    echo $this->Form->create('User', array('data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                        'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                        'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh",
+                        'url' => array(
+                            'controller' => 'users',
+                            'action' => 'login'
+                            )));
+                    ?>
+                    <label>Username</label>
+                    <div class="row col-md-12 col-xs-10 action-column">
+                        <div class="col-md-1 col-xs-1 action-column">
+                            <input type="text" class="form-control input-sm" id="text1" onkeyup="movetoNext(this, 'text2')" maxlength="4" style="width: 50px">
+                        </div>
+                        <div class="col-md-2 col-xs-2 action-column"></div>
+                        <div class="col-md-1 col-xs-1 action-column">
+                            <input type="text" class="form-control input-sm" id="text2" onkeyup="movetoNext(this, 'text3')" maxlength="4" style="width: 50px">
+                        </div>
+                        <div class="col-md-2 col-xs-2 action-column"></div>
+                        <div class="col-md-1 col-xs-1 action-column">
+                            <input type="text" class="form-control input-sm" id="text3" onkeyup="movetoNext(this, 'text4')" maxlength="4" style="width: 50px">
+                        </div>
+                        <div class="col-md-2 col-xs-2 action-column"></div>
+                        <div class="col-md-1 col-xs-1 action-column">
+                            <input type="text" class="form-control input-sm" id="text4" maxlength="4" style="width: 50px">
+                        </div>
+                    </div>
+                    <br/>
+                    <?php
+                    echo $this->Form->input('password', array(
+                        'label' => __('Password'),
+                        'id' => 'password',
+                        'type' => 'password',
+                        'data-bv-notempty' => 'true',
+                        'data-bv-notempty-message' => "The password is required.",
+                    ));
+                    ?>
+                    <button type="submit" class="btn btn-default" id="loginButton"><?php echo __('Login') ?></button>
+                    </form>
+                </div>
+                <br>
+            </div>
+        </div>
+    </div>
+    <!-- Advertisement -->
+    <div class="col-md-2 col-xs-3 table-bordered" style="height: 300px" id="advertisement">
+            <?php echo $advertisement; ?>
+        <div id = 'editAdvertisement' <?php if ($emptyLocation == 'true') { ?> style="display: none" <?php } ?>>
+            <?php
+            echo $this->Form->create('CmsLoginpage', array('action' => 'editor'));
+            echo $this->Form->input('content', array('type' => 'hidden', 'value' => $advertisement));
+            echo $this->Form->input('block_title', array('type' => 'hidden', 'value' => 'advertisement'));
+            echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'pull-right action-button actionEdit'));
+            ?>
+        </div>
+    </div>
+</div>
+<!-- Footer -->
+<div class="row col-md-12 col-xs-18 table-bordered">
+    <div class="col-md-12" id ="footer">
+            <?php echo $footer; ?>
+        <div id = 'editFooter' <?php if ($emptyLocation == 'true') { ?> style="display: none" <?php } ?>>
+            <?php
+            echo $this->Form->create('CmsLoginpage', array('action' => 'editor'));
+            echo $this->Form->input('content', array('type' => 'hidden', 'value' => $footer));
+            echo $this->Form->input('block_title', array('type' => 'hidden', 'value' => 'footer'));
+            echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'pull-right action-button actionEdit'));
+            ?>
+        </div>
+    </div>
+</div>
+</div>
+

@@ -1,0 +1,173 @@
+<?php
+
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+/**
+ * BillingPlans Controller
+ *
+ * @property BillingPlan $BillingPlan
+ * @property PaginatorComponent $Paginator
+ */
+class BillingPlansController extends AppController {
+
+    public $uses = array('BillingPlan', 'LocationsUser');
+
+    /**
+     * Components
+     *
+     * @var array
+     */
+    public $components = array('Paginator');
+
+    /**
+     * index method
+     *
+     * @return void
+     */
+    public function index() {
+        if ($this->request->is('POST') && isset($this->request->data['billing_plans']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['billing_plans']['locations_id']);
+        }
+
+        $conditon = array();
+        if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search']!='' && $this->request->data[$this->request->data['search']]!='') {
+            $condition[] = array('BillingPlan.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+        }
+
+        if (in_array($this->Auth->user('Group.name'), Configure::read('Application.wifonicGroups'))) {
+            $conditon[] = array('BillingPlan.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $conditon[] = array('BillingPlan.location_id' => $this->Session->read('choosed_location_id'),
+                'BillingPlan.cat_bp' => 'normal'
+            );
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $condition[] = array('BillingPlan.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $locationIdArray = $this->Session->read('locations_list');
+            $condition[] = array('BillingPlan.location_id' => $locationIdArray);//array('BillingPlan.location_id' => '');
+            
+        }
+       
+        $this->BillingPlan->recursive = 0;
+            $this->Paginator->settings = array(
+                'limit' => 5,
+                'order' => array('BillingPlan.name_bp' => 'ASC'),
+                'conditions' => $condition//array('BillingPlan.location_id' => $locationIdArray),
+                //'contain' => 'BillingPlansLocation'
+            );
+        $this->set('billingPlans', $this->Paginator->paginate());
+        if (!$this->Session->check('choosed_location_id') || $this->Session->read('choosed_location_id')==''){
+            $this->Session->setFlash(__('To view billing plans, please select location first.'), 'flash_info');
+        }
+    }
+
+    /**
+     * view method
+     *
+     * @throws NotFoundException
+     * @param string $id
+     * @return void
+     */
+    public function view() {
+        $this->set('label', 'View billing plan');
+        $this->set('breadcrumbLabel', 'View billing plan');
+        if ($this->request->is('post')) {
+            if (!$this->BillingPlan->exists($this->request->data['BillingPlan']['id'])) {
+                throw new NotFoundException(__('Invalid billing plan'));
+            }
+            $options = array('conditions' => array('BillingPlan.' . $this->BillingPlan->primaryKey => $this->request->data['BillingPlan']['id']));
+            $this->set('billingPlan', $this->BillingPlan->find('first', $options));
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    /**
+     * add method
+     *
+     * @return void
+     */
+    public function add() {
+        $login_display = $this->enumToSelectField('BillingPlan', 'billing_plans', 'login_display');
+        $this->set('login_display', $login_display);
+        $this->set('breadcrumbLabel', 'Add Billing Plan');
+        $this->set('label', 'Add Billing Plan');
+        if (count($this->request->data)>0 && $this->Session->read('choosed_location_id')=='') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            $this->redirect(array('action' => 'index'));
+        }
+        if ($this->request->is('post') && isset($this->request->data['billing_plans']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['billing_plans']['locations_id']);
+            if ($this->request->data['billing_plans']['locations_id']=='') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            }
+        } else {
+            if ($this->request->is('post')) {
+                if (isset($this->request->data['billing_plans']) && count($this->request->data['billing_plans']) == 1) {
+                    $this->Session->write('choosed_location_id', $this->request->data['billing_plans']['locations_id']);
+                } else {
+                    if ($this->Session->read('choosed_location_id') && count($this->request->data['BillingPlan']) > 1) {
+                        $this->request->data['BillingPlan']['location_id'] = $this->Session->read('choosed_location_id');
+                        if ($this->BillingPlan->save($this->request->data)) {
+
+                            $this->log("Billing Plan added", 'info');
+
+                            $this->Session->setFlash(__('The billing plan has been saved.'), 'flash_success');
+                            //$this->redirect(array('action' => 'index'));
+                        } else {
+                            $this->Session->setFlash(__('The billing plan could not be saved. Please, try again.'), 'flash_fail');
+                        }
+                    } else {
+                        $this->Session->setFlash(__('No location is selected. Please select a location before creating a billing plan.'), 'flash_fail');
+                    }
+                }
+            } else {
+            }
+        }
+    }
+
+    /**
+     * edit method
+     *
+     * @throws NotFoundException
+     * @param string $id
+     * @return void
+     */
+    public function edit() {
+        $login_display = $this->enumToSelectField('BillingPlan', 'billing_plans', 'login_display');
+        $this->set('login_display', $login_display);
+        $this->set('breadcrumbLabel', 'Edit Billing Plan');
+        $this->set('label', 'Edit Billing Plan');
+        if ($this->request->is('post')) {
+            if (count($this->request->data['BillingPlan']) > 1) {
+                if ($this->BillingPlan->save($this->request->data)) {
+                    $this->log("Billing Plan: " . $this->request->data['BillingPlan']['name_bp'] . " with Billing Plan ID: " . $this->request->data['BillingPlan']['id'] . " updated by userID: " . AuthComponent::user('id'), 'info');
+                    //$this->log("Billing Plan updated", 'info');
+                    $this->Session->setFlash(__('The billing plan has been saved.'), 'flash_success');
+                    return $this->redirect(array('action' => 'index'));
+                } else {
+                    $this->Session->setFlash(__('The billing plan could not be saved. Please, try again.'));
+                }
+                $this->set('billingPlan', $billingPlan = Hash::extract($this->BillingPlan->findById($this->request->data['BillingPlan']['id']), 'BillingPlan'));
+            } else {
+                $this->set('billingPlan', $billingPlan = Hash::extract($this->BillingPlan->findById($this->request->data['BillingPlan']['id']), 'BillingPlan'));
+            }
+        } else {
+            return $this->redirect(array('action' => 'index'));
+        }
+    }
+
+}

@@ -1,0 +1,465 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php echo $this->element('locations_list') ?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '/locations'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo __('Locations')     ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        //pr(AuthComponent::user('Group.name')."/". Configure::read('wf_admin'));
+//        if (AuthComponent::user('Group.name') == Configure::read('Application.wf_admin')) {
+//            echo $this->Html->link(__('Add Locations'), '/locations/addLocation0', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px'));
+//        }
+//        echo $this->Form->create('Location', array('action' => 'edit'));
+//        echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location['Location']['id']));
+//        //echo $this->Form->end('Edit', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/edit_20by20.png'));
+//        echo $this->Form->end('Edit', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px'))
+       ?>
+    </div>
+</div>
+<div class="row">
+    <div class="container">
+        <ul class="nav nav-tabs">
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li class="active"><a href="#tabLocationDetails" data-toggle="tab"><i class="fa fa-map-marker"></i> Location Details</a></li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li><a href="#tabCommercialDetails" data-toggle="tab"><i class="fa fa-money"></i> Commercial Details</a></li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.admin'))  { ?>
+                <li class="<?php echo CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') ? 'active' : '' ?>"><a href="#tabContactDetails" data-toggle="tab"><i class="fa fa-phone"></i> Contact Details</a></li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.admin')) { ?>
+                <li>
+                    <a href="#tabBillingDetails" data-toggle="tab"><i class="fa fa-ticket"></i> Billing & Installation Details</a>
+                </li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc')) { ?>
+                <li class="<?php echo ((CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer')) || (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc'))) ? 'active' : '' ?>">
+                    <a href="#tabConfigurationDetails" data-toggle="tab"><i class="fa fa-cogs"></i> Configuration Details</a>
+                </li>
+            <?php } ?>
+        </ul>
+        <div class="tab-content">
+
+            <!-- tab 1: tabLocationDetails -->
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <div class="tab-pane active in fade" id="tabLocationDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Location Name") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_name'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("State") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_state'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("City") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_city'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Country") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_country'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Organisation") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_organisation'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Server Name") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_server_name'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Street") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['location_street'] ?></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+                </div> <!-- tabLocationDetails -->
+            <?php } ?>
+
+            <!-- tab 2: tabCommercialDetails -->
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <div class="tab-pane fade" id="tabCommercialDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Revenue Share") ?>:</strong></td>
+                                    <td>
+                                        <?php
+                                        if ($location['Location']['revenue_share'] == '1') {
+                                            echo "Yes";
+                                        } else {
+                                            echo "No";
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Committed Revenue") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['committed_revenue'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Revenue Percent") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['revenue_percent'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Monthly Fixed") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['monthly_fixed'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Internet Provided") ?>:</strong></td>
+                                    <td>
+                                        <?php
+                                        if ($location['Location']['internet_provided'] == '1') {
+                                            echo "Yes";
+                                        } else {
+                                            echo "No";
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Service Tax Included") ?>:</strong></td>
+                                    <td>
+                                        <?php
+                                        if ($location['Location']['service_tax_included'] == '1') {
+                                            echo "Yes";
+                                        } else {
+                                            echo "No";
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Invoice Day") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['invoice_day'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Credit Limit") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['credit_limit'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Complementary") ?>:</strong></td>
+                                    <td>
+                                        <?php
+                                        if ($location['Location']['complementary'] == '1') {
+                                            echo "Yes";
+                                        } else {
+                                            echo "No";
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("One Time") ?>:</strong></td>
+                                    <td>
+                                        <?php
+                                        if ($location['Location']['one_time'] == '1') {
+                                            echo "Yes";
+                                        } else {
+                                            echo "No";
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("AMC") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['amc'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("One Time Cost") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['one_time_cost'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("One Time Date") ?>:</strong></td>
+                                    <td><?php echo date('d-m-Y', strtotime($location['Location']['one_time_date']))  ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Valid Till") ?>:</strong></td>
+                                    <td><?php echo date('d-m-Y', strtotime($location['Location']['valid_till'])) ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Auto Renew") ?>:</strong></td>
+                                    <td><?php
+                                    if ($location['Location']['auto_renew'] == '1') {
+                                        echo "Yes";
+                                    } else {
+                                        echo "No";
+                                    }
+                                        ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Contract Period") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contract_period'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Scratch Card Price") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['scratch_card_price'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Annual Increment") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['annual_increment'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Increment Date") ?>:</strong></td>
+                                    <td><?php echo date('d-m-Y', strtotime($location['Location']['one_time_date'])) ?></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+
+            <!-- tab 3: tabContactDetails -->
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.admin') ) {
+                ?>
+                <div class="<?php echo (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.admin'))? 'tab-pane active in fade' : 'tab-pane fade' ?>" id="tabContactDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <h5><i><?php echo __('Contact Person 1') ?></i></h5>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Name") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contact_persons1'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Post") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contact_person_post1'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Mobile") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contact_person_mob1'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Email") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['email'] ?></td>
+                                </tr>
+                            </table>
+
+                            <hr>
+                            <h5><i><?php echo __('Contact Person 2') ?></i></h5>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Name") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contact_persons2'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Post") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contact_person_post2'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Mobile") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['contact_person_mob2'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Email") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['email2'] ?></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div> <!-- tabContactDetails -->
+            <?php } ?>
+
+
+            <!-- tab 4: tabBillingDetails -->
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.admin')) {
+                ?>
+                <div class="tab-pane fade" id="tabBillingDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <h5><i><?php echo __('Billing Address') ?></i></h5>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Name") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['name'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Website") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['web'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Phone 1") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['phone1'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Phone 2") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['phone2'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Fax") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['fax'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Address 1") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['address1'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Address 2") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['address2'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("State") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['state'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Post Code") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['post_code'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Live") ?>:</strong></td>
+                                    <td>
+                                        <?php
+                                        if ($location['Location']['live'] == '1') {
+                                            echo "Yes";
+                                        } else {
+                                            echo "No";
+                                        }
+                                        ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Live Date") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['live_date'] ?></td>
+                                </tr>
+                                </table>
+
+                            <hr>
+                            <h5><i><?php echo __('Installation Address') ?></i></h5>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("Installation Name") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['installation_name'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Installation Address") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['installation_address1'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Installation Street") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['installation_address2'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Installation City") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['installation_city'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Installation State") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['installation_state'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Installation Postcode") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['installation_postcode'] ?></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+
+            <!-- tab 5: tabConfigurationDetails -->
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc')) {
+                ?>  
+                <div class="<?php echo (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc')) ? 'tab-pane active in fade' : 'tab-pane fade' ?>" id="tabConfigurationDetails">
+                    <br>
+                    <div class="row">
+                        <div class="col-lg-6 col-md-5">
+                            <table class="table table-striped">
+                                <tr>
+                                    <td><strong><?php echo __("NAS(Device)") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['nas'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Logo") ?>:</strong></td>
+                                    <td>
+                                        <img src="<?php echo $this->request->webroot ?>locations/displayLogoFile/<?php echo $location['Location']['id'] ?>" width="50" height="50">
+                                        <?php
+                                        //echo $location['Location']['logo_name'];
+                                        //echo $this->Html->link($location['Location']['logo_name'], array('controller' => 'locations', 'action' => 'displayLogoFile', $location['Location']['id']), array('class' => ''));
+                                        /* echo $this->Html->image(array(
+                                          'url' => array('controller' => 'locations', 'action' => 'displayLogoFile', 203)
+                                          )); */
+                                        ?>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong><?php echo __("Configuration File") ?>:</strong></td>
+                                    <td><?php echo $this->Html->link($location['Location']['config_name'], array('controller' => 'locations', 'action' => 'displayConfigFile', $location['Location']['id']), array('class' => '')); ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Backup File") ?>:</strong></td>
+                                    <td><?php echo $this->Html->link($location['Location']['backup_name'], array('controller' => 'locations', 'action' => 'displayBackupFile', $location['Location']['id']), array('class' => '')); ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Router Address") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['router_address'] ?></td>
+                                </tr>
+                                <!--tr>
+                                    <td><strong><?php //echo __("SMS Password")         ?>:</strong></td>
+                                    <td><?php //echo $location['Location']['sms_password']         ?></td>
+                                </tr-->
+                                <tr>
+                                    <td><strong><?php echo __("Type") ?>:</strong></td>
+                                    <td><?php echo $location['Location']['type'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><strong><?php echo __("Router Management") ?>:</strong></td>
+                                    <td><?php
+                                    if ($location['Location']['router_management'] == '1') {
+                                        echo "Yes";
+                                    } else {
+                                        echo "No";
+                                    }
+                                        ?></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+        </div><!-- tab content -->
+    </div><!-- end of container -->
+
+</div><!-- /.row -->

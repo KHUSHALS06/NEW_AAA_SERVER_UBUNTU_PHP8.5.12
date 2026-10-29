@@ -1,0 +1,216 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    tinymce.init({
+        selector: "textarea",
+        toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent",
+        setup: function(email_message) {
+            email_message.on('focus', function(e) {
+                $("#email_messageErrorIcon").attr('style', 'display:none');
+                $("#email_messageError").attr('style', 'display:none');
+                $('input[type="submit"]').removeAttr('disabled');
+            });
+        }});
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#crm_email').bootstrapValidator();
+        $('#crm_email').submit(function(e) {
+            var txtarea = tinyMCE.get('email_message').getContent();//$('#').val();
+            //alert(txtarea);
+            if ((txtarea == "") || (txtarea == null)) {
+                //$("#email_message").attr('style', 'border-color: #953B39');
+                $("#email_messageErrorIcon").attr('style', 'display:inline');
+                $("#email_messageError").attr('style', 'display:inline;color:#B94A48');
+                $('input[type="submit"]').attr('disabled', 'disabled');
+                return false;
+            } else {
+                $("#email_messageErrorIcon").attr('style', 'display:none');
+                $("#email_messageError").attr('style', 'display:none');
+                $('input[type="submit"]').removeAttr('disabled');
+                return true;
+            }
+        });
+    });
+</script>
+<?php
+echo $this->element('locations_list');
+?>
+
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Email',
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#" data-toggle="tab"><i class="fa fa-envelope-o"></i> Compose</a></li>
+        <li>
+            <a href= "<?php echo $this->request->webroot ?>c_r_ms/emailLog" id="emailLog"><i class="fa fa-inbox"></i> Sent</a>
+        </li>
+    </ul>
+    <div class="col-md-12">
+        <?php
+        echo '<br>';
+        echo $this->Html->link(
+                //$this->Html->tag('i', '', array('class' => 'fa fa-times')), '#UsersModalDeactivate', array(
+                __('SMTP Configuration'), '#emailSMTPConfig', array(
+            'class' => 'btn btn-default pull-right',
+            'data-toggle' => 'modal',
+            'role' => 'button',
+            'escape' => false), false);
+        ?>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        echo $this->Form->create('CRM', array(
+            'action' => 'emails',
+            'method' => 'post',
+            'id' => 'crm_email',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+        <div class="col-md-8">
+
+            <?php
+            $toEmailAddress['all'] = 'all';
+            $toEmailAddress[] = $emailAddress;
+            echo $this->Form->input('to', array(
+                'label' => __('To'),
+                'multiple' => 'multiple',
+                'type' => 'select',
+                'options' => $toEmailAddress,
+                'selected' => ($to != '') ? $to : 'all'
+            ));
+            echo $this->Form->input('toAll', array(
+                'type' => 'hidden',
+                'value' => implode(", ", $hiddenEmailAddress)
+            ));
+
+            echo $this->Form->input('subject', array(
+                'label' => __('Subject'),
+                'autocomplete' => 'off',
+                'id' => 'email_subject',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Please enter a subject",
+                    //'data-bv-regexp' => "true",
+                    //'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                    //'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            echo $this->Form->input('message', array(
+                'label' => __('Message'),
+                'type' => 'textArea',
+                'autocomplete' => 'off',
+                'id' => 'email_message',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Please enter a message",
+//                'data-bv-regexp' => "true",
+//                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+//                'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            ?>
+            <i id="email_messageErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display: none"> </i>
+            <br><small id ="email_messageError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none"> Please write a message</small>
+
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+
+                <?php
+                echo '<br/>';
+                echo $this->Form->end(__("Send", array('id' => 'sendEmail')));
+                ?>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="emailSMTPConfig" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" id="closeEmailSMTPConfig" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">SMTP Configuration</h4>
+            </div>
+            <?php
+            if ($this->Session->read('choosed_location_id')) {
+                ?>
+                <div class="modal-body">
+                    <?php
+                    echo $this->Form->create('CRM', array(
+                        'action' => 'setSmtp',
+                        'method' => 'POST',
+                        'id' => 'smtp_config_form'
+                    ));
+                    echo $this->Form->input('id', array(
+                        'type' => 'hidden',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['id'] != '') ? $smtpData['Location']['id'] : '',
+                    ));
+                    echo $this->Form->input('smtp_from', array(
+                        'label' => __('From Email'),
+                        'type' => 'email',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['smtp_from'] != '') ? $smtpData['Location']['smtp_from'] : '',
+                    ));
+                    echo $this->Form->input('smtp_host', array(
+                        'label' => __('Host'),
+                        'type' => 'text',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['smtp_host'] != '') ? $smtpData['Location']['smtp_host'] : '',
+                    ));
+                    echo $this->Form->input('smtp_port', array(
+                        'label' => __('Port'),
+                        'type' => 'number',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['smtp_from'] != '') ? $smtpData['Location']['smtp_port'] : '',
+                    ));
+                    echo $this->Form->input('smtp_user', array(
+                        'label' => __('Username'),
+                        'type' => 'text',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['smtp_from'] != '') ? $smtpData['Location']['smtp_user'] : '',
+                    ));
+                    echo $this->Form->input('smtp_pass', array(
+                        'label' => __('Password'),
+                        'type' => 'Password',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['smtp_from'] != '') ? $smtpData['Location']['smtp_pass'] : '',
+                    ));
+                    echo $this->Form->input('smtp_pass_conform', array(
+                        'label' => __('Conform Password'),
+                        'type' => 'Password',
+                        'value' => (key_exists('Location', $smtpData) && $smtpData['Location']['smtp_from'] != '') ? $smtpData['Location']['smtp_pass'] : '',
+                    ));
+                    echo $this->Form->end('Save');
+                    ?>
+                    <!-- The form is placed inside the body of modal -->
+
+                </div>
+                <?php
+            } else {
+                ?>
+                <div class="modal-body">
+                    <div class="modal-body alert-danger">
+                        <h5>Please select a location first.</h5>
+                    </div>
+                </div>
+                <?php
+            }
+            ?>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,747 @@
+<?php
+
+/** UsersController class
+ *  
+ * This class consists of methods for user management
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+
+<?php
+
+App::uses('CakeEmail', 'Network/Email');
+
+class UsersController extends AppController {
+
+    public $uses = array('Location', 'User', 'Group');
+    public $helpers = array('Js'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+        $this->Auth->allow('logout');
+    }
+
+    /**
+     * This is the default method for the Users controller. It fetches all the users list.
+     * If a particular location is set then it fetches the users of that particular location.
+     * 
+     * @return void
+     */
+    public function index() {
+        //pr($this->request->data);
+        $conditions = array();
+        if ($this->request->is('POST') && isset($this->request->data['users']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['users']['locations_id']);
+        }
+
+        if ($this->Session->read('choosed_location_id') == '') {//No location is set
+            $conditions[] = array('User.parent_id' => array($this->Auth->user('id')));
+
+            # Search 
+            if (count($this->passedArgs) == 0) {
+                if ($this->Session->check('search_conditions')) {
+                    $this->Session->delete('search_conditions');
+                }
+                /*
+                  if ($this->request->is('post') && isset($this->request->data['User']['type']) && !empty($this->request->data['User']['type'])) {
+                  $conditions[] = array('user.type' => $this->request->data['User']['type']);
+                  }
+                 * 
+                 */
+                if ($this->request->is('post') && isset($this->request->data['search']) && ($this->request->data['search'] != '') && ($this->request->data[$this->request->data['search']] != '')) {
+                    if ($this->request->data['search'] == 'group_id') {
+                        $conditions[] = array('User.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                    } else {
+                        $conditions[] = array('User.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                    }
+                }
+
+                $this->Session->write('search_conditions', $conditions);
+            }
+
+            if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+                //unset($conditions);
+                $conditions = $this->Session->read('search_conditions');
+            }
+            $this->set('conditions', $conditions);
+
+            $this->set('groups', $this->Group->find('list')); //Set the groups for inline editing
+            $this->Paginator->settings = array(
+                'conditions' => $conditions, //For fetching the users under the logged in user.
+                'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                'order' => array('User.modified' => 'DESC')
+            );
+        } else {//Location is set
+            $this->set('groups', $this->Group->find('list')); //Set the groups for inline editing
+            $conditions[] = array(
+                'LocationsUser.location_id' => $this->Session->read('choosed_location_id'),
+                'User.id !=' => $this->Auth->user('id'),
+                'Group.name !=' => Configure::read('Application.wf_admin')
+                    //'NOT' => array('Group.name' => Configure::read('Application.userGroups'))
+            );
+            if (count($this->passedArgs) == 0) {
+                if ($this->Session->check('search_conditions')) {
+                    $this->Session->delete('search_conditions');
+                }
+                /*
+                  if ($this->request->is('post') && isset($this->request->data['User']['type']) && !empty($this->request->data['User']['type'])) {
+                  $conditions[] = array('user.type' => $this->request->data['User']['type']);
+                  }
+                 * 
+                 */
+                if ($this->request->is('post') && isset($this->request->data['search']) && ($this->request->data['search'] != '') && ($this->request->data[$this->request->data['search']] != '')) {
+                    if ($this->request->data['search'] == 'group_id') {
+                        $conditions[] = array('User.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                    } else {
+                        $conditions[] = array('User.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                    }
+                }
+
+                $this->Session->write('search_conditions', $conditions);
+            }
+
+            if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+                //unset($conditions);
+                $conditions = $this->Session->read('search_conditions');
+            }
+            $this->set('conditions', $conditions);
+            if (in_array($this->Auth->user('Group.name'), Configure::read('Application.wifonicGroups'))) {
+                $this->User->bindModel(array('hasOne' => array('LocationsUser')), false); // Creating a nany to many join between users and locations table useing the locations_users table. 
+                $this->Paginator->settings = array(
+                    'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                    'order' => array('User.username' => 'ASC'),
+                    'conditions' => $conditions,
+                    'contain' => 'LocationsUser'
+                );
+            } else {
+                $this->User->bindModel(array('hasOne' => array('LocationsUser')), false); // Creating a nany to many join between users and locations table useing the locations_users table. 
+                $this->Paginator->settings = array(
+                    'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                    'order' => array('User.username' => 'ASC'),
+                    'conditions' => array(
+                        'LocationsUser.location_id' => $this->Session->read('choosed_location_id'),
+                        'User.parent_id' => $this->Auth->user('id')
+                    ),
+                    'contain' => 'LocationsUser'
+                );
+            }
+        }
+        $this->User->recursive = 0;
+        $this->set('users', $this->paginate('User'));
+        $userToken = rand(100, 999); //creating a token for checking porpose in view, edit and deacticate/activate action.
+        $this->Session->write('user_token', $userToken); //Writting the token to session.
+        $this->set("userToken", $userToken); //setting the token in view, edit and deacticate/activate form in the index.ctp file.
+        $this->Session->write('link', 'usersList');
+    }
+
+    /**
+     * This method validates the user
+     * @return void
+     */
+    public function login() {
+        if ($this->Auth->login() != '') {
+            $this->redirect($this->Auth->redirectUrl());
+        }
+        if ($this->request->is('post')) {
+            try {
+# Retrieve user username for auth
+                $this->request->data['User']['username'] = $this->User->getUsername($this->request->data['User']['username']);
+            } catch (Exception $e) {
+# In case that this email dont exists in database
+                $this->log("login attaim failed", 'info');
+                $this->Session->setFlash($e->getMessage(), 'flash_fail');
+                $this->redirect('/');
+            }
+
+# Try to log in the user
+            if ($this->Auth->login()) {
+                if (($this->request->data['User']['remember_me'] != '') && $this->request->data['User']['remember_me'] == 'S') {
+                    $cookie = array();
+                    $cookie['username'] = $this->request->data['User']['username'];
+                    $cookie['password'] = $this->Auth->password($this->request->data['User']['password']);
+
+# Write cookie ( 30 Days )
+                    $this->Cookie->write('Auth.User', $cookie, true);
+                }
+                $this->log("Successful login", 'info');
+# Redirect to home
+                $this->redirect($this->Auth->redirectUrl());
+            } else {
+                $this->log("login attaim failed", 'info');
+                $this->Session->setFlash(__('Invalid username or password'), 'flash_fail');
+            }
+        }
+    }
+
+    /**
+     * logout the user
+     *
+     * @return void
+     */
+    public function logout() {
+        # Destroy the Cookie
+        //$this->Cookie->delete('Auth.User');
+        # Destroy the session
+        //$this->Session->destroy('choosed_location_id');
+        //$this->Session->destroy('choosed_location_name');
+        //$this->Session->delete('locations_list');
+        $this->log("Successful logout", 'info');
+        $this->Session->destroy();
+        $this->redirect($this->Auth->logout());
+    }
+
+    /**
+     * Display the details of a user
+     * 
+     * @return void
+     */
+    public function view() {
+        $this->set('label', 'View user');
+        $this->set('breadcrumbLabel', 'View User');
+        if ($this->request->is('POST') && ($this->Session->read('user_token') == ($this->request->data['User']['user_token']))) {
+            $userData = $this->User->findByIdAndParentId($this->request->data['User']['id'], $this->Auth->user('id'));
+            //Extracting the User data from the result set
+            $user = Hash::extract($userData, 'User');
+            //Extracting the Group data from the result set
+            $group = Hash::extract($userData, 'Group');
+            $this->set('userData', $user);
+            $this->set('groupData', $group);
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    /**
+     * Add the details of a new user
+     * 
+     * @return void
+     */
+    public function add() {
+        if ($this->request->is('post') && isset($this->request->data['users']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['users']['locations_id']);
+            if (($this->request->data['users']['locations_id'] == '')) {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            }
+        }
+        if ($this->request->is('post') && isset($this->request->data['User']['username']) && ($this->request->data['User']['username'] != '')) {
+
+            //Setting the patent ID
+            $this->request->data['User']["parent_id"] = AuthComponent::user('id');
+
+            $this->User->create();
+            if ($this->User->saveAll($this->request->data)) {
+                if (AuthComponent::user('id')) {
+                    //Writing in to the log file
+                    CakeLog::info('The user ' . AuthComponent::user('username') . ' (ID: ' . AuthComponent::user('id') . ') registered user (ID: ' . $this->User->id . ')', 'users');
+                }
+                //Writing in to the log file
+                $this->log("User added", 'info');
+
+                /* Send account creation mail to user */
+                $subject = 'User account created';
+                $message = 'Dear ' . $this->request->data['User']['alias'] . ', <br />Your user account has been successfully created. <br />Your username is <b>' . $this->request->data['User']['username'] . '</b> and your password is <b>' . $this->request->data['User']['password'] . '</b>.';
+                $this->_sendEmail($this->request->data['User']['email'], $subject, $message);
+
+                $this->Session->setFlash(__('The user has been saved.'), 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            } else {
+                $this->Session->setFlash(__('The user data could not be updated. Please, try again.'), 'flash_fail');
+            }
+        }
+
+        //Setting the group option as per the permission of the login user
+        switch ($this->Auth->user('Group.name')) {
+            case Configure::read('Application.wf_admin'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.userGroups'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+
+                break;
+            case Configure::read('Application.wf_noc'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            case Configure::read('Application.wf_account'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            case Configure::read('Application.wf_engineer'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            case Configure::read('Application.admin'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('name' => Configure::read('Application.userGroups')),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            default:
+                break;
+        }
+        $this->Location->bindModel(array('hasOne' => array('LocationsUser')));
+        $this->set('locations', $this->Location->find('list', array(
+                    'fields' => array('Location.id', 'Location.location_name'),
+                    'conditions' => array('LocationsUser.user_id' => $this->Auth->user('id')), //'location_name !='=>'scratchcards'
+                    'recursive' => 0
+                        )
+                )
+        );
+        $this->set('label', 'Add user');
+        $this->set('breadcrumbLabel', 'Add User');
+        $this->Session->write('link', 'addUser');
+    }
+
+    /**
+     * Edit the details of the existing user
+     *
+     * @return void
+     */
+    public function edit() {
+        //Setting the group option as per the permission of the login user
+        switch ($this->Auth->user('Group.name')) {
+            case Configure::read('Application.wf_admin'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+
+                break;
+            case Configure::read('Application.wf_noc'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            case Configure::read('Application.wf_account'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            case Configure::read('Application.wf_engineer'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), 'NOT' => array('name' => Configure::read('Application.notWifonic'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            case Configure::read('Application.admin'):
+                $this->set('groups', $this->Group->find('list', array(
+                            'fields' => array('id', 'name'),
+                            'conditions' => array('id !=' => $this->Auth->user('Group.id'), array('name' => Configure::read('Application.userGroups'))),
+                            'recursive' => 0
+                                )
+                        )
+                );
+                break;
+            default:
+                break;
+        }
+
+        //Binding the Location with locationsusers table to get the locations of a particular user
+        $this->Location->bindModel(array('hasOne' => array('LocationsUser')), false);
+
+        //Finding location of a particular user, which one we wish to edit
+        $assignedLocations = $this->Location->find('list', array(
+            'fields' => array('Location.id', 'Location.location_name'),
+            'conditions' => array('LocationsUser.user_id' => $this->request->data['User']['id']),
+            'recursive' => 0
+                )
+        );
+        $this->set('assignedLocations', $assignedLocations);
+
+        //Binding the Location with locationsusers table to get the locations of a particular user
+        $this->Location->bindModel(array('hasOne' => array('LocationsUser')), false);
+
+        //Finding the locations which are not assigned the user but assigned to the user who is editing the user
+        $this->set('remainingLocations', $this->Location->find('list', array(
+                    'fields' => array('Location.id', 'Location.location_name'),
+                    'conditions' => array('LocationsUser.user_id' => $this->Auth->user('id'), 'NOT' => array(
+                            'Location.id' => array_keys($assignedLocations))
+                    ),
+                    'recursive' => 0
+                        )
+                )
+        );
+
+        if ($this->request->is('post')) {
+
+            if ($this->request->data['User']['user_token'] == $this->Session->read('user_token')) {
+                $this->set('userToken', $this->request->data['User']['user_token']);
+
+                $this->set('editId', $this->request->data['User']['id']);
+                $this->Session->write('user_token', '');
+
+                unset($this->request->data['User']['password']);
+                $this->set('userData', $user = Hash::extract($this->User->findById($this->request->data['User']['id']), 'User'));
+            } else {
+                if ($this->request->data['User']['password'] == '') {
+                    unset($this->request->data['User']['password']);
+                }
+                if (isset($this->request->data['User']['username'])) {
+                    if ($this->User->saveAll($this->request->data)) {
+                        # Store log
+                        CakeLog::info('The user ' . AuthComponent::user('username') . ' (ID: ' . AuthComponent::user('id') . ') edited user (ID: ' . $this->User->id . ')', 'users');
+                        $this->log("User successfully updated", 'info');
+
+                        if ($this->request->data['User']['password'] != '') {
+                            /* Send password reset mail to user */
+                            $subject = 'Password reset';
+                            $message = 'Dear ' . $this->request->data['User']['alias'] . ', <br/>Your current password has been reset. <br/>Your new password is <b>' . $this->request->data['User']['password'] . '</b>.';
+                            $this->_sendEmail($this->request->data['User']['email'], $subject, $message);
+                        }
+                        $this->Session->setFlash(__('The user data has been updated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('The user data could not be updated. Please, try again.'), 'flash_fail');
+                    }
+                } else {
+                    $this->set('userToken', $this->request->data['User']['user_token']);
+                    $this->set('editId', $this->request->data['User']['id']);
+                    $this->set('userData', $user = Hash::extract($this->User->findById($this->request->data['User']['id']), 'User'));
+                }
+            }
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+
+        $this->set('label', 'Edit user');
+        $this->set('breadcrumbLabel', 'Edit User');
+    }
+
+    /*
+      public function delete($id = null) {
+      if (AuthComponent::user('group_id') != '1') {
+      throw new ForbiddenException("You're now allowed to do this.");
+      }
+
+      $this->User->id = $id;
+
+      if (!$this->User->exists()) {
+      throw new NotFoundException(__('Invalid user'));
+      }
+
+      if ($this->User->delete()) {
+      # Store log
+      CakeLog::info('The user ' . AuthComponent::user('username') . ' (ID: ' . AuthComponent::user('id') . ') deleted user (ID: ' . $this->User->id . ')', 'users');
+
+      $this->Session->setFlash(__('User deleted'), 'flash_success');
+      $this->redirect('/home');
+      }
+
+      $this->Session->setFlash(__('User was not deleted'), 'flash_fail');
+
+      $this->redirect('/home');
+      } */
+
+    /**
+     * Change the password of the existing user
+     * 
+     * @return void
+     */
+    public function change_password() {
+        $user = $this->User->read(null, AuthComponent::user('id'));
+        $this->set('user', $user);
+        $hash = $this->User->generateHashChangePassword();
+        $this->set('hash', $hash);
+
+        if ($this->request->is('post')) {
+# Verify if password matches
+            if (($user['User']['password'] === AuthComponent::password($this->request->data['User']['current_password'])) && ($this->request->data['User']['password'] === $this->request->data['User']['re_password'])) {
+# Verify if user is logged in
+                if (AuthComponent::user('id')) {
+                    $this->request->data['User']['id'] = AuthComponent::user('id');
+                } else { # Maybe user is coming from change password form
+# Check the hash in database
+                    $user = $this->User->findByHashChangePassword($this->request->data['User']['hash']);
+
+                    if (count($user) > 0) {
+                        $this->request->data['User']['id'] = $user['User']['id'];
+
+# Clean users hash in database
+                        $this->request->data['User']['hash_change_password'] = '';
+                    } else {
+                        throw new MethodNotAllowedException(__('Invalid action'));
+                    }
+                }
+                if ($this->User->save($this->request->data)) {
+                    /* Send account creation mail to user */
+                    $subject = 'Password Change';
+                    $message = 'Dear ' . $user['User']['alias'] . ', \nYour password has been changed successfully. \nYour new password is ' . $this->request->data['User']['password'] . '.';
+                    $this->_sendEmail($user['User']['email'], $subject, $message);
+
+                    $this->Session->setFlash('Password updated successfully!', 'flash_success');
+                    $this->redirect(array('action' => 'change_password'));
+                }
+            } else {
+                $this->Session->setFlash('Current password is incorrect.', 'flash_fail');
+            }
+        }
+        $this->set('breadcrumbLabel', 'Change Password');
+        $this->set('label', 'Change Password');
+    }
+
+    /**
+     * View the profile of the existing user
+     *
+     * @return void
+     */
+    public function profile() {
+        $user = $this->User->findById(AuthComponent::user('id'));
+        $user = Hash::extract($user, 'User');
+        $this->User->id = $user['id'];
+
+        if (!$this->User->exists()) {
+            throw new NotFoundException(__('Invalid user'));
+        }
+        $this->set('user', $user);
+        $this->set('breadcrumbLabel', 'My Profile');
+        $this->set('label', 'My Profile');
+    }
+
+    /**
+     * Inline edit the username of the user using JQuery jedittable plugin
+     *
+     * @return void
+     */
+    public function update_username() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set User model for edit
+            $this->User->read(null, $data['pk']);
+
+            if ($this->User->validates(array('fieldList' => array('username')))) {
+                if ($this->User->saveField($data['name'], $data['value'])) {
+                    # Set the username and echo it in update_username.ctp
+                    $this->User->set($data['name'], $data['value']);
+                    $this->log("Username updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+                $errors = $this->User->validationErrors;
+            }
+        }
+    }
+
+    /**
+     * Inline edit the alias of the user
+     *
+     * @return void
+     */
+    public function update_alias() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set User model for edit
+            $this->User->read(null, $data['pk']);
+            //$this->User->set($data['name'], $data['value']);
+            if ($this->User->validates(array('fieldList' => array('alias')))) {
+                if ($this->User->saveField($data['name'], $data['value'])) {
+                    # Set the alias and echo it in update_alias.ctp
+                    $this->User->set($data['name'], $data['value']);
+                    $this->log("Alias updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+                $errors = $this->User->validationErrors;
+            }
+        }
+    }
+
+    /**
+     * Inline edit the email of the user
+     *
+     * @return void
+     */
+    public function update_email() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set User model for edit
+            $this->User->read(null, $data['pk']);
+            $this->User->set($data['name'], $data['value']);
+            if ($this->User->validates(array('fieldList' => array('email')))) {
+                if ($this->User->saveField($data['name'], $data['value'])) {
+                    # Set the email and echo it in update_email.ctp
+                    $this->User->set($data['name'], $data['value']);
+                    $this->log("Email updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /**
+     * Inline edit the group of the user
+     *
+     * @return void
+     */
+    public function update_group() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set User model for edit
+            $this->User->read(null, $data['pk']);
+            $this->User->set($data['name'], $data['value']);
+            if ($this->User->validates(array('fieldList' => array('email')))) {
+                if ($this->User->saveField($data['name'], $data['value'])) {
+                    # Set the group and echo it in update_email.ctp
+                    $this->User->set($data['name'], $data['value']);
+                    $this->log("Group updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /**
+     * Deactivate the user
+     *
+     * @return void
+     */
+    public function deactivate($id = null) {
+        if ($this->request->is('post')) {
+            if ($this->request->data['User']['id'] != '') {
+                $this->User->id = $this->request->data['User']['id'];
+                if ($this->User->exists()) {
+                    if ($this->User->saveField('status', 0)) {
+                        $this->log("User deactivated", 'info');
+
+                        $this->Session->setFlash(__('User ' . $this->request->data['User']['alias'] . ' is de-activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to de-activated'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid user id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a user id.'), 'flash_fail');
+            }
+        }
+    }
+
+    /**
+     * Activate the user
+     *
+     * @return void
+     */
+    public function activate($id = null) {
+
+        if ($this->request->is('post')) {
+            if ($this->request->data['User']['id'] != '') {
+                $this->User->id = $this->request->data['User']['id'];
+                if ($this->User->exists()) {
+                    if ($this->User->saveField('status', 1)) {
+                        $this->log("User activated", 'info');
+                        $this->Session->setFlash(__('User ' . $this->request->data['User']['alias'] . ' is activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to activated'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid user id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a user id.'), 'flash_fail');
+            }
+        }
+    }
+
+    /**
+     * Send email to the user
+     *
+     * @return void
+     * @access private
+     */
+    private function _sendEmail($to = null, $subject = null, $message = null) {
+        try {
+            $email = new CakeEmail('smtp');
+            $email->emailFormat('both');
+            //$email->from(array('abhayapatel@wifonic.com' => 'WiFonic Technologies Pvt. Ltd.'));
+            if (empty($to) || $to == null) {
+                $email->to('admin@wifonic.com');
+            } else {
+                $email->to($to);
+            }
+            $email->subject($subject);
+            $email->send($message);
+        } catch (Exception $ex) {
+            //throwException($ex);
+        }
+    }
+
+    public function display() {
+        
+    }
+
+    function exportcvs() {
+        $this->set('users', $this->User->find('all'));
+        $this->layout = null;
+        $this->autoLayout = false;
+        Configure::write('debug', '0');
+    }
+
+    function exportxls() {
+        $data = $this->User->find('all');
+        $this->set('users', $data);
+    }
+
+    function viewcsv($id = null) {
+        $this->set('users', $this->User->findAllById($id));
+        $this->layout = null;
+        $this->autoLayout = false;
+        Configure::write('debug', '0');
+    }
+
+    function viewxls($id = null) {
+        $data = $this->User->findAllById($id);
+        $this->set('users', $data);
+    }
+
+}
+?>

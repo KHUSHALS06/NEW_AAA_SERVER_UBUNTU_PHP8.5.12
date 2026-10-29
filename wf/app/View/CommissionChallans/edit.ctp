@@ -1,0 +1,194 @@
+<?php
+/**
+ * This ctp consists of form to edit commission challan details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        // Validate the form with Bootstrap validator
+        $('#CommissionChallanEditForm').bootstrapValidator();
+
+        // JQuery datepicker for from date
+        $('#from_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            showOn: "button",
+            buttonImage: "../img/datepicker.png",
+            buttonImageOnly: true
+        });
+
+        // JQuery datepicker for to date
+        $('#to_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            showOn: "button",
+            buttonImage: "../img/datepicker.png",
+            buttonImageOnly: true
+        });
+
+        // Revalidate the date when user changes it
+        $('#from_date')
+                .change(function(e) {
+                    $('#CommissionChallanAddForm').bootstrapValidator('revalidateField', 'data[CommissionChallan][from]');
+                });
+
+        $('#to_date')
+                .change(function(e) {
+                    $('#CommissionChallanAddForm').bootstrapValidator('revalidateField', 'data[CommissionChallan][to]');
+                });
+
+    });
+
+</script>
+
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Commission',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commission Challans',
+        'link' => '/commission_challans'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        // Create form and define validation icons for the form
+        echo $this->Form->create('CommissionChallan', array('action' => 'edit', 'method' => 'post', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php
+            echo $this->Form->input('id', array(
+                'type' => 'hidden',
+                'value' => $commissionChallansData['CommissionChallan']['id'],
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('from', array(
+                'label' => __('From Date'),
+                'type' => 'text',
+                'id' => 'from_date',
+                'readOnly' => true,
+                'value' => ($commissionChallansData['CommissionChallan']['from'] != '') ? $commissionChallansData['CommissionChallan']['from'] : '',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "This date is required and cannot be empty",
+                'data-bv-date' => 'true',
+                'data-bv-date-format' => 'YYYY-MM-DD',
+                'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD format'
+            ));
+            ?> 
+
+            <?php
+            echo $this->Form->input('to', array(
+                'label' => __('To Date'),
+                'type' => 'text',
+                'id' => 'to_date',
+                'readOnly' => true,
+                'value' => ($commissionChallansData['CommissionChallan']['to'] != '') ? $commissionChallansData['CommissionChallan']['to'] : '',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "This date is required and cannot be empty",
+                'data-bv-date' => 'true',
+                'data-bv-date-format' => 'YYYY-MM-DD',
+                'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD format'
+            ));
+            ?> 
+
+            <?php
+            /* echo $this->Form->input('challan_name', array(
+              'label' => __('Challan Name'),
+              'type' => 'text',
+              'autocomplete' => 'off',
+              'value' => !empty($commissionChallansData['CommissionChallan']['challan_name']) ? $commissionChallansData['CommissionChallan']['challan_name'] : '' ,
+              'data-bv-notempty' => 'true',
+              'data-bv-notempty-message' => "Challan name is required and cannot be empty",
+              'data-bv-regexp' => "true",
+              'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+              'data-bv-regexp-message' => "Challan name can only consist of alphabets and numbers"
+              )); */
+            ?>
+
+            <?php
+            /* echo $this->Form->input('type', array(
+              'label' => __('Type'),
+              'type' => 'text',
+              'autocomplete' => 'off',
+              'value' => !empty($commissionChallansData['CommissionChallan']['type']) ? $commissionChallansData['CommissionChallan']['type'] : '' ,
+              'data-bv-notempty' => 'true',
+              'data-bv-notempty-message' => "Type is required and cannot be empty",
+              'data-bv-regexp' => "true",
+              'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+              'data-bv-regexp-message' => "Type can only consist of alphabets and numbers"
+              )); */
+            ?>
+
+            <?php
+            /* echo $this->Form->input('size', array(
+              'label' => __('Size'),
+              'autocomplete' => 'off',
+              'type' => 'text',
+              'value' => !empty($commissionChallansData['CommissionChallan']['size']) ? $commissionChallansData['CommissionChallan']['size'] : '' ,
+              'data-bv-notempty' => 'true',
+              'data-bv-notempty-message' => "Size is required and cannot be empty",
+              'data-bv-numeric' => 'true',
+              'data-bv-numeric-message' => 'Size can only consist of numbers'
+              )); */
+            ?>
+
+            <?php
+            echo $this->Form->input('challan', array(
+                'label' => __('Challan'),
+                    //'data-bv-notempty' => 'true',
+                    //'data-bv-notempty-message' => "Challan is required and cannot be empty",
+                    //'type' => 'textarea',
+                    //'data-bv-notempty' => "false"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('amount', array(
+                'label' => __('Amount'),
+                'autocomplete' => 'off',
+                'type' => 'text',
+                'value' => ($commissionChallansData['CommissionChallan']['amount'] != '') ? $commissionChallansData['CommissionChallan']['amount'] : '',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "Amount is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'Amount can only consist of numbers'
+            ));
+            ?>
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+                <?php echo $this->Form->end(__("Submit")); ?>
+            </div>
+        </div>
+    </div>
+</div>
+

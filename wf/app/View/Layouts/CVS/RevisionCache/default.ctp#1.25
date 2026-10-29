@@ -1,0 +1,108 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@gmail.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <link rel="shortcut icon" href="img/wficon.png">
+        <title><?php //echo "WIFONIC - HotSpot Application"           ?><?php echo Configure::read('Application.name') ?></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Tangerine|Merriweather|PT Serif">
+        <link rel="stylesheet" media="all" type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+        <?php echo $this->Html->css(array('bootstrap-editable', 'bootstrap-rating', 'bootstraptest', 'font-awesome/css/font-awesome.min', 'sb-admin', 'style')); ?>
+        <?php echo $this->CakeStrap->automaticCss(); ?>
+        <?php echo $this->Html->script(array('lib/modernizr', 'lib/jquery', 'users/index', 'bootstrap-editable.min', 'tinymce/tinymce.min', 'tinymce/jquery.tinymce.min', ));//'fileman/main.min' ?>
+        <?php echo $this->Html->css('css/bootstrapValidator.min') ?>
+        <?php echo $this->Html->script('js/bootstrapValidator.min') ?>
+        <?php //echo $this->Html->script('stdlib') ?>
+        <?php echo $this->Html->css('formActions') ?>
+        <?php echo $this->Html->css('menubar') ?>
+        <?php //echo $this->Html->script(array('datepicker', 'jquery.ui.datepicker', 'jquery-ui.min')) ?>
+        <?php //echo $this->Html->css(array('jquery-ui.min', 'jquery.ui.datepicker')) ?>
+        <?php echo $this->Html->script(array('jquery-ui.min', 'jquery-ui-timepicker-addon', 'jquery-ui-sliderAccess',)); //'fckeditor/fckconfig.js'?>
+        <?php echo $this->Html->css(array('jquery-ui-timepicker-addon')); ?>
+        <script>
+            $(document).ready(function() {
+                var cUrl = window.location;
+                cUrl = cUrl.toString();
+                if (cUrl.search("users/login") > -1) {
+                    //$('#wf-footer').css({"position": "absolute", "top": ($(document).height()) - 30 + "px", "left": "0px"});
+                //} else if (cUrl.search("c_r_ms/emails") > -1 || cUrl.search("c_r_ms/smss") > -1) {
+
+                } else {
+                    $('#wf-footer').css({"position": "relative"});
+                }
+                //$(document).scroll(function() {
+                //    $('#wf-footer').css({"position": "absolute", "top": ($(document).height()) - 30 + "px", "left": "0px"});
+                //});
+            });
+        </script>
+    </head>
+    <body class="<?php echo $this->params->params['controller'] . '_' . $this->params->params['action']; ?>">
+        <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser
+                today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better
+                experience this site.</p>
+        <![endif]-->
+
+        <div id="spinner" style="display: none; position: fixed; margin-left: 40%; margin-top: 20%; z-index: 2000" >
+            <?php echo $this->Html->Image('loader.gif'); ?>
+        </div>
+        <div id="wrapper">
+
+            <?php echo $this->element('nav') ?>
+            <div id="page-wrapper">
+                <div class="container-fluid">
+                    <?php echo $this->Session->flash(); ?>
+                    <?php echo $this->fetch('content'); ?>
+                </div>
+            </div>
+            <br>
+            <br>
+            <!-- /#page-wrapper -->
+            <div id="wf-footer" >
+                <!--<div class="container">-->
+                    <!--<p class="pull-right" style="color: #101010">WiFonic HotSpot Admin v2.0</p>-->
+                <p  align="center"> WiFonic HotSpot Admin v2.0 &nbsp; &copy; <?php echo date("Y"); ?> <a href="http://www.wifonic.com" target="_blank" >Wifonic Technologies Pvt. Ltd.</p>
+                <!--</div>-->
+            </div>
+        </div>
+        <!-- /#wrapper -->
+        <?php echo $this->Html->script(array('lib/bootstrap.min', 'src/scripts.js')); ?>
+        <?php echo $this->CakeStrap->automaticScript(); ?>
+        <?php //echo $this->element('sql_dump'); ?>
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <!--
+        <script>
+            var _gaq = [
+                ['_setAccount', 'UA-XXXXX-X'],
+                ['_trackPageview']
+            ];
+            (function(d, t) {
+                var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+                g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+                s.parentNode.insertBefore(g, s)
+            }(document, 'script'));
+        </script>
+        -->
+    </body>
+</html>

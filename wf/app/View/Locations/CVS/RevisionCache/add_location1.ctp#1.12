@@ -1,0 +1,453 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#LocationAddLocation1Form').bootstrapValidator();
+
+        $('#one_time_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true
+                    //showOn: "button",
+                    //buttonImage: "../img/datepicker.png",
+                    //buttonImageOnly: true
+        });
+
+        $('#valid_till').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true,
+            onClose: function(dateText, inst) {
+                //var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                //var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                //$(this).datepicker('setDate', new Date(year, month, 1));
+                var incrementDate = $("#increment_date").datepicker("getDate")
+                var validTill = $("#valid_till").datepicker("getDate")
+                var difference = (validTill - incrementDate) / (86400000 * 7);
+                if (difference < 0) {
+                    $("#valid_till").attr('style', 'border-color: #953B39');
+                    $("#validTillDateErrorIcon").attr('style', 'display:inline');
+                    $("#validTillDateError").attr('style', 'display:inline;color:#B94A48');
+                    return false;
+                } else {
+                    $("#valid_till").attr('style', '');
+                    $("#validTillDateErrorIcon").attr('style', 'display:none');
+                    $("#validTillDateError").attr('style', 'display:none');
+                    $("#increment_date").attr('style', '');
+                    $("#incrementDateErrorIcon").attr('style', 'display:none');
+                    $("#incrementDateError").attr('style', 'display:none');
+                }
+            }
+        });
+
+        $('#increment_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            //timeFormat: 'hh:mm:00 TT',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true,
+            onClose: function(dateText, inst) {
+                //var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                //var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                //$(this).datepicker('setDate', new Date(year, month, 1));
+                var incrementDate = $("#increment_date").datepicker("getDate")
+                var validTill = $("#valid_till").datepicker("getDate")
+                var difference = (validTill - incrementDate) / (86400000 * 7);
+                if (difference < 0) {
+                    $("#increment_date").attr('style', 'border-color: #953B39');
+                    $("#incrementDateErrorIcon").attr('style', 'display:inline');
+                    $("#incrementDateError").attr('style', 'display:inline;color:#B94A48');
+                    return false;
+                } else {
+                    $("#valid_till").attr('style', '');
+                    $("#validTillDateErrorIcon").attr('style', 'display:none');
+                    $("#validTillDateError").attr('style', 'display:none');
+                    $("#increment_date").attr('style', '');
+                    $("#incrementDateErrorIcon").attr('style', 'display:none');
+                    $("#incrementDateError").attr('style', 'display:none');
+                }
+            }
+        });
+
+        $('#increment_date').blur(function() {
+            var incrementDate = $("#increment_date").datepicker("getDate")
+            var validTill = $("#valid_till").datepicker("getDate")
+            var difference = (validTill - incrementDate) / (86400000 * 7);
+            if (difference < 0) {
+                $("#increment_date").attr('style', 'border-color: #953B39');
+                $("#incrementDateErrorIcon").attr('style', 'display:inline');
+                $("#incrementDateError").attr('style', 'display:inline;color:#B94A48');
+                return false;
+            } else {
+                $("#valid_till").attr('style', '');
+                $("#validTillDateErrorIcon").attr('style', 'display:none');
+                $("#validTillDateError").attr('style', 'display:none');
+                $("#increment_date").attr('style', '');
+                $("#incrementDateErrorIcon").attr('style', 'display:none');
+                $("#incrementDateError").attr('style', 'display:none');
+            }
+        });
+
+        $('#valid_till').blur(function() {
+            var incrementDate = $("#increment_date").datepicker("getDate")
+            var validTill = $("#valid_till").datepicker("getDate")
+            var difference = (validTill - incrementDate) / (86400000 * 7);
+            if (difference < 0) {
+                $("#increment_date").attr('style', 'border-color: #953B39');
+                $("#incrementDateErrorIcon").attr('style', 'display:inline');
+                $("#incrementDateError").attr('style', 'display:inline;color:#B94A48');
+                return false;
+            } else {
+                $("#valid_till").attr('style', '');
+                $("#validTillDateErrorIcon").attr('style', 'display:none');
+                $("#validTillDateError").attr('style', 'display:none');
+                $("#increment_date").attr('style', '');
+                $("#incrementDateErrorIcon").attr('style', 'display:none');
+                $("#incrementDateError").attr('style', 'display:none');
+            }
+        });
+
+        // Revalidate the date when user changes it
+        $('#one_time_date').change(function(e) {
+            $('#LocationAddLocation1Form').bootstrapValidator('revalidateField', 'data[Location][one_time_date]');
+        });
+
+        $('#valid_till').change(function(e) {
+            $('#LocationAddLocation1Form').bootstrapValidator('revalidateField', 'data[Location][valid_till]');
+        });
+
+        $('#increment_date').change(function(e) {
+            $('#LocationAddLocation1Form').bootstrapValidator('revalidateField', 'data[Location][increment_date]');
+        });
+
+        if ($("#LocationRevenueType option[value='r']").attr('selected')) {
+            $("#revenueShare").attr('style', 'display:block');
+            $("#monthly").attr('style', 'display:none');
+            $("#amc").attr('style', 'display:none');
+        }
+
+        $("#LocationRevenueType").change(function() {
+            var revenueType = $("#LocationRevenueType").val();
+            //alert(revenueType)
+            if (revenueType == 'r') {
+                $("#revenueShare").attr('style', 'display:block');
+                $("#monthly").attr('style', 'display:none');
+                $("#amc").attr('style', 'display:none');
+            } else if (revenueType == 'a') {
+                $("#revenueShare").attr('style', 'display:none');
+                $("#monthly").attr('style', 'display:none');
+                $("#amc").attr('style', 'display:block');
+            } else if (revenueType == 'm') {
+                $("#revenueShare").attr('style', 'display:none');
+                $("#monthly").attr('style', 'display:block');
+                $("#amc").attr('style', 'display:none');
+            } else {
+                $("#revenueShare").attr('style', 'display:none');
+                $("#monthly").attr('style', 'display:none');
+                $("#amc").attr('style', 'display:none');
+            }
+        });
+    });
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Location Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commercial Details'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('Location', array('action' => 'addLocation1',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"
+        ));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php //echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id));  ?>
+            <?php
+            echo $this->Form->input('revenue_type', array(
+                'label' => __('Revenue Type*'),
+                'type' => 'select',
+                'required' => 'true',
+                'options' => array('a' => 'AMC', 'm' => 'Monthly', 'r' => 'Revenue Share'),
+                //'empty' => 'Select revenue type',
+                'selected' => 'r'
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('business_plan_id', array(
+                'label' => __('Business Plan*'),
+                'autocomplete' => 'off',
+                'type' => 'select',
+                'type' => 'select',
+                'options' => $business_type,
+            ));
+            ?> 
+            <div id="revenueShare" style="display:none">
+                <?php
+                echo $this->Form->input('committed_revenue', array(
+                    'label' => __('Committed Revenue*'),
+                    'autocomplete' => 'off',
+                    'type' => 'text',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The committed revenue value is required and cannot be empty",
+                    'data-bv-numeric' => 'true',
+                    'data-bv-numeric-message' => 'The committed revenue value can only consist of numbers'
+                ));
+                ?> 
+
+                <?php
+                echo $this->Form->input('revenue_percent', array(
+                    'label' => __('Revenue Percent*'),
+                    'autocomplete' => 'off',
+                    'type' => 'text',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The revenue percent is required and cannot be empty",
+                    'data-bv-regexp' => "true",
+                    'data-bv-regexp-regexp' => "(^(?:100|\d{1,2})$)",
+                    'data-bv-regexp-message' => "The percentage value entered is incorrect. Should be between 0-100"
+                ));
+                ?>
+            </div>
+
+            <div id="monthly" style="display:none">
+                <?php
+                echo $this->Form->input('monthly_fixed', array(
+                    'label' => __('Monthly Fixed Amount'),
+                    'autocomplete' => 'off',
+                    'type' => 'text',
+                    'data-bv-notempty' => "false",
+                    'data-bv-integer' => 'true',
+                    'data-bv-integer-message' => 'The monthly fixed amount can only consist of numbers'
+                ));
+                ?>
+                <?php
+                echo $this->Form->input('business_plan_id', array(
+                    'label' => __('Business Plan*'),
+                    'autocomplete' => 'off',
+                    'type' => 'select',
+                    'type' => 'select',
+                    'options' => $business_type,
+                ));
+                ?> 
+                <?php
+                echo $this->Form->input('annual_increment', array(
+                    'label' => __('Annual Increment*'),
+                    'type' => 'text',
+                    'autocomplete' => 'off',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The annual increment amount is required and cannot be empty",
+                    'data-bv-numeric' => 'true',
+                    'data-bv-numeric-message' => 'The annual increment amount can only consist of numbers'
+                ));
+                ?>
+            </div>
+
+            <div id="amc" style="display:none">
+                <?php
+                echo $this->Form->input('amc', array(
+                    'label' => __('AMC Percent*'),
+                    'autocomplete' => 'off',
+                    'type' => 'text',
+                    'data-bv-notempty' => "true",
+                    'data-bv-regexp' => "true",
+                    'data-bv-regexp-regexp' => "(^(?:99|\d{1,2})(?:\.\d{1,2})?$)",
+                    'data-bv-regexp-message' => "The AMC percentage value entered is incorrect. Enter in the format 0-100 or 0.00-99.99"
+                ));
+                ?>
+                <?php
+                echo $this->Form->input('business_plan_id', array(
+                    'label' => __('Business Plan*'),
+                    'autocomplete' => 'off',
+                    'type' => 'select',
+                    'type' => 'select',
+                    'options' => $business_type,
+                ));
+                ?> 
+                <?php
+                echo $this->Form->input('one_time_cost', array(
+                    'label' => __('One Time Cost*'),
+                    'type' => 'text',
+                    'autocomplete' => 'off',
+                    'data-bv-notempty' => "true",
+                    'data-bv-notempty-message' => "The one time cost is required and cannot be empty",
+                    'data-bv-numeric' => 'true',
+                    'data-bv-numeric-message' => 'The one time cost  can only consist of numbers'
+                ));
+                ?>
+
+                <?php
+                echo $this->Form->input('one_time_date', array(
+                    'label' => __('One Time Date'),
+                    'type' => 'text',
+                    'autocomplete' => 'off',
+                    'id' => 'one_time_date',
+                    'readOnly' => true,
+                    'data-bv-date' => "true",
+                    'data-bv-date-separator' => '-',
+                    'data-bv-date-format' => "YYYY-MM-DD",
+                    'data-bv-date-message' => "This is not a valid date. Please use YYYY-MM-DD format"
+                ));
+                ?>
+            </div>
+
+            <?php
+            echo $this->Form->input('internet_provided', array(
+                'label' => __('Internet Provided*'),
+                'type' => 'select',
+                'options' => array('0' => 'No', '1' => 'Yes'),
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('service_tax_included', array(
+                'label' => __('Service Tax Included*'),
+                'type' => 'select',
+                'options' => array('0' => 'No', '1' => 'Yes'),
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('invoice_day', array(
+                'label' => __('Invoice Day*'),
+                'type' => 'select',
+                'options' => $invoice_day
+            ));
+            ?> 
+
+            <?php
+            echo $this->Form->input('credit_limit', array(
+                'label' => __('Credit Limit*'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The credit limit is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The credit limit can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('complementary', array(
+                'label' => __('Complementary*'),
+                'type' => 'select',
+                'options' => array('0' => 'No', '1' => 'Yes'),
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('valid_till', array(
+                'label' => __('Valid Till*'),
+                'type' => 'text',
+                'id' => 'valid_till',
+                'readOnly' => true,
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "This date is required and cannot be empty",
+                'data-bv-date' => 'true',
+                'data-bv-date-format' => 'YYYY-MM-DD',
+                'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD format'
+            ));
+            ?> 
+            <span id="error" style="display:none;"><i class="fa fa-times"></i>Valid Till date should be greater than Increment date</span>
+            <i id="validTillDateErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+            <br>
+            <small id ="validTillDateError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none">Valid Till date should be greater than Increment date</small>
+
+            <?php
+            echo $this->Form->input('auto_renew', array(
+                'label' => __('Auto Renew*'),
+                'type' => 'select',
+                'options' => array('0' => 'No', '1' => 'Yes'),
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('contract_period', array(
+                'label' => __('Contract Period*'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The contract period is required and cannot be empty",
+                'data-bv-integer' => 'true',
+                'data-bv-integer-message' => 'The contract period value can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('scratch_card_price', array(
+                'label' => __('Scratch Card Price*'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The scratch card price is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The scratch card price can only consist of numbers'
+            ));
+            ?>
+
+
+
+            <?php
+            echo $this->Form->input('increment_date', array(
+                'label' => __('Increment Date*'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'id' => 'increment_date',
+                'readOnly' => true,
+                'data-bv-date' => 'true',
+                'data-bv-date-format' => 'YYYY-MM-DD h:m:s A',
+                'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD h:m:s AM/PM format'
+            ));
+            ?>
+            <span id="error" style="display:none;"><i class="fa fa-times"></i>Increment date should be less than Valid Till date</span>
+            <i id="incrementDateErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+            <br>
+            <small id ="incrementDateError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none">Increment date must be less than Valid Till date</small>
+
+
+            <div class="row">
+                <div class="col-xs-8"><?php echo $this->Form->end(__("Save and Continue")); ?></div>
+                <div class="col-xs-2"> &nbsp;<?php //echo $this->Html->link('Skip', array('controller' => 'locations', 'action' => 'addLocation2'), array('class' => 'btn btn-default'));            ?></div>
+                <div class="col-xs-2"><?php echo $this->Html->link('Back', array('controller' => 'locations', 'action' => 'addLocation0'), array('class' => 'btn btn-default')); ?></div>
+                <!--div class="col-xs-2"><?php //echo $this->Html->link('Skip', array('controller' => 'locations', 'action' => 'addLocation2'), array('class' => 'btn btn-default'));            ?></div-->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

@@ -1,0 +1,339 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        $('#UserAddForm').bootstrapValidator()
+
+        $('#AddUserModal').on('shown.bs.modal', function() {
+            $('#UserAddForm').bootstrapValidator('resetForm', true);
+        });
+
+        $('#view').click(function() {
+            $(this).submit();
+        });
+
+        /*$("#CouponType").change(function(){
+         var couponType = $("#CouponType").val();
+         if(couponType == 'generated'){
+         $("#actions").attr('style','display:block');
+         } else {
+         $("#actions").attr('style','display:none');
+         }
+         });*/
+
+        var numberOfColumns = document.getElementById('couponsTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan', numberOfColumns);
+
+        $('.actionPrint').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Print"
+        });
+
+        $('.actionView').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "View"
+        });
+
+    });
+
+</script>
+
+
+<?php
+//echo $this->Html->script('bootstrap-editable.min');
+//echo $this->Html->css('bootstrap-editable');
+echo $this->Html->css('menubar');
+//echo $this->Html->script('lib/jquery', array('inline'=>false));
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+
+
+<?php echo $this->element('locations_list') ?>
+
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Coupons',
+        'link' => '/coupons'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo $label       ?></h3--></div> 
+    <div class="col-md-2">
+        <?php
+        if ((AuthComponent::user('Group.name') == Configure::read('Application.wf_admin')) || (AuthComponent::user('Group.name') == Configure::read('Application.gold')) || (AuthComponent::user('Group.name') == Configure::read('Application.silver')) || (AuthComponent::user('Group.name') == Configure::read('Application.platinum'))) {
+            echo $this->Html->link(__('Generate Coupon'), array('controller' => 'coupons', 'action' => 'add'), array('class' => 'btn btn-default pull-right'));
+        } else {
+            
+        }
+        //echo $this->Html->link(__('Add User'), '/users/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px'))
+        ?>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash(); //pr($coupons); ?>
+        <?php $this->Paginator->options(array('url' => $this->passedArgs)); ?>
+        <!--hr-->
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <hr>
+        <?php echo $this->element('card_type') ?>
+        <?php //echo $this->element('search') ?>
+        <table id="couponsTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <!--th ><?php //echo $this->Paginator->sort('id', '#')                        ?></th-->
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('username', array(
+                            'asc' => __('Username') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Username') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ));
+                        ?>
+                    </th>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('sn', array(
+                            'asc' => __('Serial#') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Serial#') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ));
+                        ?>
+                    </th>
+                    <th ><?php
+                        echo $this->Paginator->sort('BillingPlan.name_bp', array(
+                            'asc' => __('Billing Plan') . ' <i class="fa fa-caret-up pull-right"></i>',
+                            'desc' => __('Billing Plan') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ));
+                        ?>
+                    </th>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('billing_plan_id', array(
+                            'asc' => __('Value') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Value') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ));
+                        ?>
+                    </th>
+                    <?php if ($usedCouponsList == 'true') { ?>
+                        <th >
+                            <?php
+                            echo $this->Paginator->sort('', array(
+                                'asc' => __('Used') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Used') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ));
+                            ?>
+                        </th>
+                    <?php } ?>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('active_date', array(
+                            'asc' => __('Activated Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Activated Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ));
+                        ?>
+                    </th>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('type', array(
+                            'asc' => __('Type') . ' <i class="fa fa-caret-up pull-right"></i>',
+                            'desc' => __('Type') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ));
+                        ?>
+                    </th>
+
+                    <th style="color: #428BCA"><?php echo __('Action') ?></th>
+
+ <!--<th style="color: #428BCA"><?php //echo __('Print')  ?></th>-->
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?php echo $this->element('search', array('columnName' => 'username')) ?></td>
+                    <td><?php echo $this->element('search', array('columnName' => 'sn')) ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))    ?></td>
+                </tr>
+                <?php if (count($coupons)>0) { ?>
+                    <?php foreach ($coupons as $coupon) { ?>
+                        <tr>
+                            <!--td width="50px"><?php //echo $user['User']['id']                        ?></td-->
+                            <!-- inline edit javascript code written in the end -->
+                            <td><?php echo $coupon['Coupon']['username'] ?></td>
+                            <td><?php echo $coupon['Coupon']['sn'] ?></td>
+                            <td><?php echo $coupon['BillingPlan']['name_bp'] ?></td>
+                            <td><?php echo $coupon['BillingPlan']['time_bp'] ?></td>
+                            <?php if ($usedCouponsList == 'true') { ?>
+                                <td><?php echo '55 minutes' ?></td>
+                            <?php } ?>
+                            <td><?php echo $coupon['Coupon']['active_date'] ?></td>
+                            <td><?php echo ucfirst(str_replace('_', ' ', $coupon['Coupon']['type'])) ?></td>
+                            <!--td><div class ="group" data-type="select" data-source = '<?php //echo json_encode($groups)                ?>' data-pk="<?php //echo $user['User']['id']                ?>" data-name="group_id" data-value="<?php //echo $user['User']['group_id']                ?>"><?php //echo $user['Group']['name']                ?></div></td--> 
+
+                            <td width="100px" id="actions">
+                                <div class="row col-md-12 action-column">
+                                    <?php //if ($couponType == 'generated') { ?>
+
+                                    <?php //} ?>
+                                    <div class="col-md-1 action-column">
+                                        <?php
+                                        echo $this->Form->create('Coupon', array('action' => 'view', 'method' => 'post'));
+                                        echo $this->Form->input('coupon_id', array('type' => 'hidden', 'value' => $coupon['Coupon']['id']));
+                                        //echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                                        //echo $this->Form->submit('view_20by20.png');
+                                        echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                        ?>
+                                    </div>
+                                    <?php if ($coupon['Coupon']['activated'] == 0) {?>
+                                    <div class="col-md-1 action-column"></div>
+                                    <div class="col-md-1 action-column">
+                                        <?php
+                                        
+                                            echo $this->Form->create('Coupon', array('action' => 'printACoupon'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $coupon['Coupon']['id']));
+                                            //echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                                            echo $this->Form->end('print.png', array('div' => false, 'class' => 'action-button actionPrint'));
+                                        ?>
+                                    </div>
+                                    <?php 
+                                        }
+                                    ?>
+
+                                </div>
+                            </td>
+                        </tr>
+                    <?php } ?>
+
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+            <?php } ?>
+        </table>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+        </div> 
+        <br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+
+<div class="modal fade" id="UsersModalDeactivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Deactivate user') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to deactivate the user ') ?><span class="label-uname strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link')) ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="UsersModalActivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Activate user') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to activate the user ') ?><span class="label-uname strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php echo $this->Html->link(__('Activate'), "/users/activate/#{uid}", array('class' => 'btn btn-primary activate-user-link')) ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="AddUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Add User</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- The form is placed inside the body of modal -->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        var newURL = window.location.protocol + "//" + window.location.host + "" + window.location.pathname;
+        $.fn.editable.defaults.mode = 'inline';
+        $('.editUserName').editable({
+            url: newURL + '/update_username'
+        });
+        $('.editAlias').editable({
+            url: newURL + '/update_alias',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z\s]*$/.test(value))) {
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editEmail').editable({
+            url: newURL + '/update_email'
+        });
+        $('.group').editable({
+            url: newURL + '/update_group',
+            title: 'Select group'
+        });
+    });
+
+</script>

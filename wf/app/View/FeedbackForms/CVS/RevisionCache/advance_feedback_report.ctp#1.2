@@ -1,0 +1,225 @@
+<script type="text/javascript">
+    $(document).ready(function() {
+        //$('#advanceFeedbackReporting').bootstrapValidator();
+        $('#advanceFeedbackReporting').submit(function() {
+            var todate = $("#to_date").datepicker("getDate")
+            var fromdate = $("#from_date").datepicker("getDate")
+            var difference = (todate - fromdate) / 86400000;
+            if (difference < 0) {
+                $("#to_date").attr('style', 'border-color: #953B39');
+                $("#error").attr('style', 'display:inline');
+                $("#error").attr('style', 'display:inline;color:#B94A48');
+                return false;
+            }
+        });
+        $('#from_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true
+            onClose: function(dateText, inst) {
+                var todate = $("#to_date").datepicker("getDate")
+                var fromdate = $("#from_date").datepicker("getDate")
+                var difference = (todate - fromdate) / 86400000;
+                if (difference < 0) {
+                    $("#to_date").attr('style', 'border-color: #953B39');
+                    $("#error").attr('style', 'display:inline');
+                    $("#error").attr('style', 'display:inline;color:#B94A48');
+
+                    return false;
+                } else {
+                    $("#to_date").attr('style', '');
+                    $("#error").attr('style', 'display:none');
+                    //return true;
+                }
+            }
+        });
+        $('#to_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true
+            onClose: function(dateText, inst) {
+                var todate = $("#to_date").datepicker("getDate")
+                var fromdate = $("#from_date").datepicker("getDate")
+                var difference = (todate - fromdate) / 86400000;
+                if (difference < 0) {
+                    $("#to_date").attr('style', 'border-color: #953B39');
+                    $("#error").attr('style', 'display:inline');
+                    $("#error").attr('style', 'display:inline;color:#B94A48');
+
+                    return false;
+                } else {
+                    $("#to_date").attr('style', '');
+                    $("#error").attr('style', 'display:none');
+                    //return true;
+                }
+            }});
+    });
+</script>
+<?php
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'before' => $this->Js->get('#spinner')->effect(
+            'fadeIn', array('buffer' => false)
+    ),
+    'complete' => $this->Js->get('#spinner')->effect(
+            'fadeOut', array('buffer' => false)
+    ),
+    'evalScripts' => TRUE
+));
+?>
+<div class="row">
+    <div class="col-md-12">
+        <?php echo $this->Session->flash(); //pr($answers) ?>
+        
+        <hr>
+        <div class="col-md-4">
+            <?php
+            echo $this->Form->create('FeedbackForm', array('action' => 'advanceFeedbackReport',
+                'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh",
+                'id' => 'advanceFeedbackReporting'
+            ));
+            echo $this->Form->input('title', array(
+                'id' => 'feedback_title',
+                'label' => __('Title'),
+                'options' => $questionList,
+                'selected' => (isset($field) && $field!='')?$field:''
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('from_date', array(
+                'label' => __('From'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'id' => 'from_date',
+                'readOnly' => true,
+                'data-bv-date' => "true",
+                'data-bv-date-separator' => '-',
+                'value' => ( isset($fromDate) && $fromDate !='') ? date('d-m-Y', strtotime($fromDate)):date('d-m-Y')
+                    //'data-bv-date-format' => "YYYY-MM-DD",
+                    //'data-bv-date-message' => "This is not a valid date. Please use YYYY-MM-DD format"
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('to_date', array(
+                'label' => __('To'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'id' => 'to_date',
+                'readOnly' => true,
+                'data-bv-date' => "true",
+                'data-bv-date-separator' => '-',
+                'value' => (isset($toDate) && $toDate !='') ? date('d-m-Y', strtotime($toDate)):date('d-m-Y')
+                    //'data-bv-date-format' => "YYYY-MM-DD",
+                    //'data-bv-date-message' => "This is not a valid date. Please use YYYY-MM-DD format"
+            ));
+            ?>
+            <span id="error" style="display:none;"><i class="fa fa-times"></i><br/>To date must be greater than From date </span>
+                <?php
+                echo $this->Form->end(__("Submit", array('class' => 'submit_button')));
+                ?>
+        </div>
+    </div>
+</div>
+<?php
+if (isset($toDate) && $toDate != '' && isset($fromDate) && $fromDate != '') {
+?>
+    <div class="row">
+
+        <div class="col-12">
+            <!--hr-->
+            <hr>
+            <table id="feedbackReportTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <!--th><?php //echo $this->Paginator->sort('id', '#')                   ?></th-->
+                        <th>
+                            <?php
+                            //echo 'user';
+                            echo $this->Paginator->sort('user', array(
+                                'asc' => __('User') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('User') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ));
+                            ?>
+                        </th>
+                        <th>
+                            <?php
+                            //echo 'Date';
+                            echo $this->Paginator->sort('created', array(
+                                'asc' => __('Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false,
+                            ));
+                            ?>
+                        </th>
+                        <th>
+                            <?php
+                            //echo 'Remarks';
+                            echo $this->Paginator->sort($field, array(
+                                'asc' => __('Remarks') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Remarks') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ));
+                            ?>
+                        </th>
+                        <th style="color: #428BCA; width: 50px"><?php echo __('Actions') ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($answers) > 0) { ?>
+                            <!--<tr>
+                                <td><?php //echo $this->element('search', array('columnName' => 'name_bp'))  ?></td>
+                                <td><?php //echo $this->element('search', array('columnName' => 'time_bp'))            ?></td>
+                                <td><?php //echo $this->element('search', array('columnName' => 'price_bp'))            ?></td>
+                                <td><?php //echo $this->element('search', array('columnName' => 'type_bp'))            ?></td>
+                            </tr>-->
+                        <?php 
+                        foreach ($answers as $feedback) { ?>
+                            <tr>
+                                <!--td width="50px"><?php //echo $feedback['BillingPlan']['id']                   ?></td-->
+                                <!-- inline edit javascript code written in the end -->
+                                <td><div class ="editBPName" data-type="text" data-pk="<?php echo $feedback['Feedback']['user'] ?>" data-name="name_bp"><?php echo $feedback['Feedback']['user'] ?></div></td>
+                                <td><div class ="editBPTime" data-type="text" data-pk="<?php echo date('d-m-Y', strtotime($feedback['Feedback']['created'])) ?>" data-name="time_bp"><?php echo date('d-m-Y', strtotime($feedback['Feedback']['created'])) ?></div></td>
+                                <td><div class ="editBPTime" data-type="text" data-pk="<?php echo $feedback['Feedback'][$field] ?>" data-name="time_bp"><?php echo $feedback['Feedback'][$field] ?></div></td>
+                                <td>
+                                    <div class="row col-md-12 action-column" style="padding-top: -5px; padding-bottom: -5px">
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Form->create('FeedbackForm', array('action' => 'feedbackDisplay', 'method' => 'post'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $feedback['Feedback']['id']));
+                                            //echo $this->Form->input('user_token', array('type' => 'hidden', 'value' => $userToken));
+                                            //echo $this->Form->submit('view_20by20.png');
+                                            echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                            ?>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                <?php } else { ?>
+                    <tr><td id="emptyTableMessage" colspan="5" style="background:#E9E8E8" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+                <?php } ?>
+            </table>
+            <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+            <?php echo $this->Js->writeBuffer(); ?>
+        </div>
+    </div>
+<?php
+//pr($questionDetails);
+ //   pr($answers);
+}
+?>

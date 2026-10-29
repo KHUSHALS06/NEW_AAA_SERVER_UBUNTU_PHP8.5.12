@@ -1,0 +1,81 @@
+<?php
+
+/** PostpaidLoginAttemptLogsController class
+ * 
+ * This class consists of methods to display the login attempts logs of the user associated to PMS
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class PostpaidLoginAttemptLogsController extends AppController {
+
+    //public $uses = array('CheckIn', 'LocationsUser');
+    public $helpers = array('Js'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+
+    /**
+     * This is the default method for the PostpaidLoginAttemptLogs controller. It fetches all the login attempts logs list.
+     * If a particular location is set then it fetches the logs of that particular location.
+     *
+     * @return void
+     */
+    public function index() {
+        $condition = array();
+        if ($this->request->is('post') && isset($this->request->data['postpaid_login_attempt_logs']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['postpaid_login_attempt_logs']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && ($this->Session->read('choosed_location_id') != '')) {
+            $condition[] = array('PostpaidLoginAttemptLog.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('PostpaidLoginAttemptLog.location_id' => '');
+        }
+
+        # Search
+        if (count($this->passedArgs) == 0) {
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+            /*
+              if ($this->request->is('post') && isset($this->request->data['User']['type']) && !empty($this->request->data['User']['type'])) {
+              $conditions[] = array('user.type' => $this->request->data['User']['type']);
+              }
+             * 
+             */
+            if ($this->request->is('post') && isset($this->request->data['search']) && ($this->request->data['search'] != '') && ($this->request->data[$this->request->data['search']] != '')) {
+                if ($this->request->data['search'] == 'group_id') {
+                    $condition[] = array('PostpaidLoginAttemptLog.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                } else {
+                    $condition[] = array('PostpaidLoginAttemptLog.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                }
+            }
+
+            $this->Session->write('search_conditions', $condition);
+        }
+
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+            //unset($conditions);
+            $conditions = $this->Session->read('search_conditions');
+        }
+        $this->Paginator->settings = array(
+            'limit' => 10,
+            'order' => array('PostpaidLoginAttemptLog.created' => 'ASC'),
+            'conditions' => $condition,
+                //'contain' => 'BillingPlansLocation'
+        );
+        $this->set('label', 'Login Attempts');
+        $this->set('breadcrumbLabel', 'Login Attempts');
+        $this->Session->write('link', 'loginAttemptsList');
+        $this->set('loginAttempts', $this->Paginator->paginate());
+    }
+
+}

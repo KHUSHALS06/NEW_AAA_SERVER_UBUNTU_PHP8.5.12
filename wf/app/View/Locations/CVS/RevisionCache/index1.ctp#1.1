@@ -1,0 +1,303 @@
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        $('#UserAddForm')
+        .bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                username: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The username is required'
+                        },
+                        stringLength: {
+                            min: 6,
+                            max: 20,
+                            message: 'The username should be between 6 to 20 characters' 
+                        }
+                    }
+                },
+                name: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The name is required'
+                        },
+                        stringLength: {
+                            min: 6,
+                            max: 20,
+                            message: 'The name should be between 6 to 20 characters' 
+                        }
+                    }
+                },
+                email: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The email cannot be empty'
+                        },
+                        emailAddress:{
+                            message: 'The email is not valid'
+                        }
+                    }
+                },
+                password: {
+                    validators: {
+                        notEmpty: {
+                            message: 'The password is required'
+                        }
+                    }
+                }
+            }
+        })
+        
+
+        $('#AddUserModal').on('shown.bs.modal', function() {
+            $('#UserAddForm').bootstrapValidator('resetForm', true);
+        });
+    });
+   
+</script>
+
+<?php
+echo $this->Html->script('bootstrap-editable.min');
+echo $this->Html->css('bootstrap-editable');
+echo $this->Html->css('menubar');
+//echo $this->Html->script('lib/jquery');
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Users',
+        'link' => '/users'
+    ),
+    array(
+        'label' => 'Users List'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-lg-10"><h3><?php echo __('Users') ?></h3></div>
+    <div class="col-lg-2">
+        <?php
+        //echo $this->Html->link(__('Add User'), '/users/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px')) 
+        echo $this->Html->link(
+                __('Add User'), '#AddUserModal', array(
+            'class' => 'btn btn-default pull-right btn-add-modal',
+            'data-toggle' => 'modal',
+            'style' => 'margin-top: 15px')
+        );
+        ?>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <hr>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <hr>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th ><?php echo $this->Paginator->sort('id', '#') ?></th>
+                    <th ><?php echo $this->Paginator->sort('location_name', __('Location Name')) ?></th>
+                    <th ><?php echo $this->Paginator->sort('contact_persons1', __('Contact Person')) ?></th>
+                    <th ><?php echo $this->Paginator->sort('email', __('Email')) ?></th>
+                    <th ><?php echo $this->Paginator->sort('contact_person_post1', __('Designation')) ?></th>
+                    <th style="color: #428BCA"><?php echo __('Actions') ?></th>
+                    <th><?php echo $this->Paginator->sort('status', __('Status')) ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($locations as $location) { ?>
+                    <tr>
+                        <td width="50px"><?php echo $location['Location']['id'] ?></td>
+                        <!-- inline edit javascript code written in the end -->
+                        <td><div class ="editUserName" data-type="text" data-pk="<?php echo $location['Location']['id'] ?>" data-name="location_name"><?php echo $location['Location']['location_name'] ?></div></td>
+                        <td><div class ="editAlias" data-type="text" data-pk="<?php echo $location['Location']['id'] ?>" data-name="contact_persons1"><?php echo $location['Location']['contact_persons1'] ?></div></td>
+                        <td><div class ="editEmail" data-type="text" data-pk="<?php echo $location['Location']['id'] ?>" data-name="email"><?php echo $location['Location']['email'] ?></div></td>
+                        <td><div class ="editEmail" data-type="text" data-pk="<?php echo $location['Location']['id'] ?>" data-name="contact_person_post1"><?php echo $location['Location']['contact_person_post1'] ?></div></td>
+                        <td width="150px">
+                            
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-info">Actions</button>
+                                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                                    <span class="caret"></span>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><?php echo $this->Html->link(__('View'), '/locations/view/' . $location['Location']['id']) ?></li>
+                                    <li><?php echo $this->Html->link(__('Edit'), '/locations/edit/' . $location['Location']['id']) ?></li>
+                                    <li><?php
+                        if ($location['Location']['live'] != 0) {
+                            echo $this->Html->link(
+                                    __('Deactivate'), '#UsersModalDeactivate', array(
+                                'class' => 'btn-remove-modal',
+                                'data-toggle' => 'modal',
+                                'role' => 'button',
+                                'data-uid' => $location['Location']['id'],
+                                'data-uname' => $location['Location']['location_name']
+                            ));
+                        } else {
+                            echo $this->Html->link(
+                                    __('Activate'), '#UsersModalActivate', array(
+                                'class' => 'btn-remove1-modal',
+                                'data-toggle' => 'modal',
+                                'role' => 'button',
+                                'data-uid' => $location['Location']['id'],
+                                'data-uname' => $location['Location']['location_name']
+                            ));
+                        }
+                            ?></li>
+
+                                </ul>
+                            </div>
+                        </td>
+                        <?php if ($location['Location']['live'] != 0) { ?>
+                            <td style = "color: green">
+                                <?php echo "Active"; ?>
+                            </td>     
+
+                        <?php } else { ?>
+                            <td style = "color: red">
+                                <?php echo "Inactive"; ?>
+                            </td>
+                        <?php } ?>
+                        
+                    </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+        </div> 
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+<div class="modal fade" id="UsersModalDeactivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Deactivate user') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to deactivate the user ') ?><span class="label-uname strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger delete-user-link')) ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="UsersModalActivate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Activate user') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to activate the user ') ?><span class="label-uname strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php echo $this->Html->link(__('Activate'), "/users/activate/#{uid}", array('class' => 'btn btn-primary delete1-user-link')) ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="AddUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Add User</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- The form is placed inside the body of modal -->
+                <?php echo $this->Form->create('User', array('action' => 'add', 'class' => 'form-horizontal')); ?>
+                <div class="form-group">
+                    <div class="col-md-5 col-md-offset-3">
+                        <?php
+                        echo $this->Form->input('username', array(
+                            'label' => __('Username'),
+                            'class' => 'col-md-3 control-label',
+                            'value' => !empty($user['username']) ? $user['username'] : ''));
+                        ?>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-5 col-md-offset-3">
+                        <?php
+                        echo $this->Form->input('name', array(
+                            'label' => __('Name'),
+                            'class' => 'col-md-3 control-label',
+                            'value' => !empty($user['name']) ? $user['name'] : ''));
+                        ?>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-5 col-md-offset-3">
+                        <?php
+                        echo $this->Form->input('email', array(
+                            'label' => __('Email'),
+                            'class' => 'col-md-3 control-label',
+                            'value' => !empty($user['email']) ? $user['email'] : ''));
+                        ?>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-5 col-md-offset-3">
+                        <?php
+                        echo $this->Form->input('password', array(
+                            'label' => __('Password'),
+                            'class' => 'col-md-3 control-label',
+                            'value' => false));
+                        ?>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-5 col-md-offset-3">
+                        <?php echo $this->Form->end(__("Submit"), array('class' => 'btn btn-primary')); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        $.fn.editable.defaults.mode = 'inline'; 
+        $('.editUserName').editable({
+            url: 'http://localhost/HotSpotAdmin/users/update_username'
+        });
+        $('.editAlias').editable({
+            url: 'http://localhost/HotSpotAdmin/users/update_alias'
+        });
+        $('.editEmail').editable({
+            url: 'http://localhost/HotSpotAdmin/users/update_email'
+        });
+    });
+    
+ 
+</script>
+
+

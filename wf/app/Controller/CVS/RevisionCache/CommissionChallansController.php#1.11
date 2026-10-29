@@ -1,0 +1,291 @@
+<?php
+
+/** CommissionChallansController class
+ *  
+ * This class consists of methods for commission challans
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class CommissionChallansController extends AppController {
+
+    public $helpers = array('Js', 'Pdf'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+    public $uses = array('CommissionAgent', 'CommissionChallan', 'CommissionAgentsLocation', 'InvoiceTrack', 'Invoice');
+
+    /**
+     * This is the default method for the CommissionChallans controller.
+     * If a particular location is set then it fetches the commission challans associated to that particular location.
+     * 
+     * @return void
+     */
+    public function index() {
+
+        if ($this->request->is('post') && isset($this->request->data['commission_challans']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['commission_challans']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $condition[] = array('CommissionChallan.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('CommissionChallan.location_id' => '');
+        }
+        # Search
+        if (count($this->passedArgs)==0) {
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+
+            if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search']!='' && $this->request->data[$this->request->data['search']]!='') {
+                if ($this->request->data['search'] == 'group_id') {
+                    $condition[] = array('CommissionChallan.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                } else {
+                    $condition[] = array('CommissionChallan.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                }
+            }
+
+            $this->Session->write('search_conditions', $condition);
+        }
+
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions'))>0) {
+            $condition = $this->Session->read('search_conditions');
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $this->Paginator->settings = array(
+                'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                'order' => array('CommissionChallan.from' => 'ASC'),
+                'conditions' => $condition
+            );
+        } else {
+            $this->Paginator->settings = array(
+                'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                'order' => array('CommissionChallan.from' => 'ASC'),
+                'conditions' => $condition
+                    
+            );
+        }
+
+        $this->CommissionChallan->recursive = 0;
+        $this->set('label', 'Commission Challans');
+        $this->set('breadcrumbLabel', 'Commission Challans');
+        $this->Session->write('link', 'commissionChallansList');
+        $this->set('commissionChallans', $this->Paginator->paginate('CommissionChallan'));
+    }
+
+    /**
+     * Add the commission challan details and create pdf
+     * 
+     * @return void
+     */
+    public function add() {
+        $agentsList = $this->CommissionAgent->find('list', array(
+            'order' => array('CommissionAgent.first_name' => 'ASC'),
+            'fields' => array('id', 'first_name')
+                ));
+        $this->set('agents_list', $agentsList);
+
+        if (isset($this->request->data['CommissionChallan']['commission_agent_id'])) {
+            $commission_agent_id = $this->request->data['CommissionChallan']['commission_agent_id'];
+        } else {
+            $commission_agent_id = '';
+        }
+        $locationIdList = $this->CommissionAgentsLocation->find('all', array(
+            'order' => array('CommissionAgentsLocation.id' => 'ASC'),
+            'conditions' => array('CommissionAgentsLocation.commission_agent_id' => $commission_agent_id),
+            'fields' => array('location_id')
+                ));
+
+        $locationList = array();
+        $tempLocationListArray = $this->Session->read('locations_list');
+        foreach ($locationIdList as $value) {
+            $locationList[$value['CommissionAgentsLocation']['location_id']] = $tempLocationListArray[$value['CommissionAgentsLocation']['location_id']];
+        }
+        unset($tempLocationListArray);
+        $this->set('locations_list', $locationList);
+        unset($locationIdList);
+        unset($locationList);
+        unset($agentsList);
+       
+        if ($this->request->is('post') && $this->request->data['CommissionChallan']['location_id'] != '') {
+            $lastChallan = $this->CommissionChallan->find('first', array('fields' => array('to'), 'conditions' => array('commission_agent_id' => $commission_agent_id), 'location_id' => $this->request->data['CommissionChallan']['location_id']));
+            $commissionChallanDetails = array();
+            //pr($lastChallan);
+            $lastChallanDate='';
+            if($lastChallan!=''){
+                $lastChallanDate = new DateTime(date('Y-m-d', strtotime($lastChallan['CommissionChallan']['to'])));
+            }else{
+                $lastChallanDate = new DateTime(date('Y-m-d', strtotime($this->request->data['CommissionChallan']['to'])));
+            }
+            $lastChallanDate = new DateTime(date('Y-m-d', strtotime($lastChallan['CommissionChallan']['to'])));
+            $this->set('lastDate', $lastChallanDate);
+            $fromDate = new DateTime(date('Y-m-d', strtotime($this->request->data['CommissionChallan']['from'])));
+            $this->set('isgreater', 'No');
+            if ($lastChallanDate >= $fromDate) {
+                $this->set('isgreater', $fromDate->diff($lastChallanDate)->format('%R%a days'));
+                $lastChallanDate = $counterDate = $lastChallanDate;
+                $counterDate = $counterDate->add(new DateInterval('P1M'));
+            }
+            $this->set('counterDate', $counterDate);
+            $toDate = new DateTime($this->request->data['CommissionChallan']['to']);
+            $this->set('fromDate', $fromDate);
+
+            $challanData = $this->CommissionAgentsLocation->recursive = 0;
+            $challanData = $this->CommissionAgentsLocation->find('first', array(
+                'fields' => array('CommissionAgentsLocation.id', 'CommissionAgentsLocation.commission_agent_id', 'CommissionAgentsLocation.location_id', 'CommissionAgentsLocation.commission_percent', 'CommissionAgentsLocation.commission_on', 'CommissionAgentsLocation.status',
+                    'Location.installation_name', 'Location.installation_address1', 'Location.installation_address2', 'Location.installation_city', 'Location.installation_state', 'Location.installation_postcode', 'Location.revenue_share', 'Location.revenue_share', 'Location.revenue_percent', 'Location.phone1',
+                    'CommissionAgent.first_name', 'CommissionAgent.middle_name', 'CommissionAgent.last_name', 'CommissionAgent.address1', 'CommissionAgent.address2', 'CommissionAgent.city', 'CommissionAgent.postcode', 'CommissionAgent.state', 'CommissionAgent.country', 'CommissionAgent.mobile', 'CommissionAgent.email'),
+                'conditions' => array('commission_agent_id' => $this->request->data['CommissionChallan']['commission_agent_id'], 'location_id' => $this->request->data['CommissionChallan']['location_id'])
+                    ));
+            $this->set('toDate', $challanData);
+            $revenueDetails = $this->Invoice->find('all', array(
+                'fields' => array('month', 'year', 'InvoiceTrack.service_tax'),
+                'conditions' => array('location_id' => $this->request->data['CommissionChallan']['location_id'], 'concat(Year, "-", if(Month  > 9 , Month, concat("0", Month))) >= ' => ($counterDate->format('Y') . "-" . $counterDate->format('m')), 'concat(Year, "-", if(Month  > 9 , Month, concat("0", Month))) <= ' => ($toDate->format('Y') . "-" . $toDate->format('m')))
+                    ));
+            $this->set('dateCompairc', $revenueDetails);
+            $counter = 0;
+            $totalCommission = 0;
+            $dateCompair = array();
+            $commissionChallanDetails['taxPercentage'] = 12.36;
+            $commissionChallanDetails['comissionPercentage'] = $challanData['CommissionAgentsLocation']['commission_percent'];
+            for ($i = 0; $i < count($revenueDetails); $i++) {
+                $commissionChallanDetails['period'][$i]['month'] = $revenueDetails[$i]['Invoice']['month'];
+                $commissionChallanDetails['period'][$i]['year'] = $revenueDetails[$i]['Invoice']['year'];
+                $commissionChallanDetails['period'][$i]['tax'] = $revenueDetails[$i]['InvoiceTrack']['service_tax'];
+                $commissionChallanDetails['period'][$i]['netRevenue'] = round(($commissionChallanDetails['period'][$i]['tax'] * 10000) / 1236);
+                $commissionChallanDetails['period'][$i]['grossSale'] = round($commissionChallanDetails['period'][$i]['tax'] + $commissionChallanDetails['period'][$i]['netRevenue']);
+                if ($challanData['Location']['revenue_share'] == 1) {
+                    $commissionChallanDetails['period'][$i]['wifonicShare'] = round(($commissionChallanDetails['period'][$i]['netRevenue'] * $challanData['Location']['revenue_percent']) / 100);
+                    $commissionChallanDetails['wifonicSharePercentage'] = $challanData['Location']['revenue_percent'];
+                } else {
+                    $commissionChallanDetails['wifonicSharePercentage'] = 100;
+                    $commissionChallanDetails['period'][$i]['wifonicShare'] = $commissionChallanDetails['period'][$i]['netRevenue'];
+                }
+                $commissionChallanDetails['period'][$i]['comission'] = round(($commissionChallanDetails['period'][$i]['wifonicShare'] * $challanData['CommissionAgentsLocation']['commission_percent']) / 100);
+                $totalCommission = $totalCommission + $commissionChallanDetails['period'][$i]['comission'];
+            }
+            $commissionChallanDetails['totalCommission'] = $totalCommission;
+            $commissionChallanDetails['address'] = $challanData['CommissionAgent']['first_name'] . ' ' . $challanData['CommissionAgent']['middle_name'] . ' ' . $challanData['CommissionAgent']['last_name'];
+            //pr($challanData);
+            if ($challanData['CommissionAgent']['address1']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>' . $challanData['CommissionAgent']['address1'];
+            }
+            if ($challanData['CommissionAgent']['address2']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>' . $challanData['CommissionAgent']['address2'];
+            }
+            if ($challanData['CommissionAgent']['city']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>' . $challanData['CommissionAgent']['city'];
+            }
+            if ($challanData['CommissionAgent']['postcode']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . ' -  ' . $challanData['CommissionAgent']['postcode'];
+            }
+            if ($challanData['CommissionAgent']['mobile']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>Mob: ' . $challanData['CommissionAgent']['mobile'];
+            }
+            $commissionChallanDetails['hotelAddress'] = $challanData['Location']['installation_name'];
+            if ($challanData['Location']['installation_address1']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br />' . $challanData['Location']['installation_address1'];
+            }
+            if ($challanData['Location']['installation_address2']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br />' . $challanData['Location']['installation_address2'];
+            }
+            if ($challanData['Location']['installation_city']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br />' . $challanData['Location']['installation_city'];
+            }
+            if ($challanData['Location']['installation_postcode']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . ' - ' . $challanData['Location']['[installation_postcode'];
+            }
+            if ($challanData['Location']['phone1']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br/>Ph : ' . $challanData['Location']['phone1'];
+            }
+            $commissionChallanDetails['wifonicAddress'] = "WiFonic Technologies Pvt. Ltd. \n238, 2nd Floor, IJMIMA Commercial Complex \nOff Link Road, Malad (West)\nMumbai-400064 \n Tel: 022-66077300 \n email: info@wifonic.com\n ";
+
+            $commissionChallanDetails['fileName'] = $commissionChallanFileName = $this->request->data['CommissionChallan']['commission_agent_id'] . '_' . date('d_m_y_H_i_s') . '.pdf';
+
+            $this->_exportCommissionChallanToPdf($commissionChallanDetails);
+            unset($commissionChallanDetails);
+
+            $file = new File("./Temp/" . $commissionChallanFileName);
+            $commissionData['CommissionChallan']['commission_agent_id'] = $commission_agent_id;
+            $commissionData['CommissionChallan']['location_id'] = $this->request->data['CommissionChallan']['location_id'];
+            $commissionData['CommissionChallan']['from'] = $lastChallanDate->format('Y-m-01');
+            $commissionData['CommissionChallan']['to'] = $toDate->format('Y-m-01');
+            $commissionData['CommissionChallan']['challan_name'] = $commissionChallanFileName;
+            $commissionData['CommissionChallan']['type'] = 'application/pdf';
+            $commissionData['CommissionChallan']['size'] = $file->size();
+            $commissionData['CommissionChallan']['challan'] = $file->read();
+            $commissionData['CommissionChallan']['amount'] = $totalCommission;
+            $file->close();
+            if ($this->CommissionChallan->save($commissionData)) {
+                $this->log("Commission challan details added for agent ID: " . $commissionData['CommissionChallan']['commission_agent_id'], 'info');
+                $this->Session->setFlash(__('Commission challan details added successfully'), 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            } else {
+                pr('error');
+            }
+        }
+
+        $this->set('breadcrumbLabel', 'Add Commission Challan');
+    }
+
+    /**
+     * View the commission challan details
+     * 
+     * @return void
+     */
+    public function view() {
+        $this->set('label', 'View Commission Challan');
+        $this->set('breadcrumbLabel', 'View Commission Challan');
+        if ($this->request->is('POST') && count($this->request->data)>0) {
+
+            $commissionChallansData = $this->CommissionChallan->findById($this->request->data['CommissionChallan']['id']);
+            $this->set('commissionChallansData', $commissionChallansData);
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    /**
+     * Export commission challan details and create pdf
+     * 
+     * @access private
+     * @return integer
+     */
+    private function _exportCommissionChallanToPdf($commissionChallanData) {
+        $this->set('commissionChallanData', $commissionChallanData);
+        $this->layout = 'pdf'; //this will use the pdf.ctp layout
+        $this->render('export_commission_challan_to_pdf');
+        $this->layout = null;
+        $this->autoLayout = false;
+        return 0;
+    }
+
+    /**
+     * Print commission challan
+     * 
+     * @return void
+     */
+    public function printChallan($id) {
+        $this->CommissionChallan->recursive = -1;
+        $challan = $this->CommissionChallan->findById($id);
+        $file = $challan['CommissionChallan']['challan'];
+        $size = $challan['CommissionChallan']['size'];
+        $type = $challan['CommissionChallan']['type'];
+        $name = $challan['CommissionChallan']['challan_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+    }
+
+}
+?>

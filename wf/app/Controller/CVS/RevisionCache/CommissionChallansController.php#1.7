@@ -1,0 +1,570 @@
+<?php
+
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class CommissionChallansController extends AppController {
+
+    public $helpers = array('Js', 'Pdf'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+    public $uses = array('CommissionAgent', 'CommissionChallan', 'CommissionAgentsLocation', 'InvoiceTrack', 'Invoice');
+
+    public function index() {
+
+        if ($this->request->is('post') && isset($this->request->data['commission_challans']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['commission_challans']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $condition[] = array('CommissionChallan.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('CommissionChallan.location_id' => '');
+        }
+        if (count($this->passedArgs)==0) {
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+
+            if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search']!='' && $this->request->data[$this->request->data['search']]!='') {
+                if ($this->request->data['search'] == 'group_id') {
+                    $condition[] = array('CommissionChallan.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                } else {
+                    $condition[] = array('CommissionChallan.' . $this->request->data['search'] . ' LIKE' => '%' . $this->request->data[$this->request->data['search']] . '%');
+                }
+            }
+
+            $this->Session->write('search_conditions', $condition);
+        }
+
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions'))>0) {
+            $condition = $this->Session->read('search_conditions');
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $this->Paginator->settings = array(
+                'limit' => 10, //Limit of records 
+                'order' => array('CommissionChallan.from' => 'ASC'),
+                'conditions' => $condition
+            );
+        } else {
+            $this->Paginator->settings = array(
+                'limit' => 10, //Limit of records 
+                'order' => array('CommissionChallan.from' => 'ASC'),
+                'conditions' => $condition
+                    
+            );
+        }
+
+        $this->CommissionChallan->recursive = 0;
+        $this->set('label', 'Commission Challans');
+        $this->set('breadcrumbLabel', 'Commission Challans');
+        $this->Session->write('link', 'commissionChallansList');
+        $this->set('commissionChallans', $this->Paginator->paginate('CommissionChallan'));
+    }
+
+    public function add() {
+        $agentsList = $this->CommissionAgent->find('list', array(
+            'order' => array('CommissionAgent.first_name' => 'ASC'),
+            'fields' => array('id', 'first_name')
+                ));
+        $this->set('agents_list', $agentsList);
+
+        if (isset($this->request->data['CommissionChallan']['commission_agent_id'])) {
+            $commission_agent_id = $this->request->data['CommissionChallan']['commission_agent_id'];
+        } else {
+            $commission_agent_id = '';
+        }
+        $locationIdList = $this->CommissionAgentsLocation->find('all', array(
+            'order' => array('CommissionAgentsLocation.id' => 'ASC'),
+            'conditions' => array('CommissionAgentsLocation.commission_agent_id' => $commission_agent_id),
+            'fields' => array('location_id')
+                ));
+
+        $locationList = array();
+        $tempLocationListArray = $this->Session->read('locations_list');
+        foreach ($locationIdList as $value) {
+            $locationList[$value['CommissionAgentsLocation']['location_id']] = $tempLocationListArray[$value['CommissionAgentsLocation']['location_id']];
+        }
+        unset($tempLocationListArray);
+        $this->set('locations_list', $locationList);
+        unset($locationIdList);
+        unset($locationList);
+        unset($agentsList);
+       
+        if ($this->request->is('post') && $this->request->data['CommissionChallan']['location_id'] != '') {
+            $lastChallan = $this->CommissionChallan->find('first', array('fields' => array('to'), 'conditions' => array('commission_agent_id' => $commission_agent_id), 'location_id' => $this->request->data['CommissionChallan']['location_id']));
+            $commissionChallanDetails = array();
+
+            $lastChallanDate = new DateTime($lastChallan['CommissionChallan']['to']);
+            $this->set('lastDate', $lastChallanDate);
+            $fromDate = new DateTime($this->request->data['CommissionChallan']['from']);
+            $this->set('isgreater', 'No');
+            if ($lastChallanDate >= $fromDate) {
+                $this->set('isgreater', $fromDate->diff($lastChallanDate)->format('%R%a days'));
+                $lastChallanDate = $counterDate = $lastChallanDate;
+                $counterDate = $counterDate->add(new DateInterval('P1M'));
+            }
+            $this->set('counterDate', $counterDate);
+            $toDate = new DateTime($this->request->data['CommissionChallan']['to']);
+            $this->set('fromDate', $fromDate);
+
+            $challanData = $this->CommissionAgentsLocation->recursive = 0;
+            $challanData = $this->CommissionAgentsLocation->find('first', array(
+                'fields' => array('CommissionAgentsLocation.id', 'CommissionAgentsLocation.commission_agent_id', 'CommissionAgentsLocation.location_id', 'CommissionAgentsLocation.commission_percent', 'CommissionAgentsLocation.commission_on', 'CommissionAgentsLocation.status',
+                    'Location.installation_name', 'Location.installation_address1', 'Location.installation_address2', 'Location.installation_city', 'Location.installation_state', 'Location.installation_postcode', 'Location.revenue_share', 'Location.revenue_share', 'Location.revenue_percent',
+                    'CommissionAgent.first_name', 'CommissionAgent.middle_name', 'CommissionAgent.last_name', 'CommissionAgent.address1', 'CommissionAgent.address2', 'CommissionAgent.city', 'CommissionAgent.postcode', 'CommissionAgent.state', 'CommissionAgent.country', 'CommissionAgent.mobile', 'CommissionAgent.email'),
+                'conditions' => array('commission_agent_id' => $this->request->data['CommissionChallan']['commission_agent_id'], 'location_id' => $this->request->data['CommissionChallan']['location_id'])
+                    ));
+            $this->set('toDate', $challanData);
+            $revenueDetails = $this->Invoice->find('all', array(
+                'fields' => array('month', 'year', 'InvoiceTrack.service_tax'),
+                'conditions' => array('location_id' => $this->request->data['CommissionChallan']['location_id'], 'concat(Year, "-", if(Month  > 9 , Month, concat("0", Month))) >= ' => ($counterDate->format('Y') . "-" . $counterDate->format('m')), 'concat(Year, "-", if(Month  > 9 , Month, concat("0", Month))) <= ' => ($toDate->format('Y') . "-" . $toDate->format('m')))
+                    ));
+            $this->set('dateCompairc', $revenueDetails);
+            $counter = 0;
+            $totalCommission = 0;
+            $dateCompair = array();
+            $commissionChallanDetails['taxPercentage'] = 12.36;
+            $commissionChallanDetails['comissionPercentage'] = $challanData['CommissionAgentsLocation']['commission_percent'];
+            for ($i = 0; $i < count($revenueDetails); $i++) {
+                $commissionChallanDetails['period'][$i]['month'] = $revenueDetails[$i]['Invoice']['month'];
+                $commissionChallanDetails['period'][$i]['year'] = $revenueDetails[$i]['Invoice']['year'];
+                $commissionChallanDetails['period'][$i]['tax'] = $revenueDetails[$i]['InvoiceTrack']['service_tax'];
+                $commissionChallanDetails['period'][$i]['netRevenue'] = round(($commissionChallanDetails['period'][$i]['tax'] * 10000) / 1236);
+                $commissionChallanDetails['period'][$i]['grossSale'] = round($commissionChallanDetails['period'][$i]['tax'] + $commissionChallanDetails['period'][$i]['netRevenue']);
+                if ($challanData['Location']['revenue_share'] == 1) {
+                    $commissionChallanDetails['period'][$i]['wifonicShare'] = round(($commissionChallanDetails['period'][$i]['netRevenue'] * $challanData['Location']['revenue_percent']) / 100);
+                    $commissionChallanDetails['wifonicSharePercentage'] = $challanData['Location']['revenue_percent'];
+                } else {
+                    $commissionChallanDetails['wifonicSharePercentage'] = 100;
+                    $commissionChallanDetails['period'][$i]['wifonicShare'] = $commissionChallanDetails['period'][$i]['netRevenue'];
+                }
+                $commissionChallanDetails['period'][$i]['comission'] = round(($commissionChallanDetails['period'][$i]['wifonicShare'] * $challanData['CommissionAgentsLocation']['commission_percent']) / 100);
+                $totalCommission = $totalCommission + $commissionChallanDetails['period'][$i]['comission'];
+            }
+            $commissionChallanDetails['totalCommission'] = $totalCommission;
+            $commissionChallanDetails['address'] = $challanData['CommissionAgent']['first_name'] . ' ' . $challanData['CommissionAgent']['middle_name'] . ' ' . $challanData['CommissionAgent']['last_name'];
+            if ($challanData['CommissionAgent']['address1']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>' . $challanData['CommissionAgent']['address1'];
+            }
+            if ($challanData['CommissionAgent']['address2']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>' . $challanData['CommissionAgent']['address2'];
+            }
+            if ($challanData['CommissionAgent']['city']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>' . $challanData['CommissionAgent']['city'];
+            }
+            if ($challanData['CommissionAgent']['postcode']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . ' -  ' . $challanData['CommissionAgent']['postcode'];
+            }
+            if ($challanData['CommissionAgent']['mobile']!='') {
+                $commissionChallanDetails['address'] = $commissionChallanDetails['address'] . '<br/>Mob: ' . $challanData['CommissionAgent']['mobile'];
+            }
+            $commissionChallanDetails['hotelAddress'] = $challanData['Location']['installation_name'];
+            if ($challanData['Location']['installation_address1']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br />' . $challanData['Location']['installation_address1'];
+            }
+            if ($challanData['Location']['installation_address2']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br />' . $challanData['Location']['installation_address2'];
+            }
+            if ($challanData['Location']['installation_city']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br />' . $challanData['Location']['installation_city'];
+            }
+            if ($challanData['Location']['[installation_postcode']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . ' - ' . $challanData['Location']['[installation_postcode'];
+            }
+            if ($challanData['Location']['[phone2']!='') {
+                $commissionChallanDetails['hotelAddress'] = $commissionChallanDetails['hotelAddress'] . '<br/>Ph : ' . $challanData['Location']['[phone2'];
+            }
+            $commissionChallanDetails['wifonicAddress'] = "WiFonic Technologies Pvt. Ltd. \n238, 2nd Floor, IJMIMA Commercial Complex \nOff Link Road, Malad (West)\nMumbai-400064 \n Tel: 022-66077300 \n email: info@wifonic.com\n ";
+
+            $commissionChallanDetails['fileName'] = $commissionChallanFileName = $this->request->data['CommissionChallan']['commission_agent_id'] . '_' . date('d_m_y_H_i_s') . '.pdf';
+
+            $this->_exportCommissionChallanToPdf($commissionChallanDetails);
+            unset($commissionChallanDetails);
+
+            $file = new File("./Temp/" . $commissionChallanFileName);
+            $commissionData['CommissionChallan']['commission_agent_id'] = $commission_agent_id;
+            $commissionData['CommissionChallan']['location_id'] = $this->request->data['CommissionChallan']['location_id'];
+            $commissionData['CommissionChallan']['from'] = $lastChallanDate->format('Y-m-01');
+            $commissionData['CommissionChallan']['to'] = $toDate->format('Y-m-01');
+            $commissionData['CommissionChallan']['challan_name'] = $commissionChallanFileName;
+            $commissionData['CommissionChallan']['type'] = 'application/pdf';
+            $commissionData['CommissionChallan']['size'] = $file->size();
+            $commissionData['CommissionChallan']['challan'] = $file->read();
+            $commissionData['CommissionChallan']['amount'] = $totalCommission;
+            $file->close();
+            if ($this->CommissionChallan->save($commissionData)) {
+                $this->log("Commission challan details added for agent ID: " . $commissionData['CommissionChallan']['commission_agent_id'], 'info');
+                $this->Session->setFlash(__('Commission challan details added successfully'), 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            } else {
+                pr('error');
+            }
+        }
+
+        $this->set('breadcrumbLabel', 'Add Commission Challan');
+    }
+
+    public function view() {
+        $this->set('label', 'View Commission Challan');
+        $this->set('breadcrumbLabel', 'View Commission Challan');
+        if ($this->request->is('POST') && count($this->request->data)>0) {
+
+            $commissionChallansData = $this->CommissionChallan->findById($this->request->data['CommissionChallan']['id']);
+            $this->set('commissionChallansData', $commissionChallansData);
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    public function deactivate($id = null) {
+        if ($this->request->is('post')) {
+            if ($this->request->data['CommissionAgent']['id']!='') {
+                $this->CommissionAgent->id = $this->request->data['CommissionAgent']['id'];
+                if ($this->CommissionAgent->exists()) {
+                    if ($this->CommissionAgent->saveField('status', 'inactive')) {
+                        $this->log("Agent ID: " . $this->request->data['CommissionAgent']['id'] . " deactivated", 'info');
+
+                        $this->Session->setFlash(__('Agent ' . $this->request->data['CommissionAgent']['first_name'] . ' is de-activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to de-activate'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid user id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a user id.'), 'flash_fail');
+            }
+        }
+    }
+
+    public function activate($id = null) {
+        if ($this->request->is('post')) {
+            if ($this->request->data['CommissionAgent']['id']!='') {
+                $this->CommissionAgent->id = $this->request->data['CommissionAgent']['id'];
+                if ($this->CommissionAgent->exists()) {
+                    if ($this->CommissionAgent->saveField('status', 'active')) {
+                        $this->log("Agent ID: " . $this->request->data['CommissionAgent']['id'] . " activated", 'info');
+                        $this->Session->setFlash(__('Agent ' . $this->request->data['CommissionAgent']['first_name'] . ' is activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to activate'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid user id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a user id.'), 'flash_fail');
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_city() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('city')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent city updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_email() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('email')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent email updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_first_name() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('first_name')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent first name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_last_name() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('last_name')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent last name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_mobile() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('mobile')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent mobile updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_account_number() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('account_number')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent account number updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_address1() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('address1')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent address1 updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_address2() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('address2')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent address1 updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_bank() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('bank')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent bank name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_branch() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('branch')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent bank branch name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_country() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('country')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent country updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_middle_name() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('middle_name')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent middle name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_phone() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('phone')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent phone updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_postcode() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('postcode')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent postcode updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_state() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('state')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent state updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    private function _exportCommissionChallanToPdf($commissionChallanData) {
+        $this->set('commissionChallanData', $commissionChallanData);
+        $this->layout = 'pdf'; //this will use the pdf.ctp layout
+        $this->render('export_commission_challan_to_pdf');
+        $this->layout = null;
+        $this->autoLayout = false;
+        return 0;
+    }
+
+    public function printChallan($id) {
+        $this->CommissionChallan->recursive = -1;
+        $challan = $this->CommissionChallan->findById($id);
+        $file = $challan['CommissionChallan']['challan'];
+        $size = $challan['CommissionChallan']['size'];
+        $type = $challan['CommissionChallan']['type'];
+        $name = $challan['CommissionChallan']['challan_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+    }
+
+}
+?>

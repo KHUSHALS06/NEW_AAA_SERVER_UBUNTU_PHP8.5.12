@@ -1,0 +1,220 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        $('#UserEditForm').bootstrapValidator();
+
+        $('#remove').click(function() {
+            return !$('#LocationLocation option:selected').remove().appendTo('#UserRemainingLocations');
+        });
+
+        $('#add').click(function() {
+            return !$('#UserRemainingLocations option:selected').remove().appendTo('#LocationLocation');
+
+        });
+
+        $('#submitUserEditForm').click(function() {
+            if ($('#LocationLocation option').length <= 0) {
+                //if ($("#LocationLocation").val() == '') { alert('empty');
+                $("#LocationLocation").attr('style', 'border-color: #953B39');
+                $("#assignedLocationsErrorIcon").attr('style', 'display:inline');
+                $("#assignedLocationsError").attr('style', 'display:inline;color:#B94A48');
+                return false;
+            } else {
+                $("#LocationLocation option").attr('selected', 'selected');
+                $("#LocationLocation").attr('style', '');
+                $("#assignedLocationsErrorIcon").attr('style', 'display:none');
+                $("#assignedLocationsError").attr('style', 'display:none');
+            }
+        });
+
+        /* $("#UserPassword").blur(function() {
+         //alert("TextBox is Focused. The Div will Fade Out Now");
+         if(document.getElementById('UserPassword').value > 0){
+         //alert(document.getElementById('UserPassword').value)
+         $('#confirmPwd').attr('style', 'display: block');
+         } else {
+         $('#confirmPwd').attr('style', 'display: none');
+         }
+         }); */
+
+        $('#UserGroupId').change(function() {
+            if (($("#LocationLocation").has('option').length > 0) && ($("#UserRemainingLocations").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+                $("#LocationLocation option").attr('selected', 'selected');
+            } else if (($("#LocationLocation").has('option').length == 0) && ($("#UserRemainingLocations").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+                $("#locationsList").attr('style', 'display:none');
+                //$("#remainingLocationsList").attr('style', 'display:none');
+            } else {
+                $("#locationsList").attr('style', 'display:block');
+                //$("#remainingLocationsList").attr('style', 'display:block');
+                //$("#locationsList").attr('style', 'display:block');
+                $("#LocationLocation option").removeAttr('selected', 'selected');
+            }
+
+        });
+
+    });
+
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Users',
+        'link' => '/users'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('User', array('action' => 'edit', 'method' => 'post', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php
+            echo $this->Form->input('id', array(
+                'type' => 'hidden',
+                'value' => $editId
+            ));
+            echo $this->Form->input('user_token', array(
+                'type' => 'hidden',
+                'value' => $userToken
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('username', array(
+                'label' => __('Username'),
+                'readonly' => true,
+                'value' => ($userData['username'] != '') ? $userData['username'] : ''));
+            ?>
+
+            <?php
+            echo $this->Form->input('alias', array(
+                'label' => __('Name'),
+                'autocomplete' => 'off',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+                'value' => ($userData['alias'] != '') ? $userData['alias'] : ''));
+            ?>
+
+            <?php
+            echo $this->Form->input('email', array(
+                'label' => __('Email'),
+                'readonly' => true,
+                'value' => ($userData['email'] != '') ? $userData['email'] : ''));
+            ?>
+
+            <?php
+            echo $this->Form->input('password', array(
+                'label' => __('Password'),
+                'required' => false,
+                'value' => false,
+                    /* 'data-bv-identical' => 'true',
+                      'data-bv-identical-field' => 'data[User][confirmpassword]',
+                      'data-bv-identical-message' => 'The password and its confirm are not the same' */
+            ));
+            ?>
+
+            <!--div id="confirmPwd" style="display: none"-->
+            <?php
+            echo $this->Form->input('confirmpassword', array(
+                'label' => __('Retype Password'),
+                'type' => 'password',
+                'required' => false,
+                'value' => false,
+                //'data-bv-notempty' => 'true',
+                //'data-bv-notempty-message' => "The retype password is required and cannot be empty",
+                'data-bv-identical' => 'true',
+                'data-bv-identical-field' => 'data[User][password]',
+                'data-bv-identical-message' => 'The password and its confirm are not the same'
+            ));
+            ?>
+            <!--/div-->
+
+            <?php
+            //echo $this->Form->input();
+            ?>
+
+            <?php //if (AuthComponent::user('group_id') == '1') { ?>
+            <?php
+            echo $this->Form->input('group_id', array(
+                'label' => __('Group'),
+                'options' => $groups,
+                'selected' => ($userData['group_id'] != '') ? $userData['group_id'] : '',
+                    //'onclick' => 'return hello()'
+            ));
+            ?>
+            <?php //} ?>
+
+            <?php //if (AuthComponent::user('group_id') == '1') { ?>
+            <div class="row" id="locationsList">
+                <div class="col-md-5" id="loc">
+
+                    <?php
+                    echo $this->Form->input('Location', array(
+                        'label' => 'Assigned Locations',
+                        'type' => 'select',
+                        'multiple' => 'true',
+                        //'style' => 'border-color: #953B39',
+                        //'required' => true,
+                        'options' => $assignedLocations
+                    ));
+                    ?>
+                    <span id="error" style="display:none;"><i class="fa fa-times"></i>Please select a location</span>
+                    <i id="assignedLocationsErrorIcon" data-bv-icon-for="data[Location][Location][]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+                    <br>
+                    <small id ="assignedLocationsError" data-bv-result="VALID" data-bv-for="data[User][email]" data-bv-validator="notEmpty" class="help-block" style="display: none">Please assign location</small>
+                </div>
+                <div class="col-md-2">
+                    <br/>
+                    <br/>
+                    <?php //if(detectDevice() == 'computer'){ ?>
+                    <a href="#" id="remove"><i class="fa fa-arrow-right btn btn-default"></i></a>
+                    <a href="#" id="add"><i class="fa fa-arrow-left btn btn-default"></i></a>
+                    <?php //} else {?>
+                    <!--a href="#" id="remove"><i class="fa fa-arrow-down btn btn-default"></i></a-->
+                    <!--a href="#" id="add"><i class="fa fa-arrow-up btn btn-default"></i></a-->
+                    <?php //} ?>
+                </div>
+                <div class="col-md-5">
+                    <?php
+                    echo $this->Form->input('remaining_locations', array(
+                        'label' => 'Locations',
+                        'type' => 'select',
+                        'multiple' => 'true',
+                        'options' => $remainingLocations
+                    ));
+                    ?>
+                </div>
+            </div>
+            <?php //} ?>
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+                <?php echo $this->Form->end(__("Submit"), array('id' => 'submitUserEditForm')); ?>
+            </div>
+        </div>
+    </div>
+</div>

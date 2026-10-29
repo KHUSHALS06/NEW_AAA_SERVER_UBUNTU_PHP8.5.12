@@ -1,0 +1,319 @@
+<?php
+/**
+ * This ctp consists of form to add commission challan details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+    $(function() {
+        
+        // Compare dates
+        $('#submit_button').click(function(){
+            var datepickerBegin = $("#from_date").datepicker("getDate")
+            var datepickerEnd = $("#to_date").datepicker("getDate")
+            var difference = (datepickerEnd- datepickerBegin ) / (86400000 * 7);
+            if (difference < 0) {
+                $("#to_date").attr('style', 'border-color: #953B39');
+                $("#toDateErrorIcon").attr('style', 'display:inline');
+                $("#toDateError").attr('style', 'display:inline;color:#B94A48');
+                return false;
+            } else {
+                $("#to_date").attr('style', '');
+                $("#toDateErrorIcon").attr('style', 'display:none');
+                $("#toDateError").attr('style', 'display:none');
+            }
+        });
+       
+    });
+</script>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        // JQuery datepicker for from date
+        $('#from_date').datepicker( {
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '2007:'+(new Date).getFullYear(),         
+            showButtonPanel: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true,
+            dateFormat: 'dd-mm-yy',
+            onClose: function(dateText, inst) { 
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).datepicker('setDate', new Date(year, month, 1));
+                var datepickerBegin = $("#from_date").datepicker("getDate")
+                var datepickerEnd = $("#to_date").datepicker("getDate")
+                var difference = (datepickerEnd- datepickerBegin ) / (86400000 * 7);
+                if (difference < 0) {
+                    $("#to_date").attr('style', 'border-color: #953B39');
+                    $("#toDateErrorIcon").attr('style', 'display:inline');
+                    $("#toDateError").attr('style', 'display:inline;color:#B94A48');
+                    return false;
+                } else {
+                    $("#to_date").attr('style', '');
+                    $("#toDateErrorIcon").attr('style', 'display:none');
+                    $("#toDateError").attr('style', 'display:none');
+                }
+            }
+        });
+        
+        // JQuery datepicker for to date
+        $('#to_date').datepicker( {
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '2007:'+((new Date).getFullYear() +10), 
+            showButtonPanel: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true,
+            dateFormat: 'dd-mm-yy',
+            onClose: function(dateText, inst) { 
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val(); 
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                var lastDay = new Date(year, month, 1).getDaysInMonth();
+                $(this).datepicker('setDate', new Date(year, month, lastDay));
+                var datepickerBegin = $("#from_date").datepicker("getDate")
+                var datepickerEnd = $("#to_date").datepicker("getDate")
+                var difference = (datepickerEnd- datepickerBegin ) / (86400000 * 7);
+                if (difference < 0) {
+                    $("#to_date").attr('style', 'border-color: #953B39');
+                    $("#toDateErrorIcon").attr('style', 'display:inline');
+                    $("#toDateError").attr('style', 'display:inline;color:#B94A48');
+                    return false;
+                } else {
+                    $("#to_date").attr('style', '');
+                    $("#toDateErrorIcon").attr('style', 'display:none');
+                    $("#toDateError").attr('style', 'display:none');
+                }
+            }
+        });
+        
+        /* $( "#from_date, #to_date" ).datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showButtonPanel: true,
+            dateFormat: 'yy-mm-dd',           
+            onClose: function(dateText, inst) {
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();            
+                $('#from_date').datepicker('setDate', new Date(year, month, 1));
+                var lastDay = new Date(year, month, 1).getDaysInMonth();
+                $('#to_date').datepicker('setDate', new Date(year, month, lastDay));
+            },
+            beforeShow : function(input, inst) {
+                if ((datestr = $(this).val()).length > 0) {
+                    year = datestr.substring(datestr.length-4, datestr.length);
+                    month = jQuery.inArray(datestr.substring(0, datestr.length-5), $(this).datepicker('option', 'monthNames'));
+                    $(this).datepicker('option', 'defaultDate', new Date(year, month, 1));
+                    $(this).datepicker('setDate', new Date(year, month, 1));   
+                }
+                var other = this.id == "from_date" ? "#to_date" : "#from_date";
+                var option = this.id == "from_date" ? "maxDate" : "minDate";       
+                if ((selectedDate = $(other).val()).length > 0) {
+                    year = selectedDate.substring(selectedDate.length-4, selectedDate.length);
+                    month = jQuery.inArray(selectedDate.substring(0, selectedDate.length-5), $(this).datepicker('option', 'monthNames'));
+                    $(this).datepicker( "option", option, new Date(year, month, 1));
+                }
+            }
+        }); */
+        
+        // Revalidate the date when user changes it
+        $('#from_date')
+        .change(function(e) { 
+            $('#CommissionChallanAddForm').bootstrapValidator('revalidateField', 'data[CommissionChallan][from]');
+        });
+        
+        $('#to_date')
+        .change(function(e) { 
+            $('#CommissionChallanAddForm').bootstrapValidator('revalidateField', 'data[CommissionChallan][to]');
+        });
+
+        //$('#CommissionChallanAddForm').bootstrapValidator();
+        
+        // Check if agent is selected from agents list
+        if(($('#CommissionChallanCommissionAgentId').val()=="") || ($('#CommissionChallanCommissionAgentId').val()=="0")){
+            $('#CommissionChallanLocationId').hide();
+        } else{
+            $('#CommissionChallanLocationId').show();
+            if($('#CommissionChallanLocationId option').length<=1){
+                $("#CommissionChallanLocationId").attr('style', 'border-color: #953B39');
+                $("#assignedLocationsErrorIcon").attr('style', 'display:inline');
+                $("#assignedLocationsError").attr('style', 'display:inline;color:#B94A48');
+                return false;
+            }else{
+                $("#CommissionChallanLocationId").attr('style', '');
+                $("#assignedLocationsErrorIcon").attr('style', 'display:none');
+                $("#assignedLocationsError").attr('style', 'display:none');
+            }
+        }
+    
+        // Validate the form with Bootstrap validator
+        $('#CommissionChallanAddForm').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                'data[CommissionChallan][location_id]': {
+                    validators: {
+                        notEmpty: {
+                            message: 'Please select a location'
+                        }
+                    }
+                },
+                'data[CommissionChallan][commission_agent_id]': {
+                    validators: {
+                        notEmpty: {
+                            message: 'Please select agent'
+                        }
+                    }
+                }
+                
+            }
+        });
+    });
+
+</script>
+<style type="text/css">   
+    /* To hide the calendar */
+    .ui-datepicker-calendar {
+        display: none;
+    }
+    div.ui-datepicker{
+        line-height: 11px;
+        font-size:12px;
+        position:fixed
+    }
+</style>
+<?php //echo $this->element('locations_list') ?>
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Commission',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commission Challans',
+        'link' => '/commission_challans'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+/*echo 'last Date';
+pr($lastDate);
+
+echo 'from date';
+pr($fromDate);
+
+echo 'is greater';
+pr($isgreater);
+
+echo 'counter date';
+pr($counterDate);
+
+echo 'to date';
+pr($toDate);
+echo 'dateCompairc';
+
+echo 'END';
+pr($dateCompair);*/
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        // Create form and define validation icons for the form
+        echo $this->Form->create('CommissionChallan', array('data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <div class="row">
+                <div class="col-lg-6">
+                    <?php
+                    echo $this->Form->create('CommissionChallan', array('method' => 'post', 'action' => $this->request->params['action']));
+                    echo $this->Form->input('commission_agent_id', array(
+                        'label' => false,
+                        'options' => $agents_list, //$this->Session->read('locations_list'),
+                        //'selected' => $this->Session->read('choosed_location_id'),
+                        'empty' => 'Select Agent',
+                        'onChange' => 'javascript:this.form.submit()'
+                    ));
+                    ?>
+                    </form>
+                    <br>
+                </div>
+                <div class="col-lg-6">
+                    <?php
+                    //echo $this->Form->create($this->request->params['controller'], array('method' => 'post', 'action' => $this->request->params['action']));
+                    echo $this->Form->input('location_id', array(
+                        'label' => false,
+                        'options' => $locations_list, //$this->Session->read('locations_list'),
+                        //'selected' => $this->Session->read('choosed_location_id'),
+                        'empty' => 'Select Location',
+                    ));
+                    ?>
+                    <!--/form-->
+                    <span id="error" style="display:none;"><i class="fa fa-times"></i>Please select a location</span>
+                    <i id="assignedLocationsErrorIcon" data-bv-icon-for="data[Location][Location][]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+                    <br>
+                    <small id ="assignedLocationsError" data-bv-result="VALID" data-bv-for="data[User][email]" data-bv-validator="notEmpty" class="help-block" style="display: none">No location yet assigned</small>
+                </div>
+            </div>
+            <?php
+            echo $this->Form->input('from', array(
+                'label' => __('From'),
+                'type' => 'text',
+                'id' => 'from_date',
+                'readOnly' => true,
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "This date is required and cannot be empty",
+                    /* 'data-bv-date' => 'true',
+                      'data-bv-date-format' => 'YYYY-MM-DD',
+                      'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD format' */
+            ));
+            ?> 
+
+            <?php
+            echo $this->Form->input('to', array(
+                'label' => __('To'),
+                'type' => 'text',
+                'id' => 'to_date',
+                'readOnly' => true,
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "This date is required and cannot be empty",
+                    /* 'data-bv-date' => 'true',
+                      'data-bv-date-format' => 'YYYY-MM-DD',
+                      'data-bv-date-message' => 'This is not a valid date. Please use YYYY-MM-DD format' */
+            ));
+            ?> 
+            <span id="error" style="display:none;"><i class="fa fa-times"></i>Please select a location</span>
+            <i id="toDateErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+            <br>
+            <small id ="toDateError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none">To date must be greater than from date</small>
+
+            <?php echo $this->Form->end(__("Submit"), array('id' => 'submit_button')); ?>
+        </div>
+
+    </div>
+</div>
+</div>
+

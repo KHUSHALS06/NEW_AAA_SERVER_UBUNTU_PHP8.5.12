@@ -1,0 +1,263 @@
+<?php
+/**
+ * This ctp consist of form to edit commission agent details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        // Validate the form with Bootstrap validator
+        $('#CommissionAgentEditForm').bootstrapValidator();
+        
+    });
+
+</script>
+
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+     array(
+        'label' => 'Commission',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commission Agents',
+        'link' => '/commission_agents'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        // Create form and define validation icons for the form
+        echo $this->Form->create('CommissionAgent', array('action' => 'edit', 'method' => 'post', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php
+            echo $this->Form->input('id', array(
+                'type' => 'hidden',
+                'value' => $commissionAgentsData['CommissionAgent']['id'],
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('first_name', array(
+                'label' => __('First Name'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['first_name'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "First name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "First name can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('middle_name', array(
+                'label' => __('Middle Name'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['middle_name'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "Middle name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Middle name can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('last_name', array(
+                'label' => __('Last Name'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['last_name'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "Last name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Last name can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('address1', array(
+                'label' => __('Address'),
+                'type' => 'text',
+                'maxlength' => '50',
+                'value' => $commissionAgentsData['CommissionAgent']['address1'],
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The address is required and cannot be empty"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('address2', array(
+                'label' => __('Street'),
+                'type' => 'text',
+                'maxlength' => '50',
+                'value' => $commissionAgentsData['CommissionAgent']['address2'],
+                'data-bv-notempty' => "false"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('city', array(
+                'label' => __('City'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['city'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The city is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                'data-bv-regexp-message' => "The city can only consist of alphabets"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('state', array(
+                'label' => __('State'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['state'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The state is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                'data-bv-regexp-message' => "The state can only consist of alphabets"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('postcode', array(
+                'label' => __('Post Code'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['postcode'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The postal code is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The postal code can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('country', array(
+                'label' => __('Country*'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['country'],
+                'autocomplete' => 'off',
+                'value' => 'IN'));
+            ?>
+
+            <?php
+            echo $this->Form->input('bank', array(
+                'label' => __('Bank'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['bank'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Bank name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Bank name can only consist of alphabets and numbers",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('branch', array(
+                'label' => __('Branch'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['branch'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Branch name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Branch name can only consist of alphabets and numbers",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('account_number', array(
+                'label' => __('Account Number'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['account_number'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Account number is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Account number can only consist of alphabets and numbers",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('mobile', array(
+                'label' => __('Mobile'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['mobile'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Mobile number is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^([1-9]{1})([0-9]{9})$",
+                'data-bv-regexp-message' => "Mobile number can only consist of 10 digits"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('phone', array(
+                'label' => __('Phone'),
+                'type' => 'text',
+                'value' => $commissionAgentsData['CommissionAgent']['phone'],
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The phone number is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The phone number can only consist of numbers'
+            ));
+            ?> 
+
+            <?php
+            echo $this->Form->input('email', array(
+                'label' => __('Email'),
+                'value' => $commissionAgentsData['CommissionAgent']['email'],
+                //'type' => 'email',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Email is required and cannot be empty",
+            ));
+            ?>
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+                    <?php
+                    echo $this->Form->end(__("Submit"), array('id' => 'submitCommissionAgentEditForm')); 
+                    ?>
+            </div>
+            <?php  ?>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class InvoiceTracksController extends AppController {
+
+    public $uses = array('Invoice', 'Location', 'InvoiceTrack', 'InvoiceExtra');
+
+    /**
+     * Helpers
+     *
+     * @var array
+     */
+    public $helpers = array('Js');
+
+    /**
+     * Components
+     *
+     * @var array
+     */
+    public $components = array('Paginator', 'RequestHandler');
+
+    function beforeFilter() {
+        parent::beforeFilter();
+    }
+
+    /**
+     * index method
+     *
+     * @return void
+     */
+    public function overall_payment() {
+        $this->Paginator->settings = array(
+            'limit' => 10,
+            'order' => array('InvoiceTrack.invoice_name' => 'ASC'),
+            'conditions' => array(
+                'InvoiceTrack.invoice_id' => 'Invoice.id'
+            ),
+        );
+
+        $this->set('overallPaymentDatas', $this->Paginator->paginate('InvoiceTrack'));
+        $this->set('breadcrumbLabel', 'Overall Payment');
+        $this->Session->write('link', 'overallPayment');
+    }
+
+    public function individual_payment() {
+        if ($this->request->is('POST') && isset($this->request->data['invoice_tracks']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['invoice_tracks']['locations_id']);
+        }
+        //pr($this->request->data);
+        $this->Paginator->settings = array(
+            'limit' => 10,
+            'order' => array('InvoiceTrack.invoice_name' => 'ASC'),
+            'conditions' => array(
+                'InvoiceExtra.location_id' => $this->Session->read('choosed_location_id')),
+        );
+
+        $this->set('individualPaymentDatas', $this->Paginator->paginate('InvoiceExtra'));
+        $this->set('breadcrumbLabel', 'Individual Payment');
+        $this->Session->write('link', 'individualPayment');
+    }
+}

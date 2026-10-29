@@ -1,0 +1,229 @@
+<?php
+/**
+ * This ctp displays the list of overall payments
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@gmail.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        // Get the number of columns in a table and assign it to colspan attribute
+        var numberOfColumns = document.getElementById('overallPaymentTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan',numberOfColumns);
+    });
+   
+</script>
+<script type="text/javascript">
+    // JQuery datepicker
+    $("#monthYear").datepicker("setDate", new Date());
+    $(function() {
+        $('#monthYear').datepicker( {
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '2007:'+(new Date).getFullYear(),         
+            showButtonPanel: true,
+            showOn: "button",
+            buttonImage: "../img/datepicker.png",
+            buttonImageOnly: true,
+            dateFormat: 'MM yy',
+            onClose: function(dateText, inst) { 
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).datepicker('setDate', new Date(year, month, 1));
+            }
+        });
+        
+    });
+</script>
+<style type="text/css">   
+    /* To hide the calendar */
+    .ui-datepicker-calendar {
+        display: none;
+    }
+    div.ui-datepicker{
+        line-height: 11px;
+        font-size:12px;
+        position:fixed
+    }
+</style>
+<?php
+echo $this->Html->css('menubar');
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Payment',
+        'link' => '/users'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo __('Users')                                       ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        //echo $this->Html->link(__('Add User'), '/users/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px')) 
+        ?>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php echo $this->Paginator->options(array('url' => $this->passedArgs)); ?>
+        <hr>
+        <div class="col-md-3">
+            <?php //echo $this->Form->input('month', array('label' => false,'type' => 'text', 'class' => 'date-picker', 'id' => 'monthYear')) ?>
+            <?php
+            echo $this->Form->create($this->request->params['controller'], array('action' => 'overall_payment', 'method' => 'POST'));
+            echo $this->Form->input('invoice_period', array(
+                'label' => false,
+                'type' => 'text',
+                'class' => 'date-picker',
+                'id' => 'monthYear',
+                'value' => date("F Y", strtotime("-1 month"))
+            ));
+            echo $this->Form->end('Go');
+            ?>
+        </div>
+
+        <table id="overallPaymentTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('location_id', array(
+                            'asc' => __('Location Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Location Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th ><?php
+                        echo $this->Paginator->sort('previous_due', array(
+                            'asc' => __('Prev Due') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Prev Due') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('payable_before_due_date', array(
+                            'asc' => __('Current') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Current') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('total_payable', array(
+                            'asc' => __('Total Payable') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Total Payable') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('service_tax', array(
+                            'asc' => __('Service Tax') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Service Tax') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('payed', array(
+                            'asc' => __('Paid') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Paid') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('previous_due', array(
+                            'asc' => __('Due') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Due') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('pay_date', array(
+                            'asc' => __('Pay Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Pay Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('mode', array(
+                            'asc' => __('Paid By') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Paid By') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th><?php
+                        echo $this->Paginator->sort('invoice_name', array(
+                            'asc' => __('Invoice#') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Invoice#') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (count($overallPaymentDatas) > 0) { ?>
+
+                    <?php foreach ($overallPaymentDatas as $overallPaymentData) { ?>
+                        <tr>
+                            <!-- inline edit javascript code written in the end -->
+                            <td>
+                                <?php
+                                $tempLocationsListArray = $this->Session->read('locations_list');
+                                echo $tempLocationsListArray[$overallPaymentData['Invoice']['location_id']];
+                                unset($tempLocationsListArray);
+                                ?>
+                            </td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['previous_due'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['payable_before_due_date'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['previous_due'] + $overallPaymentData['InvoiceTrack']['payable_before_due_date'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['service_tax'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['payed'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['previous_due'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['pay_date'] ?></td>
+                            <td><?php echo $overallPaymentData['InvoiceTrack']['mode'] ?></td>
+                            <td><?php echo $this->Html->link($overallPaymentData['Invoice']['invoice_name'], array('controller' => 'invoices', 'action' => 'printInvoice', $overallPaymentData['Invoice']['id']), array('class' => '')); ?></td>
+
+                        </tr>
+                <?php } ?>
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+<?php } ?>
+        </table>
+        <div class="paginator">
+<?php echo $this->Paginator->numbers(); ?>
+        </div> 
+        <br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+<?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>

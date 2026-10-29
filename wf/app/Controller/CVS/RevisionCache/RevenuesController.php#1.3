@@ -1,0 +1,140 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of RevenuesController
+ *
+ * @author dev3
+ */
+class RevenuesController extends AppController {
+
+    public $uses = array('Location', 'User', 'Group', 'ReportCoupon');
+    public $helpers = array('Js');
+    public $components = array('Paginator', 'RequestHandler');
+
+    function beforeFilter() {
+        parent::beforeFilter();
+        if ($this->request->is('ajax')) {
+            $this->layout = 'ajax';
+        }
+    }
+
+    public function index() {
+        $this->Paginator->settings = array(
+            'limit' => Configure::read('Application.rowLimit'),
+            'order' => array('Location.live_date' => 'DESC'),
+            'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.one_time !=' => '1')
+        );
+        
+        $totalRevenue = $this->ReportCoupon->find('all', array(
+            'fields' => array('ReportCoupon.total_price', 'ReportCoupon.client_share', 'ReportCoupon.wifonic_share', 'ReportCoupon.total_coupon', 'Location.monthly_fixed','Location.revenue_share', 'Location.location_name'),
+            'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.one_time !=' => '1')
+        ));
+        $totalPrice = 0;
+        $totalClientShare = 0;
+        $totalWifonicShare = 0;
+        $totalCoupon = 0;
+        if (count($totalRevenue) > 0) {
+            foreach ($totalRevenue as $value) {
+                //pr($value);
+                if($value['Location']['revenue_share']==1){
+                    $totalPrice = $totalPrice + $value['ReportCoupon']['total_price'];
+                    $totalClientShare = $totalClientShare + $value['ReportCoupon']['client_share'];
+                    $totalWifonicShare = $totalWifonicShare + $value['ReportCoupon']['wifonic_share'];
+                }else{
+                    $totalPrice = $totalPrice + $value['Location']['monthly_fixed'];
+                    $totalWifonicShare = $totalWifonicShare + $value['Location']['monthly_fixed'];
+                }
+                $totalCoupon = $totalCoupon + $value['ReportCoupon']['total_coupon'];
+                //pr($totalPrice);
+            }
+        }
+        $this->set('totalPrice', $totalPrice);
+        $this->set('totalClientShare', $totalClientShare);
+        $this->set('totalWifonicShare', $totalWifonicShare);
+        $this->set('totalCoupon', $totalCoupon);
+        
+        $this->set('revenues', $this->Paginator->paginate('ReportCoupon'));
+        $this->Session->write('link', 'revenues');
+    }
+
+    public function revenue() {
+
+        $this->Paginator->settings = array(
+            'limit' => Configure::read('Application.rowLimit'),
+            'order' => array('Location.live_date' => 'DESC'),
+            'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.revenue_share' => '1', 'Location.one_time !=' => '1')
+        );
+        $totalRevenue = $this->ReportCoupon->find('all', array(
+            'fields' => array('ReportCoupon.total_price', 'ReportCoupon.client_share', 'ReportCoupon.wifonic_share', 'ReportCoupon.total_coupon'),
+            'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.revenue_share' => '1', 'Location.one_time !=' => '1')
+        ));
+        $totalPrice = 0;
+        $totalClientShare = 0;
+        $totalWifonicShare = 0;
+        $totalCoupon = 0;
+        if (count($totalRevenue) > 0) {
+            foreach ($totalRevenue as $value) {
+                $totalPrice = $totalPrice + $value['ReportCoupon']['total_price'];
+                $totalClientShare = $totalClientShare + $value['ReportCoupon']['client_share'];
+                $totalWifonicShare = $totalWifonicShare + $value['ReportCoupon']['wifonic_share'];
+                $totalCoupon = $totalCoupon + $value['ReportCoupon']['total_coupon'];
+            }
+        }
+        $this->set('totalPrice', $totalPrice);
+        $this->set('totalClientShare', $totalClientShare);
+        $this->set('totalWifonicShare', $totalWifonicShare);
+        $this->set('totalCoupon', $totalCoupon);
+        $this->set('revenues', $this->Paginator->paginate('ReportCoupon'));
+        $this->Session->write('link', 'revenues');
+    }
+
+    public function monthly() {
+
+        $this->Paginator->settings = array(
+            'limit' => Configure::read('Application.rowLimit'),
+            'order' => array('Location.live_date' => 'DESC'),
+            'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.revenue_share !=' => '1', 'Location.one_time !=' => '1')
+        );
+        $this->set('revenues', $this->Paginator->paginate('ReportCoupon'));
+        
+        $this->set('totalMonthlyRevenue', $this->ReportCoupon->find('all', array(
+                    'fields' => array('sum(Location.monthly_fixed) AS wifonic_total_revenue'),
+                    'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.revenue_share !=' => '1', 'Location.one_time !=' => '1')
+        )));
+        
+        $this->set('totalMonthlyCoupon', $this->ReportCoupon->find('all', array(
+                    'fields' => array('SUM(ReportCoupon.total_coupon) AS wifonic_total_coupon'),
+                    'conditions' => array('ReportCoupon.month' => date('m'), 'ReportCoupon.year' => date('Y'), 'Location.revenue_share !=' => '1', 'Location.one_time !=' => '1')
+        )));
+        $this->Session->write('link', 'revenues');
+    }
+
+    public function oneTime() {
+
+        $this->Location->recursive =-1;
+        $this->Paginator->settings = array(
+            'limit' => Configure::read('Application.rowLimit'),
+            'fields' => array('Location.id', 'Location.location_name', 'Location.installation_city', 'Location.type', 'Location.live_date', 'Location.one_time_cost', 'Location.amc', ),
+            'order' => array('Location.live_date' => 'DESC'),
+            'conditions' => array('Location.revenue_share !=' => '1', 'Location.one_time' => '1'),
+        );
+        $this->set('revenues', $this->Paginator->paginate('Location'));
+        
+        $this->Location->recursive =-1;
+        $this->set('amcDetails', $this->Location->find('all', array(
+                    'fields' => array('sum(Location.one_time_cost) AS total_instalation_cost', 'sum(Location.amc) AS total_amc'),
+                    'conditions' => array('Location.revenue_share !=' => '1', 'Location.one_time' => '1'),
+        )));
+        
+        
+        $this->Session->write('link', 'revenues');
+    }
+
+    //put your code here
+}

@@ -1,0 +1,152 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+ ?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        
+        $('#LocationAddLocation2Form').bootstrapValidator();
+        
+    });
+   
+</script>
+<?php //echo $this->element('locations_list'); ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Location Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commercial Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Contact Details'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('Location', array('action' => 'addLocation2',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"
+        ));
+        ?>
+        <?php //echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+
+        <hr>
+        <div class="col-md-5">
+            <h2><h4><i><?php echo __('Contact Person 1') ?></i></h4></h2>
+            <hr>
+            <?php
+            echo $this->Form->input('contact_persons1', array(
+                'label' => __('Name*'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The contact person name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "The contact person name can only consist of alphabets and numbers"
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('contact_person_post1', array(
+                'label' => __('Post*'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The contact person post is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "The contact person post can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('contact_person_mob1', array(
+                'label' => __('Mobile*'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The contact person mobile number is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^([1-9]{1})([0-9]{9})$",
+                'data-bv-regexp-message' => "The contact person mobile can only consist of 10 digits"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('email', array(
+                'label' => __('Email*'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The contact person email is required and cannot be empty"
+            ));
+            ?>
+            <hr>
+            <h2><h4><i><?php echo __('Contact Person 2') ?></i></h4></h2>
+            <hr>
+            <?php
+            echo $this->Form->input('contact_persons2', array(
+                'label' => __('Name'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "false",
+                //'data-bv-notempty-message' => "The contact person name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "The contact person name can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('contact_person_post2', array(
+                'label' => __('Post'),
+                'autocomplete' => 'off',
+                //'data-bv-notempty' => "false",
+                //'data-bv-notempty-message' => "The contact person post is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "The contact person post can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('contact_person_mob2', array(
+                'label' => __('Mobile'),
+                'autocomplete' => 'off',
+                //'data-bv-notempty' => "false",
+                //'data-bv-notempty-message' => "The contact person mobile number is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^([1-9]{1})([0-9]{9})$",
+                'data-bv-regexp-message' => "The contact person mobile can only consist of 10 digits"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('email2', array(
+                'label' => __('Email'),
+                'autocomplete' => 'off',
+                    //'data-bv-notempty' => "false",
+                    //'data-bv-notempty-message' => "The contact person email is required and cannot be empty"
+            ));
+            ?>
+            <div class="row">
+                    <div class="col-xs-8"><?php echo $this->Form->end(__("Save and Continue")); ?></div>
+                    <div class="col-xs-2"><?php echo $this->Html->link('Back', array('controller' => 'locations', 'action' => 'addLocation1'), array('class' => 'btn btn-default')); ?></div>
+                    <div class="col-xs-2"><?php echo $this->Html->link('Skip', array('controller' => 'locations', 'action' => 'addLocation3'), array('class' => 'btn btn-default')); ?></div>
+            </div>
+        </div>
+    </div>
+</div>

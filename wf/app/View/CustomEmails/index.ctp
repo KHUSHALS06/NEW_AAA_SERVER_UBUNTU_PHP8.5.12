@@ -1,0 +1,146 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+    $("#add_user_location_id[multiple] option").attr('selected', 'selected');
+    $('#UserGroupId').change(function() {
+        if (($("#add_user_location_id").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer') || ($('#UserGroupId option:selected').text() == 'wf accounts'))) {
+            $("#add_user_location_id option").attr('selected', 'selected');
+        } else if (($("#add_user_location_id").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+            $("#locationsList").attr('style', 'display:none');
+        } else {
+            $("#locationsList").attr('style', 'display:block');
+            $("#add_user_location_id option").removeAttr('selected', 'selected');
+        }
+
+    });
+    $("#add_user_location_id[multiple] option").attr('selected', 'selected');
+    $('#UserGroupId').change(function() {
+        if (($("#add_user_location_id").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer') || ($('#UserGroupId option:selected').text() == 'wf accounts'))) {
+            $("#add_user_location_id option").attr('selected', 'selected');
+        } else if (($("#add_user_location_id").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+            $("#locationsList").attr('style', 'display:none');
+        } else {
+            $("#locationsList").attr('style', 'display:block');
+            $("#add_user_location_id option").removeAttr('selected', 'selected');
+        }
+
+    });
+    $('#submitUser').click(function() {
+        if (($("#add_user_location_id").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'admin') || ($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer') || ($('#UserGroupId option:selected').text() == 'wf accounts'))) {
+            $("#add_user_location_id option").attr('selected', 'selected');
+        } else if (($("#add_user_location_id").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+            $("#locationsList").attr('style', 'display:none');
+        } else {
+            $("#locationsList").attr('style', 'display:block');
+            $("#add_user_location_id option").removeAttr('selected', 'selected');
+        }
+
+    });
+    //$('#UserAddForm').bootstrapValidator();
+    $('#UserAddForm').bootstrapValidator({
+        feedbackIcons: {
+            valid: 'glyphicon glyphicon-ok',
+            invalid: 'glyphicon glyphicon-remove',
+            validating: 'glyphicon glyphicon-refresh'
+        },
+        fields: {
+            'data[Location][Location][]': {
+                validators: {
+                    choice: {
+                        min: 1,
+                        //max: 4,
+                        message: 'Please choose one or more locations'
+                    }
+                }
+            }
+        }
+
+    });
+</script>
+
+<!--<script type="text/javascript" src="<your installation path>/tinymce/tinymce.min.js"></script>-->
+<script type="text/javascript">
+tinymce.init({
+    selector: "textarea",
+    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent"
+});
+</script>
+
+<?php //echo $this->element('locations_list')    ?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Compose Email',
+        'link' => '/custom_emails'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+//pr($emailAddress);
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+<?php
+echo $this->Form->create('CustomEmail', array(
+    'action' => 'index',
+    'method' => 'post',
+    'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+    'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+    'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+?>
+
+        <hr>
+        <div class="col-md-5">
+
+<?php
+$toEmailAddress['all'] = 'all';
+$toEmailAddress[] = $emailAddress;
+echo $this->Form->input('to', array(
+    'label' => __('To'),
+    'multiple' => 'multiple',
+    'type' => 'select',
+    'options' => $toEmailAddress,
+    'selected' => ($to!='') ? $to : 'all'
+));
+echo $this->Form->input('toAll', array(
+    'type' => 'hidden',
+    'value' => implode(", ", $emailAddress)
+));
+
+echo $this->Form->input('subject', array(
+    'label' => __('Subject'),
+    'autocomplete' => 'off',
+    'data-bv-regexp' => "true",
+    'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+    'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+));
+echo $this->Form->input('message', array(
+    'label' => __('Message'),
+    'type' => 'textArea',
+    'autocomplete' => 'off',
+    'data-bv-regexp' => "true",
+    'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+    'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+));
+echo '<br/>';
+
+?>
+            <?php echo $this->Form->end(__("Send", array('id' => 'sendEmail'))); ?>
+        </div>
+
+    </div>
+</div>
+

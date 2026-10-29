@@ -1,0 +1,334 @@
+<?php
+
+/** ChequesController class
+ * 
+ * This class consists of methods for payment management
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class ChequesController extends AppController {
+
+    public $uses = array('Invoice', 'Cheque', 'InvoiceTrack', 'InvoiceExtra');
+    public $helpers = array('Js'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+
+    /**
+     * This is the default method for the Cheques controller.
+     * If a particular location is set then it fetches the cheques(instruments) associated to that particular location.
+     * 
+     * @return void
+     */
+    public function index() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        
+        if ($this->request->is('POST') && isset($this->request->data['cheques']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cheques']['locations_id']);
+        }
+        $condition = array();
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+            $condition[] = array('Cheque.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('Cheque.location_id' => '');
+        }
+        if (count($this->passedArgs) == 0) {
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+
+            if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search'] != '' && $this->request->data[$this->request->data['search']] != '') {
+                if ($this->request->data['search'] == 'group_id') {
+                    $condition[] = array('Cheque.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                } else {
+                    $condition[] = array('Cheque.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                }
+            }
+
+            $this->Session->write('search_conditions', $condition);
+        }
+
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+            //unset($conditions);
+            $condition = $this->Session->read('search_conditions');
+        }
+        if ($this->Session->read('choosed_location_id') == '') {//No location is set 
+            $this->Paginator->settings = array(
+                'conditions' => $condition,
+                'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                'order' => array('Cheque.id' => 'DESC'),
+            );
+        } else {//Location is set
+            $this->Paginator->settings = array(
+                'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+                'order' => array('Cheque.id' => 'DESC'),
+                'conditions' => $condition,
+            );
+        }
+
+        $this->set('latestTwoInvoices', $this->Invoice->find('list', array(
+                    'fields' => array('Invoice.id', 'Invoice.id'),
+                    'conditions' => array('Invoice.location_id' => $this->Session->read('choosed_location_id')),
+                    'limit' => 2,
+                    'order' => array('Invoice.id' => 'DESC')
+                )));
+
+
+        $this->set('chequeDetails', $this->paginate('Cheque'));
+        $this->Session->write('link', 'paymentDetails');
+        $this->set('breadcrumbLabel', 'Payment Details');
+    }
+
+    /**
+     * Add the cheques details
+     * 
+     * @return void
+     */
+    public function add() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        
+        $instrument = $this->enumToSelectField('Cheque', 'cheques', 'instrument');
+        $this->set('instrument', $instrument);
+        if ($this->request->is('post') && isset($this->request->data['cheques']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cheques']['locations_id']);
+        }
+        if (count($this->request->data) == 0 && $this->Session->read('choosed_location_id') == '') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+        }
+        if ($this->request->is('post') && isset($this->request->data['cheques']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cheques']['locations_id']);
+            if ($this->request->data['cheques']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            }
+        } else {
+            if ($this->request->is('post') && count($this->request->data) > 0 && count($this->request->data['Cheque']) > 1) {
+                if ($this->Session->read('choosed_location_id') != '') {
+                    $this->request->data['Cheque']['location_id'] = $this->Session->read('choosed_location_id');
+
+                    /* Check if cheque is uploaded */
+                    if ($this->request->data['Cheque']['scan_file']['name'] == '') {
+                        unset($this->request->data['Cheque']['scan_name']);
+                    } else {
+                        $this->request->data['Cheque']['scan_name'] = $this->request->data['Cheque']['scan_file']['name'];
+                    }
+                    if ($this->request->data['Cheque']['scan_file']['type'] == '') {
+                        unset($this->request->data['Cheque']['scan_type']);
+                    } else {
+                        $this->request->data['Cheque']['scan_type'] = $this->request->data['Cheque']['scan_file']['type'];
+                    }
+                    if ($this->request->data['Cheque']['scan_file']['size'] == '') {
+                        unset($this->request->data['Cheque']['scan_size']);
+                    } else {
+                        $this->request->data['Cheque']['scan_size'] = $this->request->data['Cheque']['scan_file']['size'];
+                    }
+                    if ($this->request->data['Cheque']['scan_file']['tmp_name'] == '') {
+                        unset($this->request->data['Cheque']['scan']);
+                    } else {
+                        $this->request->data['Cheque']['scan'] = file_get_contents($this->request->data['Cheque']['scan_file']['tmp_name']);
+                    }
+
+                    $invoiceDetails = $this->Invoice->find('first', array(
+                        'fields' => array('Invoice.id', 'Invoice.invoice_name', 'InvoiceTrack.invoice_id', 'InvoiceTrack.instrument_number', 'InvoiceTrack.payed'),
+                        'conditions' => array(
+                            'Invoice.month' => date("n", strtotime("-1 month")),
+                            'Invoice.year' => date("Y", strtotime("-1 month")),
+                            'Invoice.location_id' => $this->request->data['Cheque']['location_id'],
+                        )
+                            ));
+
+                    if (count($invoiceDetails) > 0) {
+                        $this->request->data['Cheque']['invoice_id'] = $invoiceDetails['Invoice']['id'];
+                        if ($this->Cheque->save($this->request->data)) {
+                            $this->log("Payment details added against invoice ID: " . $this->request->data['Cheque']['invoice_id'], 'info');
+
+                            if ($invoiceDetails['InvoiceTrack']['instrument_number'] == '') {
+                                $invoiceDetails['InvoiceTrack']['instrument_number'] = ($this->request->data['Cheque']['instrument_number'] . "#" . $this->request->data['Cheque']['description']);
+                            } else {
+                                $invoiceDetails['InvoiceTrack']['instrument_number'] = $invoiceDetails['InvoiceTrack']['instrument_number'] . "," . ($this->request->data['Cheque']['instrument_number'] . "#" . $this->request->data['Cheque']['description']);
+                            }
+
+                            if ($invoiceDetails['InvoiceTrack']['payed'] == 0) {
+                                $invoiceDetails['InvoiceTrack']['payed'] = $invoiceDetails['InvoiceTrack']['payed'] + $this->request->data['Cheque']['amount'];
+                            } else {
+                                $invoiceDetails['InvoiceTrack']['payed'] = $invoiceDetails['InvoiceTrack']['payed'] + $this->request->data['Cheque']['amount'];
+                            }
+                            $tmpInstrumentNumber = $invoiceDetails['InvoiceTrack']['instrument_number'];
+                            $this->InvoiceTrack->updateAll(array(
+                                //'InvoiceTrack.instrument_number' => '\'' . $invoiceDetails['InvoiceTrack']['instrument_number'] . '\'',
+                                'InvoiceTrack.instrument_number' => "'$tmpInstrumentNumber'",
+                                'InvoiceTrack.payed' => $invoiceDetails['InvoiceTrack']['payed']
+                                    ), array(
+                                'InvoiceTrack.invoice_id' => $invoiceDetails['Invoice']['id']
+                            ));
+
+                            $this->Session->setFlash(__('Payment details added successfully'), 'flash_success');
+                            $this->redirect(array('action' => 'index'));
+                        }
+                    } else {
+                        $this->Session->setFlash(__('No invoice generated.'), 'flash_fail');
+                    }
+                } else {
+                    $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+                }
+            } else {
+                if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') == '') {
+                    $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+                    //$this->redirect(array('action' => 'index'));
+                }
+            }
+        }
+
+        $this->set('breadcrumbLabel', 'Add Payment Details');
+        $this->Session->write('link', 'addPaymentDetails');
+    }
+
+    /**
+     * Display the cheque(instrument)
+     * 
+     * @param integer $id Cheque ID
+     * @return void
+     */
+    public function displayInstrument($id) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        
+        $instrument = $this->Cheque->findById($id);
+        $file = $instrument['Cheque']['scan'];
+        $size = $instrument['Cheque']['scan_size'];
+        $type = $instrument['Cheque']['scan_type'];
+        $name = $instrument['Cheque']['scan_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+    }
+
+    /**
+     * Display the invoice
+     * 
+     * @param integer $id Invoice ID
+     * @return void
+     */
+    public function displayInvoice($id) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        
+        $invoice = $this->Invoice->findById($id);
+        $file = $invoice['Invoice']['invoice'];
+        $size = $invoice['Invoice']['size'];
+        $type = $invoice['Invoice']['type'];
+        $name = $invoice['Invoice']['invoice_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+    }
+
+    /**
+     * Handle cheque bounce
+     * 
+     * @return void
+     */
+    public function chequeBounce() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        
+        $title = 'Cheque Bounce';
+        $invoiceDate = $this->Invoice->find('first', array(
+            'fields' => array('Invoice.location_id', 'Invoice.month', 'Invoice.year'),
+            'conditions' => array('Invoice.id' => $this->request->data['Cheque']['invoice_id']),
+                ));
+
+        $chequeBounceDetails = array();
+        $chequeBounceDetails['InvoiceExtra']['location_id'] = $invoiceDate['Invoice']['location_id'];
+        $chequeBounceDetails['InvoiceExtra']['month'] = $invoiceDate['Invoice']['month'];
+        $chequeBounceDetails['InvoiceExtra']['year'] = $invoiceDate['Invoice']['year'];
+        $chequeBounceDetails['InvoiceExtra']['title'] = "Cheque Bounce";
+        $chequeBounceDetails['InvoiceExtra']['description'] = $this->request->data['Cheque']['description'];
+        $chequeBounceDetails['InvoiceExtra']['adjustment'] = "+";
+        $lastDateOfPreviousMonth = date("Y-m-t", strtotime($invoiceDate['Invoice']['year'] . "-" . $invoiceDate['Invoice']['month']));
+        $InvoiceTrackDetails = $this->InvoiceTrack->find('first', array(
+            'fields' => array('InvoiceTrack.invoice_id', 'InvoiceTrack.previous_due', 'InvoiceTrack.payed'),
+            'conditions' => array('InvoiceTrack.invoice_id' => $this->request->data['Cheque']['invoice_id']),
+                ));
+
+        if ($this->request->data['Cheque']['receive_date'] > $lastDateOfPreviousMonth) {
+            $InvoiceTrackDetails['InvoiceTrack']['previous_due'] = $InvoiceTrackDetails['InvoiceTrack']['previous_due'];
+            $InvoiceTrackDetails['InvoiceTrack']['payed'] = "0";
+        } else {
+            $InvoiceTrackDetails['InvoiceTrack']['previous_due'] = ($InvoiceTrackDetails['InvoiceTrack']['previous_due'] + $this->request->data['Cheque']['amount']);
+            $InvoiceTrackDetails['InvoiceTrack']['payed'] = ($InvoiceTrackDetails['InvoiceTrack']['payed'] - $this->request->data['Cheque']['amount']);
+        }
+
+        $conditions = array(
+            'InvoiceExtra.location_id' => $invoiceDate['Invoice']['location_id'],
+            'InvoiceExtra.month' => $invoiceDate['Invoice']['month'],
+            'InvoiceExtra.year' => $invoiceDate['Invoice']['year'],
+            'InvoiceExtra.title' => $title,
+        );
+        $InvoiceExtraDetails = $this->InvoiceExtra->find('first', array(
+            'fields' => array('InvoiceExtra.amount'),
+            'conditions' => $conditions
+                ));
+        try {
+            if (count($InvoiceExtraDetails) > 0) {
+                $chequeBounceDetails['InvoiceExtra']['amount'] = $InvoiceExtraDetails['InvoiceExtra']['amount'] + $this->request->data['Cheque']['cheque_bounce_amount'];
+                $this->InvoiceExtra->updateAll(array(
+                    'InvoiceExtra.amount' => $chequeBounceDetails['InvoiceExtra']['amount']
+                        ), array(
+                    'InvoiceExtra.location_id' => $chequeBounceDetails['InvoiceExtra']['location_id'],
+                    'InvoiceExtra.month' => $chequeBounceDetails['InvoiceExtra']['month'],
+                    'InvoiceExtra.year' => $chequeBounceDetails['InvoiceExtra']['year'],
+                    'InvoiceExtra.title' => $title,
+                ));
+                $this->InvoiceTrack->updateAll(array(
+                    'InvoiceTrack.previous_due' => $InvoiceTrackDetails['InvoiceTrack']['previous_due'],
+                    'InvoiceTrack.payed' => $InvoiceTrackDetails['InvoiceTrack']['payed']
+                        ), array(
+                    'InvoiceTrack.invoice_id' => $InvoiceTrackDetails['InvoiceTrack']['invoice_id']
+                ));
+                $this->Cheque->updateAll(array(
+                    'Cheque.status' => "'0'"
+                        ), array(
+                    'Cheque.id' => $this->request->data['Cheque']['id']
+                ));
+                $this->log("Cheque bounce details added against invoice ID: " . $this->request->data['Cheque']['invoice_id'] . ", for location ID: " . $invoiceDate['Invoice']['location_id'] . ", for month: " . $invoiceDate['Invoice']['month'] . " and year: " . $invoiceDate['Invoice']['year'], 'info');
+                $this->Session->setFlash(__('Cheque bounce details added successfully'), 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            } else {
+                $chequeBounceDetails['InvoiceExtra']['amount'] = $this->request->data['Cheque']['amount'];
+                if ($this->InvoiceExtra->save($chequeBounceDetails)) {
+                    $this->InvoiceTrack->updateAll(array(
+                        'InvoiceTrack.previous_due' => $InvoiceTrackDetails['InvoiceTrack']['previous_due'],
+                        'InvoiceTrack.payed' => $InvoiceTrackDetails['InvoiceTrack']['payed']
+                            ), array(
+                        'InvoiceTrack.invoice_id' => $InvoiceTrackDetails['Invoice']['id']
+                    ));
+                    $this->Cheque->updateAll(array(
+                        'Cheque.status' => "'0'"
+                            ), array(
+                        'Cheque.id' => $this->request->data['Cheque']['id']
+                    ));
+                    $this->Session->setFlash(__('Cheque bounce details added successfully'), 'flash_success');
+                    $this->redirect(array('action' => 'index'));
+                }
+            }
+        } catch (CakeException $e) {
+            throw new CakeException($e);
+        }
+    }
+
+}

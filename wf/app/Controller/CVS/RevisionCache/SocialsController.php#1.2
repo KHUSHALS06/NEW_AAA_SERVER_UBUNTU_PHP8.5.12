@@ -1,0 +1,104 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of Socialcontroller
+ *
+ * @author dev3
+ */
+class SocialsController extends AppController {
+
+    public $uses = array('Location', 'RegisteredUser');
+    public $helpers = array('Js'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+        if ($this->request->is('ajax')) {
+            $this->layout = 'ajax';
+        }
+    }
+
+    public function facebookIndex() {
+        $this->Session->write('link', 'facebook_index');
+        if ($this->request->is('post') && isset($this->request->data['socials']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['socials']['locations_id']);
+        }
+        $condition = array('type' => 'facebok', 'location_id' => $this->Session->read('choosed_location_id'));
+        $this->Paginator->settings = array(
+            //'fields' => array('id', 'location_id', 'first_name', 'last_name', 'dob', 'email', 'phone'),
+            //'conditions' => $condition, //For facing the users undr the loged in user.
+            'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+        );
+        $this->RegisteredUser->recursive = -1;
+        $this->set('registeredUsers', $this->paginate('RegisteredUser'));
+    }
+
+    public function view_user() {
+        $this->set('calling_action', '');
+        if ($this->request->is('post')) {
+
+            if (!$this->RegisteredUser->exists($this->request->data['Social']['id'])) {
+                throw new NotFoundException(__('Invalid billing plan'));
+            }
+            $options = array('conditions' => array('RegisteredUser.' . $this->RegisteredUser->primaryKey => $this->request->data['Social']['id']));
+            $this->set('registeredUser', $this->RegisteredUser->find('first', $options));
+            if (isset($this->request->data['Social']['calling_action'])) {
+                $this->set('calling_action', $this->request->data['Social']['calling_action']);
+            }
+        } else {
+            $this->redirect(array('action' => 'registeredUser'));
+        }
+    }
+
+    public function facebookReporting() {
+
+        $this->RegisteredUser->recursive = -1;
+        $male = $this->RegisteredUser->find('count', array(
+            'conditions' => array('gender' => 'male')
+        ));
+        $female = $this->RegisteredUser->find('count', array(
+            'conditions' => array('gender' => 'female')
+        ));
+        $this->set('chatTitle', 'Gender distribution');
+        $this->set('data', '[["male",' . $male . '],["female",' . $female . ']]');
+
+        $data = $this->RegisteredUser->find('all', array(
+            'fields' => array('name', 'gender', 'date_of_birth'),
+            'conditions' => array('type' => 'facebook')
+        ));
+        //pr($data);
+        $male = 0;
+        $female = 0;
+        $ageB18 = 0;
+        $ageB60 = 0;
+        $ageA60 = 0;
+        //pr('hello');
+        foreach ($data as $value) {
+            if ($value['RegisteredUser']['gender'] == 'male') {
+                $male++;
+            } else {
+                $female++;
+            }
+            $date1 = date_create(date('Y-m-d'));
+            $date2 = date_create($value['RegisteredUser']['date_of_birth']);
+            
+            $age = date_diff($date1, $date2);
+            if($age->y<18 || ($age->y==18 && $age->m == 0 && $age->d == 0) ){
+                $ageB18++;
+            }else if($age->y<60 || ($age->y==60 && $age->m == 0 && $age->d == 0) ) {
+                $ageB60++;
+            }  else {
+                $ageA60++;
+            }
+        }
+        $this->set('data_gender', '[["male",' . $male . '],["female",' . $female . ']]');
+        $this->set('data_age', '[["below 18",' . $ageB18 . '],["18-60",' . $ageB60 . '],["Above 60",' . $ageA60 . ']]');
+    }
+
+}

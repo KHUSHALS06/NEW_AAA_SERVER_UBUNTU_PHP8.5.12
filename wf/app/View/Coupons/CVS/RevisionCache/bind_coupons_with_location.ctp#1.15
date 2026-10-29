@@ -1,0 +1,272 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+
+        // Validate the form with Bootstrap validator
+        $('#CouponBindCouponsWithLocationForm').bootstrapValidator();
+
+        /*$('#CouponBindCouponsWithLocationForm').bootstrapValidator({
+         feedbackIcons: {
+         valid: 'glyphicon glyphicon-ok',
+         invalid: 'glyphicon glyphicon-remove',
+         validating: 'glyphicon glyphicon-refresh'
+         }
+         });
+         
+         /*$('.clickToAddMore').live('click', function() {
+         //alert()
+         
+         $('<p><input type="text" id="p_new" size="40" name="p_new" value="" placeholder="I am New" /><a href="#" id="remNew">Remove</a> </p>').appendTo(addDiv);
+         
+         
+         return false;
+         });*/
+
+
+        /*$(".clickToAddMore").click(function (e) {
+         //Append a new row of code to the "#items" div
+         $(".addNewRow").append('<div><input type="text" name="input[]"><button  class="delete">Delete</button></div>');
+         });*/
+
+    });
+
+</script>
+<script type="text/javascript">
+    $(function() {
+        var addDiv = $('#addNewRow');
+        var i = $('#addNewRow #couponRange').size();
+        optionString = $('#optionList').text().split('###');
+        var optionStringValue = [];
+        //alert(optionString.length);
+        //alert(i)
+        for (k = 0; k < optionString.length; k = k + 1) {
+            optionStringValue[k] = optionString[k].split('~~~');
+            //optionStringValue[k] = optionString[k].split('~~~')[1];
+            //alert(optionStringValue[k]); 
+        }
+        $('.clickToAddMore').live('click', function() { //alert();
+            //var optionString = $('#optionList').text();
+            stringToPrint = '<div class="row col-lg-12 col-md-12"><div class="col-lg-3 col-md-3"><div class="form-group"><label for="CouponBillingPlanId">Billing Plan</label><select name="data[Coupon][billing_plan_id_' + i + ']" class="form-control" placeholder="Billing Plan" id="CouponBillingPlanId' + i + '">';
+            for (j = 0; j < optionString.length; j = j + 1) {
+                stringToPrint = stringToPrint + '<option value=' + optionString[j].split('~~~')[0] + '>' + optionString[j].split('~~~')[1] + '(Rs.' + optionString[j].split('~~~')[2] + '/-)</option>';
+            }
+            stringToPrint = stringToPrint + '</select></div></div><div class="col-lg-3 col-md-3"><div class="form-group"><label for="CouponSerialFrom">From</label><input name="data[Coupon][serialFrom_' + i + ']" class="form-control serialFrom" placeholder="From" type="text" id="CouponSerialFrom_' + i + '"/></div><span id="error" style="display:none;"><i class="fa fa-times"></i>FROM should be less than TO</span><i id="serialFromErrorIcon_' + i + '" data-bv-icon-for="data[Coupon][serialFrom_' + i + ']" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i><small id ="serialFromError_' + i + '" data-bv-result="VALID" data-bv-for="data[User][email]" data-bv-validator="notEmpty" class="help-block" style="display: none">FROM should be less than TO</small></div><div class="col-lg-3 col-md-3"><div class="form-group"><label for="CouponSerialTo">To</label><input name="data[Coupon][serialTo_' + i + ']" class="form-control serialTo" autocomplete="off" data-bv-regexp-message="Name can only consist of alphabets" placeholder="To" type="text" id="CouponSerialTo_' + i + '"/></div></div></div>';
+            //$('<div class="row col-lg-12 col-md-12"><div class="col-lg-3 col-md-3"><div class="form-group"><label for="CouponBillingPlanId">Billing Plan</label><select name="data[Coupon][billing_plan_id_'+i+']" class="form-control" placeholder="Billing Plan" id="CouponBillingPlanId'+i+'">'+optionString+'</select></div></div><div class="col-lg-3 col-md-3"><div class="form-group"><label for="CouponSerialFrom">From</label><input name="data[Coupon][serialFrom_'+i+']" class="form-control" autocomplete="off" data-bv-regexp-message="Username can only consist of alphabets and numbers, with no blank space" placeholder="From" type="text" id="CouponSerialFrom'+i+'"/></div></div><div class="col-lg-3 col-md-3"><div class="form-group"><label for="CouponSerialTo">To</label><input name="data[Coupon][serialTo_'+i+']" class="form-control" autocomplete="off" data-bv-regexp-message="Name can only consist of alphabets" placeholder="To" type="text" id="CouponSerialTo'+i+'"/></div></div><div class="col-lg-3 col-md-3 "><br><br><a href="#" class="clickToAddMore">Click to add more</a></div></div>').appendTo(addDiv);
+            $('' + stringToPrint).appendTo(addDiv);
+            // <input type="text" id="p_new" size="40" name="p_new_' + i +'" value="" placeholder="I am New" /><a href="#" id="remNew">Remove</a> </p>').appendTo(addDiv);
+            i++;
+            return false;
+        });
+
+        $('.serialTo').live('blur', function(e) {
+            var toid = e.target.id;
+            var substring = toid.split('_')[1];
+
+            if ($('#CouponSerialFrom_' + substring).val() > $('#CouponSerialTo_' + substring).val()) {
+                //alert('error');
+                $('#CouponSerialFrom_' + substring).attr('style', 'border-color: #953B39');
+                $("#serialFromErrorIcon_" + substring).attr('style', 'display:inline');
+                $("#serialFromError_" + substring).attr('style', 'display:inline;color:#B94A48');
+                $('#submitCoupon').attr('disabled', 'disabled');
+                return false;
+            } else {
+                $('#CouponSerialFrom_' + substring).attr('style', '');
+                $("#serialFromErrorIcon_" + substring).attr('style', 'display:none');
+                $("#serialFromError_" + substring).attr('style', 'display:none');
+                $('#submitCoupon').removeAttr('disabled');
+            }
+        });
+
+        $('.serialFrom').live('blur', function(e) {
+            var fromid = e.target.id;
+            var substring = fromid.split('_')[1];
+            //alert(fromid)
+            if ($('#CouponSerialTo_' + substring).val() != "") {
+                if ($('#CouponSerialFrom_' + substring).val() > $('#CouponSerialTo_' + substring).val()) {
+                    //alert('error');
+                    $('#CouponSerialFrom_' + substring).attr('style', 'border-color: #953B39');
+                    $("#serialFromErrorIcon_" + substring).attr('style', 'display:inline');
+                    $("#serialFromError_" + substring).attr('style', 'display:inline;color:#B94A48');
+                    $('#submitCoupon').attr('disabled', 'disabled');
+                    return false;
+                } else {
+                    $('#CouponSerialFrom_' + substring).attr('style', '');
+                    $("#serialFromErrorIcon_" + substring).attr('style', 'display:none');
+                    $("#serialFromError_" + substring).attr('style', 'display:none');
+                    $('#submitCoupon').removeAttr('disabled');
+                }
+            }
+        });
+
+
+
+
+    });
+
+</script>
+<?php //pr($this->Session->read('billingPlans')[0]['BillingPlan']['id']);  ?>
+<?php
+echo $this->element('locations_list');
+//pr($noCoupon);
+//pr($cp);
+//pr($counter);
+?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Coupons',
+        'link' => '/coupons'
+    ),
+    array(
+        'label' => 'Free Coupons List',
+        'link' => '/coupons/freeCouponsList'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+//echo $this->Session->read('challan_pdf').'.pdf';
+echo $this->Session->flash();
+
+//pr($this->Session->read('pdfData'));
+//pr($testResult);
+//pr($x);
+//pr($username);
+?>
+<div id="optionList" style="display: none;">
+    <?php
+    $str = '';
+    $tempBillingPlanArray = $this->Session->read('billingPlans');
+    for ($j = 0; $j < count($tempBillingPlanArray); $j++) {
+        if ($j == 0) {
+            $str = $tempBillingPlanArray[$j]['BillingPlan']['id'] . '~~~' . $tempBillingPlanArray[$j]['BillingPlan']['name_bp'] . '~~~' . $tempBillingPlanArray[$j]['BillingPlan']['price_bp'];
+        } else {
+            $str = $str . '###' . $tempBillingPlanArray[$j]['BillingPlan']['id'] . '~~~' . $tempBillingPlanArray[$j]['BillingPlan']['name_bp'] . '~~~' . $tempBillingPlanArray[$j]['BillingPlan']['price_bp'];
+        }
+    }
+    unset($tempBillingPlanArray);
+    echo $str;
+    ?>
+</div>
+
+<div class="row">
+    <div class="col-lg-12 col-md-12">
+        <?php
+        $tempLocationsListArray = $this->Session->read('locations_list');
+        if ($this->Session->read('choosed_location_id') != '' && $tempLocationsListArray[$this->Session->read('choosed_location_id')] == 'scratchcards') {
+            ?>
+            <?php
+            echo $this->Form->create('Coupon', array('method' => 'post', 'action' => 'bindCouponsWithLocation', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+            ?>
+            <hr>
+            <div class="row col-lg-12 col-md-12">
+                <div class="col-lg-3 col-md-3">
+                    <?php
+                    echo $this->Form->input('location_id', array(
+                        //'type' => 'select',
+                        'options' => $this->Session->read('locations_list')
+                    ));
+                    ?>
+                </div>
+            </div>
+            <div class="row col-lg-12 col-md-12">
+
+                <?php
+                //pr($printRequestData);
+                if (count($noOfBillingPlans) > 0) {
+                    $billingPlansSelectOptions = array();
+                    foreach ($billingPlans as $value) {
+                        $billingPlansSelectOptions[$value['BillingPlan']['id']] = $value['BillingPlan']['name_bp'] . ' (Rs.' . $value['BillingPlan']['price_bp'] . '/-)';
+                    }
+                    //for ($i = 0; $i < $noOfBillingPlans; $i++) {
+                    //pr($billingPlansSelectOptions)
+                    ?>
+                    <div id="addNewRow">
+                        <div class="row col-lg-12 col-md-12" id="couponRange">
+                            <div class="col-lg-3 col-md-3">
+                                <?php
+                                echo $this->Form->input('billing_plan_id_0', array(
+                                    'type' => 'select',
+                                    'label' => __('Billing Plan'),
+                                    'options' => $billingPlansSelectOptions,
+                                    'data-bv-regexp-message' => "Compulsory",
+                                ));
+                                ?>
+                            </div>
+                            <div class="col-lg-3 col-md-3">
+                                <?php
+                                echo $this->Form->input('serialFrom_0', array(
+                                    'label' => __('From'),
+                                    'class' => 'serialFrom',
+                                    'id' => 'CouponSerialFrom_0',
+                                    'autocomplete' => 'off',
+                                    'data-bv-regexp-message' => "Username can only consist of alphabets and numbers, with no blank space",
+                                ));
+                                ?>
+                                <span id="error_" style="display:none;"><i class="fa fa-times"></i>FROM should be less than TO</span>
+                                <i id="serialFromErrorIcon_0" data-bv-icon-for="data[Location][Location][]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+                                <br>
+                                <small id ="serialFromError_0" data-bv-result="VALID" data-bv-for="data[User][email]" data-bv-validator="notEmpty" class="help-block" style="display: none">FROM should be less than TO</small>
+                            </div>
+                            <div class="col-lg-3 col-md-3">
+                                <?php
+                                echo $this->Form->input('serialTo_0', array(
+                                    'label' => __('To'),
+                                    'class' => 'serialTo',
+                                    'id' => 'CouponSerialTo_0',
+                                    'autocomplete' => 'off',
+                                    'data-bv-regexp-message' => "Name can only consist of alphabets",
+                                ));
+                                ?>
+                                <span id="error" style="display:none;"><i class="fa fa-times"></i>TO should be less than FROM</span>
+                                <i id="serialToErrorIcon" data-bv-icon-for="data[Location][Location][]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+                                <br>
+                                <small id ="serialToError" data-bv-result="VALID" data-bv-for="data[User][email]" data-bv-validator="notEmpty" class="help-block" style="display: none">TO should be greater than FROM</small>
+                            </div>
+                            <div class="col-lg-3 col-md-3 ">
+                                <br><br>
+                                <?php
+                                echo $this->Html->link(__('Click to add more'), '#', array('class' => 'clickToAddMore'));
+
+                                //echo $this->Html->link($this->Html->image('plus.png', array('width' => '30', 'height' => '30')), '#', array('div' => false,'escape' => false));
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php //}
+                    ?>
+                    <?php
+                    unset($billingPlansSelectOptions);
+                }
+                ?>
+                <div class="row col-md-9 wf-div-right-pad12">
+                    <!--<div class="col-md-5">-->
+                            <br>
+                            <?php
+                            echo $this->Form->end(__("Submit"), array('id' => 'submitCoupon'));
+                            ?>
+                    <!--</div>-->
+                </div>
+            </div>
+            <?php
+            unset($tempLocationsListArray);
+        }
+        ?>
+    </div>
+
+</div>
+

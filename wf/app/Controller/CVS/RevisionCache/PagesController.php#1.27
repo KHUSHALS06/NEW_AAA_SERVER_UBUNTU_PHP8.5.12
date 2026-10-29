@@ -1,0 +1,270 @@
+<?php
+
+/** PagesController class
+ * 
+ * This class consists of methods to display details on dashboard
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+/**
+ * Static content controller
+ *
+ * Override this controller by placing a copy in controllers directory of an application
+ *
+ * @package       app.Controller
+ * @link http://book.cakephp.org/2.0/en/controllers/pages-controller.html
+ */
+class PagesController extends AppController {
+
+    /**
+     * Controller name
+     *
+     * @var string
+     */
+    public $name = 'Pages';
+
+    /**
+     * Default helper
+     *
+     * @var array
+     */
+    public $helpers = array('Html', 'Session');
+
+    /**
+     * This controller does not use a model
+     *
+     * @var array
+     */
+    public $uses = array('User', 'Location', 'BillingPlan', 'LocationsUser', 'Group', 'ReportCoupon');
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+
+        $this->Auth->allow('home', 'maintenance');
+    }
+
+    /**
+     * This is the default method for the Pages controller. It fetches count of users, locations, billing plans and coupons.
+     * If a particular location is set then it fetches the count of that particular location.
+     *
+     * @return void
+     */
+    public function index() {
+        $this->set('authUser', Configure::read('Application.wifonicGroups'));
+        if ($this->request->is('post')) {
+            $this->Session->write('choosed_location_id', $this->request->data['pages']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') == '') {
+            if ($this->Auth->user('Group.name') == Configure::read('Application.wf_admin')) {
+                $this->set('users_count', $this->User->find('count', array(
+                            'conditions' => array('User.group_id !=' => $this->Auth->user('Group.id'))
+                )));
+            } else {
+                $x = $this->User->find('count', array(
+                    'conditions' => array(
+                        'User.parent_id' => $this->Auth->user('id')
+                    ),
+                ));
+                $this->set('users_count', $x);
+            }
+            $bpCondition = array();
+            $bpCondition[] = array('BillingPlan.location_id' => $this->Session->read('locations_id_list'));
+            $bpCondition[] = array('BillingPlan.cat_bp' => 'normal');
+            $this->set('billing_plans_count', $this->BillingPlan->find('count', array(
+                        'conditions' => $bpCondition
+            )));
+        } else {
+            $this->set('users_count', $this->LocationsUser->find('count', array(
+                        'conditions' => array(
+                            'location_id' => $this->Session->read('choosed_location_id'),
+                            'user_id' => $this->User->find('list', array(
+                                'fields' => array('id'),
+                                'conditions' => array('parent_id' => $this->Auth->user('id'), 'NOT' => array('id' => $this->User->find('list', array(
+                                            'fields' => array('User.id', 'User.id'),
+                                            'conditions' => array('Group.name' => Configure::read('Application.wifonicGroups')),
+                                            'recursive' => 0
+                                        )))))
+                            )
+                        )
+                    ))
+            );
+            $bpCondition = array();
+            $tempArray = $this->Session->read('locations_id_list');
+            if ($this->Session->read('choosed_location_id') != '' && array_key_exists($this->Session->read('choosed_location_id'), $tempArray)) {
+                $bpCondition[] = array('BillingPlan.location_id' => $tempArray[$this->Session->read('choosed_location_id')]);
+                $bpCondition[] = array('BillingPlan.cat_bp' => 'normal');
+                $this->set('billing_plans_count', $this->BillingPlan->find('count', array(
+                            'conditions' => $bpCondition
+                )));
+            }
+            unset($tempArray);
+            $bpCondition[] = array('BillingPlan.cat_bp' => 'normal');
+        }
+        $billingPlans = $this->BillingPlan->find('list', array('conditions' => $bpCondition));
+        $barchat = $this->_barChart();
+        $upload = $barchat['upload'];
+        $download = $barchat['download'];
+        $totalCouponUsed = $barchat['coupon'];
+        $totalPrice = $barchat['price'];
+        $maxCoupon = $this->_tenX(strlen($barchat['maxCoupon']));
+        $maxPrice = $this->_tenX(strlen($barchat['maxPrice']));
+        $monthArray = array('1' => 'Jan', '2' => 'Feb', '3' => 'Mar', '4' => 'Apr', '5' => 'May', '6' => 'Jun', '7' => 'Jul', '8' => 'Aug', '9' => 'Sep', '10' => 'Oct', '11' => 'Nov', '12' => 'Dec');
+        $totalDataPerMonth = '';
+        $totalPricePerMonth = '';
+        for ($i = 0; $i < count($upload) && $this->Session->read('choosed_location_id') != ''; $i++) {
+            if ($i == 0) {
+                $totalDataPerMonth = $totalDataPerMonth . '["' . $monthArray[$i + 1] . '",' . ($upload[$i] + $download[$i]) . ']';
+                $totalPricePerMonth = $totalPricePerMonth . '["' . $monthArray[$i + 1] . '",' . $totalPrice[$i] . ']';
+            } else {
+                $totalDataPerMonth = $totalDataPerMonth . ', ["' . $monthArray[$i + 1] . '",' . ($upload[$i] + $download[$i]) . ']';
+                $totalPricePerMonth = $totalPricePerMonth . ', ["' . $monthArray[$i + 1] . '",' . $totalPrice[$i] . ']';
+            }
+        }
+        $pieChat = $this->_paiChart($billingPlans);
+        $this->set('upload', $upload);
+        $this->set('download', $download);
+        $this->set('totalCouponUsed', $totalCouponUsed);
+        $this->set('maxCoupon', $maxCoupon);
+        $this->set('maxPrice', $maxPrice);
+        $this->set('price', $totalPrice);
+        $this->set('totalDataPerMonth', '[' . $totalDataPerMonth . ']');
+
+        $this->set('current_month_coupon', $barchat['currentMonthCoupon']);
+        if (round($barchat['currentMonthDownload'] + $barchat['currentMonthUpload']) > 0) {
+            $this->set('current_month_data', round($barchat['currentMonthDownload'] + $barchat['currentMonthUpload']) . ' GB');
+        } else {
+            $this->set('current_month_data', round(($barchat['currentMonthDownload'] + $barchat['currentMonthUpload']) * 1024) . ' MB');
+        }
+        //$this->set('current_month_data', round($barchat['currentMonthDownload']+$barchat['currentMonthUpload']));
+        $this->set('current_month_sell', $barchat['currentMonthSell']);
+        $this->set('billing_plans', $billingPlans);
+        unset($tempLocationsListArray);
+    }
+
+    private function _tenX($x = null) {
+        $returnValue = 1;
+        for ($i = 0; $i < $x; $i++) {
+            $returnValue = $returnValue * 10;
+        }
+        return $returnValue;
+    }
+
+    public function maintenance() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+    }
+
+    public function view() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+    }
+
+    /**
+     * Display barchart
+     *
+     * @return array
+     * @access public
+     */
+    public function _barChart() {
+        $upload = array();
+        $download = array();
+        $coupon = array();
+        $duration = array();
+        $price = array();
+        $currentMonthSell = '';
+        $currentMonthUpload = '';
+        $currentMonthDownload = '';
+        $currentMonthCoupon = '';
+
+        if ($this->Session->check('choosed_location_id') && ($this->Session->read('choosed_location_id') != '')) {
+//          $fDate = '';
+//        if ($i < 9) {
+//            $fDate = date('Y') . '-' . date('0' . ($i + 1)) . '-' . date('01');
+//        } else {
+//            $fDate = date('Y') . '-' . date($i + 1) . '-' . date('01');
+//        }
+//        $lDate = date('Y') . '-' . date('m', strtotime($fDate)) . '-' . date('t', strtotime($fDate));
+            $conditions = array(
+                'location_id' => $this->Session->read('choosed_location_id')
+            );
+            $this->ReportCoupon->recursive = -1;
+            $uploadDoenload = $this->ReportCoupon->find('all', array(
+                'fields' => array('month', 'total_upload', 'total_download', 'total_coupon', 'total_duration', 'total_price'),
+                'conditions' => $conditions
+            ));
+            $i = 0;
+            $maxCoupon = 0;
+            $maxPrice = 0;
+            foreach ($uploadDoenload as $value) {
+                if ($i == 0 && (int) $value['ReportCoupon']['month'] != 1) {
+                    $j = 0;
+                    for (; $j < (int) $value['ReportCoupon']['month']; $j++) {
+                        $upload[$j] = 0;
+                        $download[$j] = 0;
+                        $coupon[$j] = 0;
+                        $duration[$j] = 0;
+                        $price[$j] = 0;
+                        $currentMonthSell = 0;
+                        $currentMonthCoupon = 0;
+                        $currentMonthDownload = 0;
+                        $currentMonthUpload = 0;
+                    }
+                    $i = $j - 1;
+                }
+                $upload[$i] = ($value['ReportCoupon']['total_upload']) / (1024 * 1024 * 1024);
+                $download[$i] = ($value['ReportCoupon']['total_download']) / (1024 * 1024 * 1024);
+                $coupon[$i] = $value['ReportCoupon']['total_coupon'];
+                $duration[$i] = $value['ReportCoupon']['total_duration'];
+                $price[$i] = $value['ReportCoupon']['total_price'];
+                $currentMonthSell = $value['ReportCoupon']['total_price'];
+                $currentMonthCoupon = $value['ReportCoupon']['total_coupon'];
+                $currentMonthDownload = $download[$i];
+                $currentMonthUpload = $upload[$i];
+                if ($value['ReportCoupon']['total_coupon'] > $maxCoupon) {
+                    $maxCoupon = $value['ReportCoupon']['total_coupon'];
+                }
+                if ($value['ReportCoupon']['total_price'] > $maxPrice) {
+                    $maxPrice = $value['ReportCoupon']['total_price'];
+                }
+
+                $i++;
+            }
+            $x['upload'] = $upload;
+            $x['download'] = $download;
+            $x['coupon'] = $coupon;
+            $x['duration'] = $duration;
+            $x['price'] = $price;
+
+            $x['currentMonthSell'] = $currentMonthSell;
+            $x['currentMonthCoupon'] = $currentMonthCoupon;
+            $x['currentMonthDownload'] = $currentMonthDownload;
+            $x['currentMonthUpload'] = $currentMonthUpload;
+            $x['maxCoupon'] = $maxCoupon;
+            $x['maxPrice'] = $maxPrice;
+            return $x;
+        }
+    }
+
+    /**
+     * Display piechart
+     *
+     * @return array
+     * @access public
+     */
+    public function _paiChart($plans) {
+        $x = '';
+        return ('[' . $x . ']');
+    }
+
+}

@@ -1,0 +1,63 @@
+<style>
+</style>
+<script>
+    $(document).ready(function() {
+
+        var docHeight = $(window).height();
+        var footerHeight = $('#footer').height();
+        var footerTop = $('#footer').position().top + footerHeight;
+
+        if (footerTop < docHeight) {
+            $('#footer').css('margin-top', (docHeight - footerTop)-5 + 'px');
+        }
+    });
+
+</script>
+<?php //pr($loginCms['0']['CmsLoginpage']['notice']);?>
+<?php $bgurl = $this->request->webroot.'cms_loginpages/displayBackGround/'.$loginCms['0']['CmsLoginpage']['id'].'/'; ?>
+<div style="background-image: url('<?php echo $bgurl?>');">
+<div class="wf-header">
+    <div class="container"> 
+        <div class="col-sm-12 navbar-inverse">
+            <marquee behavior="scroll" direction="left" scrollamount="4" class="wf-font20x-floralwhite"><?php echo $loginCms['0']['CmsLoginpage']['notice']?></marquee>
+        </div>
+    </div>
+</div>
+<div id="center_div">
+    <section id="sign-in-area">
+
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-offset-4 col-sm-4 col-sm-offset-4 text-center">
+                    <?php $logourl = $this->request->webroot.'cms_loginpages/displayLogo/'.$loginCms['0']['CmsLoginpage']['id'].'/'; ?>
+                    <h1 style="visibility: visible;" class="title-big wow zoomIn animated animated"><img  height="100" width="200" src="<?php echo $logourl?>/"></h1> <br> 
+                </div>
+                <div class="text-center panel-">
+                    <form role="form" class="">
+                        <div style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay=".5s">
+                            <input  class="form-control" id="signinemail" placeholder="Username" type="text">
+                        </div>
+                        <div style="visibility: visible;-webkit-animation-delay: 1s; -moz-animation-delay: 1s; animation-delay: 1s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                            <input class="form-control" id="signinpassword" placeholder="Password" type="password">
+                        </div>
+                        <div style="margin-bottom:20px;  visibility: visible;-webkit-animation-delay: 1.5s; -moz-animation-delay: 1.5s; animation-delay: 1.5s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                            <input type="checkbox" name="termsAndCondition" value="1"><font class="wf-font15x-floralwhite"> I agree to the Terms and Privacy.</font><br>
+                            <!--<input class="form-control" id="signinpassword" placeholder="Password" type="checkbox"><font class="wf-font15x-white"> I agree to the Terms and Privacy.</font></br>--> 
+                        </div>
+                        <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4"> 
+                            <a style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size btn btn-danger col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" href="#">Log in</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<div class="wf-footer" id="footer">
+    <div class="container"> 
+        <div class="col-sm-12 text-center wf-font15x-floralwhite">
+            <?php echo $loginCms['0']['CmsLoginpage']['footer'];?>
+        </div>
+    </div>
+</div>
+</div>

@@ -1,0 +1,348 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        $('#UserAddForm').bootstrapValidator()
+        
+        var numberOfColumns = document.getElementById('chequeTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan',numberOfColumns);
+        
+        $('.actionChequeBounce').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Cheque Bounce"
+        });
+        
+    });
+   
+</script>
+
+
+<?php
+//echo $this->Html->script('bootstrap-editable.min');
+//echo $this->Html->css('bootstrap-editable');
+echo $this->Html->css('menubar');
+//echo $this->Html->script('lib/jquery', array('inline'=>false));
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+<?php //pr($latestTwoInvoices); ?>
+
+<?php echo $this->element('locations_list') ?>
+
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Payment',
+        'link' => '/cheques'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+//pr(date('d F Y H:i:s'));
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo __('Users')                                                        ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        /* if ((AuthComponent::user('Group.name') == Configure::read('Application.wf_admin')) || (AuthComponent::user('Group.name') == Configure::read('Application.admin')) || (AuthComponent::user('Group.name') == Configure::read('Application.gold')) || (AuthComponent::user('Group.name') == Configure::read('Application.silver')) || (AuthComponent::user('Group.name') == Configure::read('Application.platinum'))) {
+          echo $this->Html->link(__('Add User'), array('controller' => 'users', 'action' => 'add'), array('class' => 'btn btn-default pull-right'));
+          } else {
+
+          } */
+        echo $this->Html->link(__('Add Payment Details'), '/cheques/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px'))
+        ?>
+    </div>
+</div>
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php $this->Paginator->options(array('url' => array("0"))); ?>
+        <!--hr-->
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Session->read('user') ?>
+        <hr>
+        <?php //echo $this->element('search') ?>
+        <table id="chequeTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('instrument', array(
+                            'asc' => __('Instrument') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Instrument') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th ><?php
+                        echo $this->Paginator->sort('instrument_number', array(
+                            'asc' => __('Instrument#') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Instrument#') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('description', array(
+                            'asc' => __('Description') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Description') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('amount', array(
+                            'asc' => __('Amount') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Amount') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('instrument_date', array(
+                            'asc' => __('Inst Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Inst Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('receive_date', array(
+                            'asc' => __('Rec Date') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Rec Date') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('scan', array(
+                            'asc' => __('Scan') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Scan') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('invoice_id', array(
+                            'asc' => __('Invoice') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Invoice') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th style="color: #428BCA"><?php echo __('Actions') ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?php echo $this->element('search', array('columnName' => 'instrument'))                   ?></td>
+                    <td><?php echo $this->element('search', array('columnName' => 'instrument_number')) ?></td>
+                    <td><?php echo $this->element('search', array('columnName' => 'description')) ?></td>
+                    <td><?php //echo $this->element('search_dropdown', array('columnName' => 'role'))                      ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'username'))                            ?></td>
+                </tr>
+                <?php if (count($chequeDetails)>0) { ?>
+                    <?php foreach ($chequeDetails as $chequeDetail) { ?>
+                        <tr>
+                            <!--td width="50px"><?php //echo $user['User']['id']                                                              ?></td-->
+                            <!-- inline edit javascript code written in the end -->
+                            <td><?php echo $chequeDetail['Cheque']['instrument'] ?></td>
+                            <td><?php echo $chequeDetail['Cheque']['instrument_number'] ?></td>
+                            <td><?php echo $chequeDetail['Cheque']['description']; ?></td>
+                            <td><?php echo $chequeDetail['Cheque']['amount'] ?></td>
+                            <td><?php echo $chequeDetail['Cheque']['instrument_date'] ?></td>
+                            <td><?php echo $chequeDetail['Cheque']['receive_date'] ?></td>
+                            <td>
+                                <?php
+                                if ($chequeDetail['Cheque']['scan'] == "") {
+                                    echo __('No scanned file');
+                                } else {
+                                    echo $this->Html->link($chequeDetail['Cheque']['instrument_number'] . "#" . $chequeDetail['Cheque']['description'], array('controller' => 'cheques', 'action' => 'displayInstrument', $chequeDetail['Cheque']['id']), array('class' => ''));
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                if ($chequeDetail['InvoiceTrack']['invoice_name'] == "") {
+                                    echo __('No scanned file');
+                                } else {
+                                    echo $this->Html->link($chequeDetail['InvoiceTrack']['invoice_name'], array('controller' => 'cheques', 'action' => 'displayInvoice', $chequeDetail['Cheque']['invoice_id']), array('class' => ''));
+                                }
+                                ?>
+                            </td>
+                            <!--td><?php //echo $chequeDetail['InvoiceTrack']['invoice_name']                   ?></td-->
+                            <td width="120px">
+                                <div class="row col-md-12 action-column action-link">
+                                    <?php /* if (($chequeDetail['Cheque']['instrument'] == 'Cheque') && in_array($chequeDetail['Cheque']['invoice_id'], $latestTwoInvoices)) { ?>
+                                      <div class="col-md-1 action-column">
+                                      <?php
+                                      echo $this->Form->create('Cheque', array('action' => 'chequeBounce', 'method' => 'post'));
+                                      echo $this->Form->input('invoice_id', array('type' => 'hidden', 'value' => $chequeDetail['Cheque']['invoice_id']));
+                                      echo $this->Form->end('alert_cheque.png', array('div' => false, 'class' => 'action-button actionChequeBounce'));
+                                      ?>
+                                      </form>
+                                      </div>
+                                      <?php } */ ?>
+                                    <?php if (($chequeDetail['Cheque']['instrument'] == 'Cheque') && ($chequeDetail['Cheque']['status'] == '1') && in_array($chequeDetail['Cheque']['invoice_id'], $latestTwoInvoices)) { ?>
+                                        <?php
+                                        echo $this->Html->link(
+                                                //$this->Html->tag('i', '', array('class' => 'fa fa-check')), '#UsersModalActivate', array(
+                                                $this->Html->image('cheque-bounce.png'), '#ChequeBounceModal', array(
+                                            'class' => 'btn-chequebounce-modal actionChequeBounce',
+                                            'data-toggle' => 'modal',
+                                            'role' => 'button',
+                                            'data-id' => $chequeDetail['Cheque']['id'],
+                                            'data-invoiceid' => $chequeDetail['Cheque']['invoice_id'],
+                                            'data-recvdate' => $chequeDetail['Cheque']['receive_date'],
+                                            'data-amount' => $chequeDetail['Cheque']['amount'],
+                                            'escape' => false), false);
+                                        ?>
+                                    <?php } ?>
+                                </div>
+                            </td>
+
+
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+            <?php } ?>
+        </table>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+            <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>'))));   ?>
+        </div><br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+
+<div class="modal fade" id="ChequeBounceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Add Cheque Bounce Details</h4>
+            </div>
+
+            <div class="modal-body">
+                <!-- The form is placed inside the body of modal -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <?php
+                        echo $this->Form->create('Cheque', array('action' => 'chequeBounce',
+                            'method' => 'post',
+                            'class' => 'form-horizontal',
+                            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+                        ?>
+                        <div class="col-md-8">
+                            <?php
+                            echo $this->Form->input('id', array(
+                                'id' => 'idForChequeBounce',
+                                'type' => 'hidden',
+                                'value' => ''));
+                            ?>
+                            <?php
+                            echo $this->Form->input('invoice_id', array(
+                                'id' => 'invoiceIdForChequeBounce',
+                                'type' => 'hidden',
+                                'value' => ''));
+                            ?>
+                            <?php
+                            echo $this->Form->input('receive_date', array(
+                                'id' => 'receiveDateForChequeBounce',
+                                'type' => 'hidden',
+                                'value' => ''));
+                            ?>
+                            <?php
+                            echo $this->Form->input('amount', array(
+                                'id' => 'chequeAmountForChequeBounce',
+                                'type' => 'hidden',
+                                'value' => ''));
+                            ?>
+                            <?php
+                            echo $this->Form->input('description', array(
+                                'label' => __('Description'),
+                                'data-bv-notempty' => 'true',
+                                'data-bv-notempty-message' => "Description is required and cannot be empty",
+                                    //'data-bv-regexp-regexp' => "^[A-Za-z]{1,}[\.]{0,1}[A-Za-z]{0,}$",
+                                    //'data-bv-regexp-message' => "Description can only consist of alphabets and numbers",
+                            ));
+                            ?>
+
+                            <?php
+                            echo $this->Form->input('cheque_bounce_amount', array(
+                                'type' => 'text',
+                                'label' => __('Amount'),
+                                'data-bv-notempty' => 'true',
+                                'data-bv-notempty-message' => "Amount is required and cannot be empty",
+                                'data-bv-notempty' => "false",
+                                'data-bv-integer' => 'true',
+                                'data-bv-integer-message' => 'The amount can only consist of numbers'
+                            ));
+                            ?>
+
+                            <?php echo $this->Form->end(__("Submit"), array('class' => 'btn btn-primary')); ?>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function(){
+        var newURL = window.location.protocol + "//" + window.location.host + "" + window.location.pathname;
+        $.fn.editable.defaults.mode = 'inline'; 
+        $('.editUserName').editable({
+            url: newURL+'/update_username'
+        });
+        $('.editAlias').editable({
+            url: newURL+'/update_alias'
+            /*validate: function(value) {
+                if($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if(!(/^[a-zA-Z\s]*$/.test(value))){
+                    return 'Only alphabets allowed';
+                }
+            }*/
+        });
+        $('.editEmail').editable({
+            url: newURL+'/update_email'
+        });
+        $('.group').editable({
+            url: newURL+'/update_group',
+            title: 'Select group'
+        });
+    });
+    
+</script>
+
+

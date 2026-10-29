@@ -1,0 +1,1425 @@
+<?php
+
+/**
+ * This file will render views from views/pages/
+ *
+ *
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+
+App::uses('CakeEmail', 'Network/Email');
+App::uses('File', 'Utility');
+?> 
+
+<?php
+
+class CouponsController extends AppController {
+
+    public $components = array('Paginator', 'RequestHandler');
+    public $uses = array('Coupon','Radacct', 'BillingPlan', 'Usage', 'FreeUser', 'Radcheck', 'Radreply', 'DeliveryChallan', 'InvoiceExtra','Weblog');
+    public $helpers = array('Pdf');
+    public $xyz;
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+
+// Change layout for Ajax requests
+        if ($this->request->is('ajax')) {
+            $this->layout = 'ajax';
+        }
+    }
+
+    public function index() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $this->redirect(array('action' => 'usedCouponList'));
+    }
+
+    private function _couponList($condition) { //pr($condition);
+        $this->Paginator->settings = array(
+            'fields' => array('id', 'sn', 'cust_id', 'firstname', 'lastname', 'username', 'password', 'duration', 'active_date', 'type', 'status', 'activated', 'maximum_session', 'BillingPlan.id', 'BillingPlan.name_bp', 'BillingPlan.time_bp', 'Coupon.price', 'Coupon.cr_date', 'Coupon.creator', 'location_id', 'Location.location_name', 'calling_station_id', 'mail'),
+            'conditions' => $condition, //For facing the users undr the loged in user.
+            'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+            'order' => array('active_date' => 'DESC')
+        );
+        $this->Coupon->recursive = 0;
+        $this->set('coupons', $this->paginate('Coupon'));
+        $this->set('couponType', '');
+        //$this->set('breadcrumbLabel', __('Coupons List'));
+        $this->set('label', __('Coupons'));
+        $this->Session->write('link', 'usedCouponsList');
+    }
+
+    public function usedCouponList() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $condition = array();
+        $condition[] = array('activated' => '1');
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+            $condition[] = array('Coupon.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('Coupon.location_id' => '');
+        }
+        
+        //-------------08-09-2015-------------
+        //if(in_array( $this->Auth->user('Group.name'), Configure::read('Application.clientGroups'))){
+            //$condition[] = array('BillingPlan.cat_bp !=' => 'special');
+        //}
+        //-------------08-09-2015-------------
+        if (count($this->passedArgs) == 0) {
+
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+
+            if ($this->request->is('post') && isset($this->request->data['Coupon']['type']) && $this->request->data['Coupon']['type'] != '') {
+		if($this->request->data['Coupon']['type'] == 'online'){
+	                $condition[] = array('Coupon.sn' => null );
+		}else{
+                	$condition[] = array('Coupon.sn !=' => '' );
+		}
+            }
+            if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search'] != '' && $this->request->data[$this->request->data['search']] != '') {
+                $condition[] = array('Coupon.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+            }
+            $this->Session->write('search_conditions', $condition);
+        }
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+            $condition = $this->Session->read('search_conditions');
+        }
+        $this->_couponList($condition);
+        //unset($condition);
+        $this->set('breadcrumbLabel', __('Used Coupons List'));
+        $this->set('usedCouponsList', 'true');
+        $this->Session->write('link', 'usedCouponsList');
+        $this->render('index');
+    }
+
+    public function unUsedCouponList() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $condition = array();
+        $condition[] = array('activated' => '0');
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+            $condition[] = array('Coupon.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('Coupon.location_id' => '');
+        }
+        $this->set('x', $this->passedArgs);
+        if (count($this->passedArgs) == 0) {
+            //$this->set('x', 'Y');
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+            if ($this->request->is('post') && isset($this->request->data['Coupon']['type']) && $this->request->data['Coupon']['type'] != '') {
+                $condition[] = array('Coupon.type' => $this->request->data['Coupon']['type']);
+            }
+            if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search'] != '' && $this->request->data[$this->request->data['search']] != '') {
+                $condition[] = array('Coupon.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+            }
+            $this->Session->write('search_conditions', $condition);
+        }
+        if ($this->Session->check('search_conditions') && $this->Session->read('search_conditions') != '') {
+            $condition = $this->Session->read('search_conditions');
+        }
+        $this->_couponList($condition);
+        unset($condition);
+        $this->Session->write('link', 'unusedCouponsList');
+        $this->set('breadcrumbLabel', __('Unused Coupons List'));
+        $this->set('usedCouponsList', 'false');
+        //$this->render('index');
+    }
+
+    public function couponReporting() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $condition = array();
+        if ($this->request->is('post')) {
+            if (isset($this->request->data['coupons']['locations_id'])) {
+                $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+                if ($this->Session->check('coupon_reporting')) {
+                    $this->Session->delete('coupon_reporting');
+                }
+                $this->redirect(array('action' => 'index'));
+            } else {
+                if (array_key_exists('Coupon', $this->request->data) && isset($this->request->data['Coupon']['period']) && $this->Session->check('coupon_reporting')) {
+                    $this->Session->delete('coupon_reporting');
+                    if ($this->request->data['Coupon']['period'] == 'today') {
+                        $condition[] = array('active_date >=' => date("Y-m-d")); //date('Y-m-d'));
+                        $this->Session->write('period_reporting', 'today');
+                    } else if ($this->request->data['Coupon']['period'] == 'weekly') {
+                        $condition[] = array('active_date >=' => date("Y-m-d", strtotime("-1 week")));
+                        $this->Session->write('period_reporting', 'weekly');
+                    } else if ($this->request->data['Coupon']['period'] == 'monthly') {
+                        $condition[] = array('active_date >=' => date("Y-m-d", strtotime("-1 month")));
+                        $this->Session->write('period_reporting', 'monthly');
+                    }
+                }
+            }
+        }
+        $this->set('period', $this->Session->read('period_reporting'));
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+            $condition[] = array('Coupon.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('Coupon.location_id' => '');
+        }
+        if (count($this->passedArgs) == 0) {
+
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+            if ($this->request->is('post') && isset($this->request->data['search']) && $this->request->data['search'] != '' && $this->request->data[$this->request->data['search']] != '') {
+                $condition[] = array('Coupon.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+            }
+            $this->Session->write('search_conditions', $condition);
+        }
+        $condition[] = array('activated' => '1');
+        if ($this->Session->check('coupon_reporting') && $this->Session->read('coupon_reporting') != '') {
+            $condition = $this->Session->read('coupon_reporting');
+            if ($this->Session->check('search_conditions') && $this->Session->read('search_conditions') != '') {
+                $condition[] = $this->Session->read('search_conditions');
+            }
+            $this->_couponList($condition);
+        } else {
+            $this->Session->write('coupon_reporting', $condition);
+            $this->_couponList($this->Session->read('coupon_reporting'));
+        }
+        $this->set('breadcrumbLabel', __('Used Coupons List'));
+        $this->set('usedCouponsList', 'true');
+        $this->Session->write('link', 'usedCouponsList');
+        $this->set('action', 'usedCouponList');
+        $this->render('index');
+    }
+
+    public function generatedCoupon($f = null, $l = null) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($f == null || $l == null)
+            $this->redirect(array('action' => 'unUsedCouponList'));
+        $condition = array();
+        $condition[] = array('Coupon.activated' => '0');
+        $condition[] = array('Coupon.id >=' => $f, 'Coupon.id <=' => $l);
+        $condition[] = array('Coupon.location_id' => $this->Session->read('choosed_location_id'));
+        //pr($condition);
+        $this->_couponList($condition);
+        unset($condition);
+        $this->Session->write('link', 'generatedCoupon');
+        $this->set('breadcrumbLabel', __('Generated Coupons List'));
+        $this->set('usedCouponsList', FALSE);
+        $this->set('isGeneratedCouponList', 'yes');
+        //$this->render('index');
+    }
+/*
+    public function view() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->data['Coupon']['coupon_id']) {
+            $this->set('coupon', $this->Coupon->findById($this->request->data['Coupon']['coupon_id']));
+        } else {
+            $this->set('coupon', '');
+            $this->redirect(array('action' => 'index'));
+        }
+        $this->set('breadcrumbLabel', 'View Coupons');
+        $this->set('label', 'View Coupons');
+    }
+*/
+
+public function view() {
+		if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+			$this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+		if (isset($this->request->data['Coupon']['coupon_id'])) {
+			$this->set('coupon', $this->Coupon->findById($this->request->data['Coupon']['coupon_id']));
+		} else {
+			$this->set('coupon', '');
+			$this->redirect(array('action' => 'index'));
+		}
+		$this->set('breadcrumbLabel', 'View Coupons');
+		$this->set('label', 'View Coupons');
+	}
+/*
+public function sessionDetails() {
+//        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+//            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        //pr($this->request->data);
+        $this->set('rq', $this->request);
+        $couponId = '';
+
+        $username = '';
+        if (isset($this->request->data['Coupon'])) {
+            $this->Session->write('username', $this->request->data['Coupon']['coupon_id']);
+            $couponId = $this->request->data['Coupon']['coupon_id'];
+            $this->Session->write('username', $this->request->data['Coupon']['username']);
+            $username = $this->request->data['Coupon']['username'];
+        } else {
+            $username = $this->Session->read('username');
+            $couponId = $this->Session->read('coupon_id');
+        }
+        $this->set('user', $this->Session->read('username'));
+        $this->Radacct->recursive = 0;
+        if ($username != '') {
+            $totaltransfer = $this->Radacct->find('all', array(
+                'fields' => array('sum(acctsessiontime) as totaltime', 'sum(acctinputoctets + acctoutputoctets)as  totaltransfer', 'count(*) as nof'),
+                'conditions' => array('username' => $username)
+            ));
+            $this->set('totalsession', $totaltransfer);
+        }
+
+        $this->set('totalDatatransfer', $this->convertByteToKbMbGb($totaltransfer[0][0]['totaltransfer']));
+        $this->set('duration', $this->totalsessiontime($totaltransfer[0][0]['totaltime']));
+
+        $this->set('couponId', $couponId);
+        $this->set('breadcrumbLabel', 'View Coupons');
+        $this->set('label', 'View Coupons');
+	$this->Paginator->settings = array(
+            'fields' => array('radacctid', 'username', 'acctsessiontime', 'acctinputoctets ', 'acctoutputoctets', 'callingstationid', 'nasipaddress', 'framedipaddress', 'acctstarttime', 'acctstoptime', 'acctterminatecause'),
+            'limit' => Configure::read('Application.rowLimit'),
+            'conditions' => array('username' => $username),
+            'order' => array('radacctid' => 'Desc')
+        );
+        $session = $this->Paginator->paginate('Radacct');
+        if ($this->request->data['Coupon']) {
+            $this->Session->write('session_setails_server_ip', $session[0]['Radacct']['nasipaddress']);
+        }
+        $this->set('session', $session);
+    }
+*/
+
+public function sessionDetails() {
+		//if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+		//      $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+		//pr($this->request->data);
+		$this->set('rq', $this->request);
+		$couponId = '';
+
+		$username = '';
+		if (isset($this->request->data['Coupon'])) {
+			$this->Session->write('username', $this->request->data['Coupon']['coupon_id']);
+			$couponId = $this->request->data['Coupon']['coupon_id'];
+			$this->Session->write('username', $this->request->data['Coupon']['username']);
+			$username = $this->request->data['Coupon']['username'];
+		} else {
+			$username = $this->Session->read('username');
+			$couponId = $this->Session->read('coupon_id');
+		}
+		$this->set('user', $this->Session->read('username'));
+		$this->Radacct->recursive = 0;
+		if ($username != '') {
+			$totaltransfer = $this->Radacct->find('all', array(
+						'fields' => array('sum(acctsessiontime) as totaltime', 'sum(acctinputoctets + acctoutputoctets)as  totaltransfer', 'count(*) as nof'),
+						'conditions' => array('username' => $username)
+						));
+			$this->set('totalsession', $totaltransfer);
+		}
+		$this->set('totalDatatransfer', $this->convertByteToKbMbGb($totaltransfer[0][0]['totaltransfer']));
+		$this->set('duration', $this->totalsessiontime($totaltransfer[0][0]['totaltime']));
+		$this->set('couponId', $couponId);
+		$this->set('breadcrumbLabel', 'View Coupons');
+		$this->set('label', 'View Coupons');
+		$this->Paginator->settings = array(
+				'fields' => array('radacctid', 'username', 'acctsessiontime', 'acctinputoctets ', 'acctoutputoctets', 'callingstationid', 'nasipaddress', 'framedipaddress', 'acctstarttime', 'acctstoptime', 'acctterminatecause'),
+				'limit' => Configure::read('Application.rowLimit'),
+				'conditions' => array('username' => $username),
+				'order' => array('radacctid' => 'Desc')
+				);
+		$session = $this->Paginator->paginate('Radacct');
+		if ($this->request->data['Coupon']) {
+			$this->Session->write('session_setails_server_ip', $session[0]['Radacct']['nasipaddress']);
+		}
+		$this->set('session', $session);
+	}
+
+public function webLogDetails() {
+		/*if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['
+		  controller']) . "/" . $this->request->params['action']))
+		  $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+		 */
+		$couponId = '';
+		$username = '';
+		if (isset($this->request->data['Coupon'])) {
+			$this->Session->write('coupon_id', $this->request->data['Coupon']['coupon_id']);
+			$couponId = $this->request->data['Coupon']['coupon_id'];
+			$this->Session->write('username', $this->request->data['Coupon']['username']);
+			$username = $this->request->data['Coupon']['username'];
+		} else {
+			$username = $this->Session->read('username');
+			$couponId = $this->Session->read('coupon_id');
+		}
+		$this->set('couponId', $couponId);
+		$this->set('username', $username);
+		if ($username!='') {
+			$this->Paginator->settings = array(
+					'fields' => array('id', 'receivedat', 'ip', 'mac', 'url'),
+					'limit' => Configure::read('Application.rowLimit'),
+					'conditions' => array('username' => $username),
+					'order' => array('receivedat' => 'Desc')
+					);
+			$this->Weblog->recursive = 0;
+			$this->set('weblogs', $this->paginate('Weblog'));
+		} else {
+		}
+		$this->set('breadcrumbLabel', 'View Coupons');
+		$this->set('label', 'View Coupons');
+	}
+
+
+public static function convertByteToKbMbGb($transferdata) {
+        if ($transferdata < 1024) {
+            return round($transferdata, 2) . " Bytes";
+        } elseif ($transferdata < (1024 * 1024)) {
+            $transferdata = $transferdata / (1024);
+            return round($transferdata, 2) . " KB";
+        } elseif ($transferdata < (1024 * 1024 * 1024)) {
+            $transferdata = $transferdata / (1024 * 1024);
+            return round($transferdata, 2) . " MB";
+        } elseif ($transferdata < (1024 * 1024 * 1024 * 1024)) {
+            $transferdata = $transferdata / (1024 * 1024 * 1024);
+            return round($transferdata, 2) . " GB";
+        }
+    }
+    public static function totalsessiontime($time) {
+        $duration = '';
+        $day = floor($time / (3600 * 24));
+        if ($day > 0) {
+            $time = $time - $day * (3600 * 24);
+            if ($day > 1) {
+                $duration = $duration . $day . ' days ';
+            } else {
+                $duration = $duration . $day . ' day ';
+            }
+        }
+        $hours = floor($time / 3600);
+        if ($hours > 0) {
+            $time = $time - $hours * 3600;
+            if ($hours > 1) {
+                $duration = $duration . $hours . ' hours ';
+            } else {
+                $duration = $duration . $hours . ' hour ';
+            }
+        }
+        $mins = floor(($time / 60));
+        if ($mins > 0) {
+            $time = $time - $mins * 60;
+            if ($mins > 1) {
+                $duration = $duration . $mins . ' mins ';
+            } else {
+                $duration = $duration . $mins . ' min ';
+            }
+        }
+        $secs = $time;
+        if ($secs > 0) {
+            if ($secs > 1) {
+                $duration = $duration . $secs . ' secs ';
+            } else {
+                $duration = $duration . $secs . ' sec ';
+            }
+        }
+        return $duration;
+        // $acctsessiontime = floor($session['Radacct']['acctsessiontime']/ 60);
+    }
+
+/*
+    public function webLogDetails() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $this->set('rq', $this->request->data);
+        if ($this->request->data['Coupon']['coupon_id']) {
+            $this->set('coupon', $this->Coupon->findById($this->request->data['Coupon']['coupon_id']));
+        } else {
+            //$this->set('coupon', '');
+            //$this->redirect(array('action' => 'index'));
+        }
+        $this->set('breadcrumbLabel', 'View Coupons');
+        $this->set('label', 'View Coupons');
+    }
+*/
+    public function add() {
+       // if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+         //   $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $startSlNo = '';
+        $lastSlNo = '';
+        //$this->set('req', $this->request->data);
+        if (isset($this->request->data['Coupon']['desboard']) && $this->request->data['Coupon']['desboard'] == 1 && !$this->Session->check('add_coupon')) {
+            $this->Session->write('add_coupon', true);
+        }
+        //Seting the changed location 
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+
+        if (!$this->Session->check('choosed_location_id')) {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            $this->redirect(array('controller' => 'coupons', 'action' => 'index'));
+        }
+//$this->set('lc', $this->Session->read('add_coupon'));
+        if ($this->request->is('post') && isset($this->request->data['Coupon']['billing_plan_id']) && ($this->Session->read('add_coupon') == 'true')) {
+
+            if ($this->Session->read('choosed_location_id') == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_fail');
+            } else {
+                $counter = 1;
+                if (isset($this->request->data['Coupon']['no_of_coupons']) && $this->request->data['Coupon']['no_of_coupons'] > 1) {
+                    $counter = $this->request->data['Coupon']['no_of_coupons'];
+                }
+                $tempArray = $this->Session->read('locations_list');
+                if ($tempArray[$this->Session->read('choosed_location_id')] != 'ScratchCards') {
+                    $tmpDomainArray = $this->Session->read('locations_domain_list');
+                    //$this->request->data['Coupon']['called_station_id'] = '\'' . $tmpDomainArray[$this->Session->read('choosed_location_id')] . '\'';
+                    $tmpCalledStationId = $tmpDomainArray[$this->Session->read('choosed_location_id')];
+                    $this->request->data['Coupon']['called_station_id'] = $tmpCalledStationId;
+                    unset($tmpDomainArray);
+                }
+                unset($tempArray);
+                $this->request->data['Coupon']['location_id'] = $this->Session->read('choosed_location_id');
+                $this->request->data['Coupon']['creator'] = $this->Auth->user('username');
+                $billingPlanDetails = $this->BillingPlan->find('first', array('conditions' => array('BillingPlan.id' => $this->request->data['Coupon']['billing_plan_id'])));
+                $this->set('bp', $billingPlanDetails);
+                if (count($billingPlanDetails) > 0) {
+                    $this->request->data['Coupon']['upload_limit'] = $billingPlanDetails['BillingPlan']['bandwidth_upload_bp'] != '' ? $billingPlanDetails['BillingPlan']['bandwidth_upload_bp'] : '0';
+                    $this->request->data['Coupon']['download_limit'] = $billingPlanDetails['BillingPlan']['bandwidth_download_bp'] != '' ? $billingPlanDetails['BillingPlan']['bandwidth_download_bp'] : '0';
+                    $this->request->data['Coupon']['time_to_finish'] = $billingPlanDetails['BillingPlan']['timetofinish_bp'];
+                    $this->request->data['Coupon']['duration'] = $billingPlanDetails['BillingPlan']['name_bp'];
+                    $this->request->data['Coupon']['price'] = $billingPlanDetails['BillingPlan']['price_bp'];
+                    $this->request->data['Coupon']['maximum_octet'] = $billingPlanDetails['BillingPlan']['maximum_octet_bp'] != '' ? $billingPlanDetails['BillingPlan']['maximum_octet_bp'] : '0';
+                }
+                /*
+                  if (isset($this->request->data['Coupon']['room_no']) && !empty($this->request->data['Coupon']['room_no'])) {
+                  if (is_numeric($this->request->data['Coupon']['cust_id'])) {
+                  $this->request->data['Coupon']['cust_id'] = '\'' . $this->request->data['Coupon']['room_no'].'\'';
+                  } else {
+                  $this->request->data['Coupon']['cust_id'] = $this->request->data['Coupon']['room_no'];
+                  }
+                  }
+                 */
+
+                if (isset($this->request->data['Coupon']['mac']) && $this->request->data['Coupon']['mac'] != '') {
+                    $this->request->data['Coupon']['calling_station_id'] = $this->request->data['Coupon']['mac'];
+                }
+                //$this->set('req', $this->request->data);
+                $tempUserLenthArray = $this->Session->read('coupon_username_length_list');
+
+                for ($i = 0; $i < $counter; $i++) {
+//$this->set('req', $this->request->data);
+                    $this->request->data['Coupon']['username'] = $this->_keygen($tempUserLenthArray[$this->Session->read('choosed_location_id')], 'username');
+                    $this->request->data['Coupon']['password'] = $this->_keygen(4, 'passwd');
+                    $this->request->data['Coupon']['cr_date'] = date('Y-m-d H:i:s');
+                    //pr($this->request->data);
+                    $this->Coupon->create();
+                    try {
+                        if ($this->Coupon->save($this->request->data)) {
+//$this->Coupon->save($this->request->data);
+                            $serialNumber = $this->_createSerialNumber($this->Coupon->getLastInsertId());
+                            $tmpSl = $this->Coupon->id = $this->Coupon->getLastInsertId();
+                            $this->Coupon->saveField('sn', $serialNumber);
+//pr($this->request->data);
+                            $this->request->data['Coupon']['BillingPlan'] = $billingPlanDetails['BillingPlan'];
+                            $this->_prepairAndInsertToRadCheckAndRadReplayTable($this->request->data);
+                            if ($i == 0) {
+                                $startSlNo = $tmpSl;
+                            } else {
+                                $lastSlNo = $tmpSl;
+                            }
+                        }
+                    } catch (Exception $exc) {
+                        throw new Exception('Unable to create the coupon please try again.' . $exc);
+                    }
+//$this->Coupon->clear();
+                }
+                unset($tempUserLenthArray);
+                try {
+                    if (isset($this->request->data['Coupon']['lumpsum_price']) && $this->request->data['Coupon']['lumpsum_price'] > 0) {
+                        $invoiceExtra['InvoiceExtra']['title'] = 'Special Tariff Coupons';
+                        $invoiceExtra['InvoiceExtra']['adjustment'] = '+';
+                        $invoiceExtra['InvoiceExtra']['month'] = date('n', strtotime('-1 month'));
+                        $invoiceExtra['InvoiceExtra']['year'] = date('Y', strtotime('-1 month'));
+                        $invoiceExtra['InvoiceExtra']['amount'] = $this->request->data['Coupon']['lumpsum_price'];
+                        $invoiceExtra['InvoiceExtra']['description'] = $this->request->data['Coupon']['special_description'];
+                        $invoiceExtra['InvoiceExtra']['location_id'] = $this->Session->read('choosed_location_id');
+                        $invoiceExtra['InvoiceExtra']['internet_payment'] = 'none';
+                        $this->InvoiceExtra->save($invoiceExtra);
+                        $this->log($this->request->data['Coupon']['special_description'], 'info');
+                    }
+                } catch (Exception $ex) {
+                    throw new Exception('Unable to create the coupon please try again.' . $exc);
+                }
+
+                unset($serialNumber);
+//pr($this->request->data);
+                $this->Session->write('add_coupon', 'false');
+                $this->Session->setFlash(__('Coupons successfully created'), 'flash_success');
+                if (isset($this->request->data['Coupon']['desboard']) && $this->request->data['Coupon']['desboard'] == 1) {
+                    $this->Session->write('add_coupon', 'true');
+                    //if (!isset($this->request->data['Coupon']['no_of_coupons'])) {
+                    $this->_printCoupon($startSlNo, $lastSlNo, $this->Session->read('choosed_location_id'));
+                    $this->Session->setFlash(__('Coupons successfully created' . $this->request->data['Coupon']['username']), 'flash_success');
+                    //}
+                    $this->redirect(array('controller' => 'pages', 'action' => 'index'));
+                }
+                unset($this->request->data);
+                if ($lastSlNo == '') {
+                    $lastSlNo = $startSlNo;
+                }
+                $this->set('firstCId', $startSlNo);
+                $this->set('lastCId', $lastSlNo);
+                $this->redirect(array('action' => 'generatedCoupon', $startSlNo, $lastSlNo));
+            }
+        } else {
+            $this->Session->write('add_coupon', 'true');
+        }
+        $billingPlanCondition = array();
+        $billingPlanCondition[] = array('location_id' => $this->Session->read('choosed_location_id'));
+        $billingPlanCondition[] = array('BillingPlan.name_bp !=' => 'complimentary');
+
+
+$billingPlanCondition[] = 'NOT (
+    BillingPlan.time_bp = 0
+    AND BillingPlan.price_bp = 0
+)';
+
+
+        if ($this->Auth->user('Group.name') == Configure::read('Application.admin')) {
+            $billingPlanCondition[] = array('BillingPlan.cat_bp' => 'normal');
+        }
+        $this->set('billing_plans', $this->BillingPlan->find('all', array(
+                    'fields' => array('id', 'name_bp', 'cat_bp', 'price_bp'),
+                    'conditions' => $billingPlanCondition
+                        )
+        ));
+        $this->set('breadcrumbLabel', 'Generate Coupons');
+        $this->Session->write('link', 'generateCoupons');
+    }
+
+    public function freeCouponsList() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+        $this->Paginator->settings = array(
+            'conditions' => array('FreeUser.location_id' => $this->Session->read('choosed_location_id')), //For facing the users undr the loged in user.
+            'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+        );
+        $this->FreeUser->recursive = 0;
+        $this->set('freeUsers', $this->paginate('FreeUser'));
+        $this->set('breadcrumbLabel', 'Free Coupons List');
+        $this->set('label', 'Free Coupons');
+        $this->Session->write('link', 'freeCouponsList');
+    }
+
+    public function createFreeCoupons() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+
+        $this->set('breadcrumbLabel', __('Generate Coupons List'));
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+        if ($this->request->is('post') && $this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '' && isset($this->request->data['Coupon']['mac']) && isset($this->request->data['Coupon']['description'])) {
+            $freeUser = array();
+            $freeUser['FreeUser']['status'] = date('d M Y H:i:s', strtotime("+60 days"));
+            $freeUser['FreeUser']['mac'] = $this->request->data['Coupon']['calling_station_id'] = str_replace("-", ":", $this->request->data['Coupon']['mac']);
+            $freeUser['FreeUser']['description'] = $this->request->data['Coupon']['description'] != '' ? $this->request->data['Coupon']['description'] : '';
+            $tempLocationDomainArray = $this->Session->read('locations_domain_list');
+            $tmpCalledStationId = $tempLocationDomainArray[$this->Session->read('choosed_location_id')];
+            //$this->request->data['Coupon']['called_station_id'] = '\'' . $tempLocationDomainArray[$this->Session->read('choosed_location_id')] . '\'';
+            $this->request->data['Coupon']['called_station_id'] = $tmpCalledStationId; //$tempLocationDomainArray[$this->Session->read('choosed_location_id')];
+            unset($tempLocationDomainArray);
+            unset($tmpCalledStationId);
+            $freeUser['FreeUser']['location_id'] = $this->request->data['Coupon']['location_id'] = $this->Session->read('choosed_location_id');
+            $tempUserNameLengthArray = $this->Session->read('coupon_username_length_list');
+            $freeUser['FreeUser']['username'] = $this->request->data['Coupon']['username'] = $this->_keygen($tempUserNameLengthArray[$this->Session->read('choosed_location_id')], 'username');
+            unset($tempUserNameLengthArray);
+            $freeUser['FreeUser']['password'] = $this->request->data['Coupon']['password'] = $this->_keygen(4, 'passwd');
+            $this->request->data['Coupon']['creator'] = $this->Auth->user('username');
+            $billingPlanDetails = $this->BillingPlan->find('first', array(
+//'fields' => array('id', 'time_bp', 'price_bp'),
+                'conditions' => array('BillingPlan.location_id' => $this->request->data['Coupon']['location_id'], 'BillingPlan.name_bp' => 'complimentary')
+                    )
+            );
+            if (count($billingPlanDetails) > 0) {
+                $this->request->data['Coupon']['billing_plan_id'] = $billingPlanDetails['BillingPlan']['id'];
+                $this->request->data['Coupon']['upload_limit'] = $billingPlanDetails['BillingPlan']['bandwidth_upload_bp'];
+                $this->request->data['Coupon']['download_limit'] = $billingPlanDetails['BillingPlan']['bandwidth_download_bp'];
+                $this->request->data['Coupon']['time_to_finish'] = $billingPlanDetails['BillingPlan']['timetofinish_bp'];
+                $this->request->data['Coupon']['duration'] = $billingPlanDetails['BillingPlan']['name_bp'];
+                $this->request->data['Coupon']['price'] = $billingPlanDetails['BillingPlan']['price_bp'];
+
+                if (count($this->FreeUser->find('first', array('conditions' => array('mac' => $this->request->data['Coupon']['mac'], 'location_id' => $this->Session->read('choosed_location_id'))))) == 0) {
+                    $this->request->data['Coupon']['cr_date'] = date('Y-m-d');
+                    if ($this->Coupon->save($this->request->data)) {
+                        $serialNumber = $this->_createSerialNumber($this->Coupon->getLastInsertId());
+                        $this->Coupon->id = $this->Coupon->getLastInsertId();
+                        $this->Coupon->saveField('sn', $serialNumber);
+                        unset($serialNumber);
+                        if ($this->FreeUser->save($freeUser)) {
+                            $this->request->data['Coupon']['FreeUser'] = $freeUser['FreeUser'];
+                            $this->request->data['Coupon']['BillingPlan'] = $this->_fetchBillingPlan($this->request->data['Coupon']['billing_plan_id']);
+                            $this->_prepairAndInsertToRadCheckAndRadReplayTable($this->request->data);
+                            $this->Session->setFlash(__('Complimentary User added'), 'flash_success');
+                            $this->redirect(array('action' => 'freeCouponsList'));
+                        }
+                    }
+                } else {
+                    $this->Session->setFlash(__('MAC is already bound'), 'flash_fail');
+                }
+            } else {
+                if ($this->request->data['Coupon']['billing_plan_id'] == 0) {
+                    $this->Session->setFlash(__('No Complimentary Plan available'), 'flash_fail');
+                } else if (isset($this->request->data['Coupon']['mac']) && isset($this->request->data['Coupon']['description'])) {
+                    $this->Session->setFlash(__('Both fields are mandatory'), 'flash_fail');
+                }
+            }
+        } else {
+            if ($this->Session->read('choosed_location_id') == '')
+                $this->Session->setFlash(__('No Location Selected'), 'flash_fail');
+        }
+    }
+
+    public function extendFreeCoupon() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $this->FreeUser->id = $this->request->data['Coupon']['id'];
+            $statusDate = '';
+            if (strtotime($this->request->data['Coupon']['status']) < strtotime(date('d M Y H:i:s'))) {
+                $this->Session->setFlash(__('Complimentary extended'), 'flash_success');
+                $statusDate = date('d M Y H:i:s', strtotime("+60 days"));
+                $this->FreeUser->saveField('status', $statusDate);
+            } else {
+                $this->Session->setFlash(__('Complimentary extended'), 'flash_success');
+                $this->FreeUser->saveField('status', date('d M Y H:i:s', strtotime($this->request->data['Coupon']['status'] . "+60 days"))); //date(strtotime($this->request->data['Coupon']['status']), strtotime("+60 days"))
+                $statusDate = date('d M Y H:i:s', strtotime("+60 days"));
+                $this->FreeUser->saveField('status', $statusDate);
+            }
+            $this->_updateExpairationDateInRadCheck($this->request->data['Coupon']['username'], $statusDate);
+        }
+        $this->redirect(array('action' => 'freeCouponsList'));
+    }
+
+    public function expairFreeCoupon() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $this->FreeUser->id = $this->request->data['Coupon']['id'];
+            $this->Session->setFlash(__('Complimentary expired'), 'flash_fail');
+            $statusDate = date('d M Y H:i:s', strtotime("-3600 seconds"));
+            $this->FreeUser->saveField('status', $statusDate);
+            $this->_updateExpairationDateInRadCheck($this->request->data['Coupon']['username'], $statusDate);
+        }
+        $this->redirect(array('action' => 'freeCouponsList'));
+    }
+
+    private function _updateExpairationDateInRadCheck($username = null, $expirationDate = null) {
+        $this->log($username . ', Expiration date modified to date:' . $expirationDate, 'info');
+        $this->Radcheck->updateAll(array('value' => "'$expirationDate'"), array('username' => $username, 'attribute' => 'Expiration'));
+    }
+
+    public function bindCouponsWithLocation() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+        $tempLocationListArray = $this->Session->read('locations_list');
+        $tempLocationDomainListArray = $this->Session->read('locations_domain_list');
+        $tempScratchCardPriceArray = $this->Session->read('location_scratch_card_price');
+        $tempIsRevenueSharedArray = $this->Session->read('is_revenue_shared');
+        if ($this->Session->read('choosed_location_id') != '' && $tempLocationListArray[$this->Session->read('choosed_location_id')] == 'ScratchCards') {
+            $this->BillingPlan->recursive = -1;
+            $billingPlanDetails = $this->BillingPlan->find('all', array(
+//'fields' => array('id', 'name_bp'),
+                'conditions' => array(
+                    'BillingPlan.location_id' => $this->Session->read('choosed_location_id'),
+                    'BillingPlan.cat_bp' => 'normal'
+            )));
+            if (count($billingPlanDetails) > 0) {
+                $this->set('billingPlans', $billingPlanDetails);
+                $this->Session->write('billingPlans', $billingPlanDetails);
+                $this->set('noOfBillingPlans', count($billingPlanDetails));
+                $this->Session->write('noOfBillingPlans', count($billingPlanDetails));
+            } else {
+                $this->Session->setFlash(__('No billing plan is associate with this location'), 'flash_fail');
+            }
+            $numberOfCoupon = 0;
+            if ($this->request->is('post') && count($this->request->data) > 0 && (array_key_exists('Coupon', $this->request->data) && count($this->request->data['Coupon']) > 0)) {
+                //$this->set('cp', $this->request->data['Coupon']);
+                //pr($this->request->data['Coupon']);
+                $challanData = array();
+                $counter = (count($this->request->data['Coupon']) - 1) / 3;
+                //$counter = (count($this->request->data['Coupon']) - 2);
+                //$this->set('counter', $counter);
+                $billingPlanTraker = 0;
+                $billingPlanName = '';
+                $locationId = $this->request->data['Coupon']['location_id'];
+
+                for ($i = 0; $i < $counter; $i++) {
+
+                    if ($this->request->data['Coupon']['serialFrom_' . $i] != '' && $this->request->data['Coupon']['serialTo_' . $i] != '' && $this->request->data['Coupon']['serialFrom_' . $i] <= $this->request->data['Coupon']['serialTo_' . $i]) {
+//$challanData[$i]['billingPlanId'] = $this->request->data['Coupon']['billing_plan_id_' . $i];
+                        $c = 0;
+                        for ($j = $this->request->data['Coupon']['serialFrom_' . $i]; $j <= $this->request->data['Coupon']['serialTo_' . $i]; $j++) {
+//pr($this->request->data['Coupon']['serialFrom_' . $i]);
+
+                            $this->Coupon->recursive = -1;
+                            $userDetails = $this->Coupon->find('first', array(
+                                'fields' => array('id', 'username', 'sn', 'location_id', 'billing_plan_id', 'duration', 'price'),
+                                'conditions' => array('id' => $j, 'location_id' => $this->Session->read('choosed_location_id'))
+                            ));
+                            //$this->set('counter', $userDetails);
+//$this->set('username', $userDetails);
+                            if (count($userDetails) > 0) {
+                                $this->set('username', $userDetails);
+                                $this->Coupon->create();
+                                //$x = $this->Coupon->updateAll(array('Coupon.location_id' => $locationId, 'Coupon.called_station_id' => '\'' . $tempLocationDomainListArray[$locationId] . '\''), array('Coupon.id' => $j, 'Coupon.location_id' => $this->Session->read('choosed_location_id'), 'Coupon.activated' => 0));
+                                $x = $this->Coupon->updateAll(array('Coupon.location_id' => $locationId, 'Coupon.called_station_id' => "'$tempLocationDomainListArray[$locationId]'"), array('Coupon.id' => $j, 'Coupon.location_id' => $this->Session->read('choosed_location_id'), 'Coupon.activated' => 0));
+                                $this->set('x', $x);
+                                if ($x > 0) {
+                                    //$this->_updateRadCheckTable($userDetails['Coupon']['username'], 'Called-Station-Id', '\'' . $tempLocationDomainListArray[$locationId] . '\'');
+                                    $this->_updateRadCheckTable($userDetails['Coupon']['username'], 'Called-Station-Id', $tempLocationDomainListArray[$locationId]);
+                                    if ($j == $this->request->data['Coupon']['serialFrom_' . $i]) {
+                                        $challanData[$billingPlanTraker]['firstSN'] = $userDetails['Coupon']['sn'];
+                                        $billingPlanName = $challanData[$billingPlanTraker]['planName'] = $userDetails['Coupon']['duration'];
+                                        $challanData[$billingPlanTraker]['price'] = $userDetails['Coupon']['price'];
+                                    } else {
+                                        if ($billingPlanName != $userDetails['Coupon']['duration']) {
+                                            $billingPlanTraker++;
+                                            $challanData[$billingPlanTraker]['firstSN'] = $userDetails['Coupon']['sn'];
+                                            $billingPlanName = $challanData[$billingPlanTraker]['planName'] = $userDetails['Coupon']['duration'];
+                                            $challanData[$billingPlanTraker]['price'] = $userDetails['Coupon']['price'];
+                                        }
+                                        $challanData[$billingPlanTraker]['lastSN'] = $userDetails['Coupon']['sn'];
+                                    }
+                                    $challanData[$billingPlanTraker]['SerialNumber'][$j] = $userDetails['Coupon']['sn'];
+                                    $challanData[$billingPlanTraker]['BillingPlan'][$j] = $userDetails['Coupon']['billing_plan_id'];
+                                    $c++;
+                                    $numberOfCoupon++;
+                                }
+                                $this->Coupon->clear();
+                            }
+                        }
+                        $billingPlanTraker++;
+                        $challanData[$i]['numbers'] = $c;
+                    }
+                }
+                //$this->set('noCoupon',$numberOfCoupon);
+                if ($numberOfCoupon > 0) {
+                    /* -------------------------Preparing and inserting data to invoice extra-------------------- */
+                    $extraInvoice = array();
+                    $extraInvoice['InvoiceExtra']['amount'] = $numberOfCoupon * $tempScratchCardPriceArray[$locationId];
+                    $extraInvoice['InvoiceExtra']['amount'] = $extraInvoice['InvoiceExtra']['amount'] + ($extraInvoice['InvoiceExtra']['amount'] * 5 / 100);
+                    $extraInvoice['InvoiceExtra']['title'] = 'Scratch Cards'; //$challanData[$billingPlanTraker]['price'];
+                    $date = new DateTime();
+                    $date = $date->sub(new DateInterval('P1M'));
+                    $extraInvoice['InvoiceExtra']['adjust_in_total'] = 1;
+                    $extraInvoice['InvoiceExtra']['month'] = $date->format('m');
+                    $extraInvoice['InvoiceExtra']['year'] = $date->format('Y');
+                    $extraInvoice['InvoiceExtra']['adjustment'] = '+';
+                    $extraInvoice['InvoiceExtra']['location_id'] = $this->request->data['Coupon']['location_id'];
+                    $extraInvoiceResult = $this->InvoiceExtra->find('first', array('fields' => array('id', 'amount', 'adjust_in_total'), 'conditions' => array('location_id' => $extraInvoice['InvoiceExtra']['location_id'], 'title' => $extraInvoice['InvoiceExtra']['title'], 'month' => $extraInvoice['InvoiceExtra']['month'], 'year' => $extraInvoice['InvoiceExtra']['year'])));
+                    //$this->set('testResult', $extraInvoice['InvoiceExtra']['adjust_in_total']);
+                    if ($tempIsRevenueSharedArray[$locationId] == 1) {
+                        if (count($extraInvoiceResult) == 0) {
+                            $this->InvoiceExtra->save($extraInvoice);
+                        } else {
+                            $this->InvoiceExtra->id = $extraInvoiceResult['InvoiceExtra']['id'];
+                            $extraInvoice['InvoiceExtra']['amount'] = $extraInvoice['InvoiceExtra']['amount'] + $extraInvoiceResult['InvoiceExtra']['amount'];
+                            $this->InvoiceExtra->saveField('amount', $extraInvoice['InvoiceExtra']['amount'], true);
+                        }
+                    }
+                    /* -------------------------------End-------------------------------- */
+                    $fileName = $tempLocationListArray[$locationId] . date('d_m_Y_H_i_s');
+                    $this->Session->write('challan_pdf', $fileName);
+                    $this->Session->setFlash(__('Coupons are bound and delevery challan has been mailed.  ')."<a href=".$this->request->webroot."Challans/".$this->Session->read('challan_pdf') . '.pdf'." target='_blank'>".__('Click to download')."</a>", 'flash_success');
+                    $this->_createDeliveryChallan($locationId, $challanData);
+                } else {
+                    $this->Session->setFlash(__('No coupon to bind'), 'flash_fail');
+                    $this->redirect(array('action' => 'bindCouponsWithLocation'));
+                }
+                //$this->redirect(array('action' => 'bindCouponsWithLocation'));
+            } else {
+                $this->set('printRequestData', '$this->request->data');
+            }
+            $this->autoLayout = true;
+        } else {
+            $this->Session->setFlash(__('You need to select ScratchCards location'), 'flash_fail');
+        }
+        unset($tempLocationListArray);
+        unset($tempLocationDomainListArray);
+        unset($tempIsRevenueSharedArray);
+        unset($tempScratchCardPriceArray);
+        $this->set('breadcrumbLabel', 'Free Coupons List');
+        $this->set('label', 'Free Coupons');
+        $this->Session->write('link', 'bindCouponsWithLocation');
+        $this->autoLayout = true;
+//$this->render('bind_coupons_with_location');
+    }
+    public function printbindchallan($filename=null){
+        $this->set('hi', "HotSpotAdmin/".$filename);
+        //pr($filename);
+        $myFile = new File('Challans/'.$filename);
+        $this->set('hi', $myFile->info());
+        ob_clean();
+        header("Content-Length: ".$myFile->size());
+        header("Content-Type: application/pdf");
+        header("Content-Disposition:attachment;filename=$myFile");
+        echo $myFile;
+    }
+    
+    public function unbindCouponsFromLocation() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        // Code to be written later.
+    }
+
+    /*
+      public function createSingleCouponForParticularUser() {
+
+      }
+
+      public function createBunchCouponsForParticularLocation() {
+
+      }
+     * 
+     */
+
+    private function _mKey($len = 12, $type = 'ALNUM') {
+        $alpha = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+            'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+            'y', 'z');
+
+        $ALPHA = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
+            'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+            'X', 'Y', 'Z');
+
+        $num = array('1', '2', '3', '4', '5', '6', '7', '8', '9', '0');
+
+        $keyVals = array();
+
+        $key = array();
+
+        switch ($type) {
+            case 'lower' :
+                $keyVals = $alpha;
+                break;
+            case 'upper' :
+                $keyVals = $ALPHA;
+                break;
+            case 'numeric' :
+                $keyVals = $num;
+                break;
+            case 'ALPHA' :
+                $keyVals = array_merge($alpha, $ALPHA);
+                break;
+            case 'ALNUM' :
+                $keyVals = array_merge($alpha, $ALPHA, $num);
+                break;
+        }
+        for ($i = 0; $i <= $len - 1; $i++) {
+            $r = rand(0, count($keyVals) - 1);
+            $key[$i] = $keyVals[$r];
+        }
+        return join("", $key);
+    }
+
+    private function _genuser() {
+        $rvalue = '';
+        for ($i = 0; $i < 4; $i++) {
+            $rvalue .= $this->_mKey(4, 'numeric');
+            $rvalue .= "-";
+        }
+        $rvalue = preg_replace('/\-$/', "", $rvalue);
+        return $rvalue;
+    }
+
+    function _keygen($len, $type) {
+        $rvalue = "";
+        if ($type == 'passwd') {
+            $rvalue = $this->_mKey(4, 'numeric');
+        } else {
+            do {
+                switch ($len) {
+                    case '4':
+                        $tempCustomerIdListArray = $this->Session->read('locations_customer_id_list');
+                        $appendString = '';
+                        for ($i = 0; $i < strlen($tempCustomerIdListArray[$this->Session->read('choosed_location_id')]); $i = $i + 4) {
+                            $substrLastParameter = ($i + 4) - strlen($tempCustomerIdListArray[$this->Session->read('choosed_location_id')]);
+
+                            if ($substrLastParameter == 0) {
+                                $appendString = $appendString . '-' . substr($tempCustomerIdListArray[$this->Session->read('choosed_location_id')], $i);
+                            } else {
+                                $appendString = $appendString . '-' . substr($tempCustomerIdListArray[$this->Session->read('choosed_location_id')], $i, $substrLastParameter);
+                            }
+                            $this->log($appendString . '*' . $i . '*' . $substrLastParameter, 'info');
+                        }
+
+                        $rvalue = $this->_mKey(4, 'numeric') . $appendString;
+                         // $rvalue = $this->_mKey(4, 'ALNUM') . $appendString;
+                        $this->log($rvalue, 'info');
+                        //$this->_mKey(4, 'numeric') . "@" . $tempCustomerIdListArray[$this->Session->read('choosed_location_id')];
+                        unset($tempCustomerIdListArray);
+                        break;
+                    default:
+                        $rvalue = $this->_genuser();
+                        break;
+                }
+                $numrows = $this->Coupon->find('count', array(
+                    'conditions' => array('username' => $rvalue)
+                ));
+            } while ($numrows != 0);
+        }
+        return $rvalue;
+    }
+
+    function _createSerialNumber($id) {
+        return 'SN/WF/0' . date('Y') . '0' . date('m') . '0' . $id;
+    }
+
+    public function usages() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        //$this->set('testPrint',$this->Session->read('locations_list'));
+        $condition = array();
+        if ($this->request->is('post') && isset($this->request->data['coupons']['locations_id'])) {//&& $this->request->data['coupons']['locations_id']!='all'
+            $this->Session->write('choosed_location_id', $this->request->data['coupons']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+            $condition[] = array('Usage.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            //$condition[] = array('Usage.location_id' => '');
+            $condition[] = array('Usage.location_id' => $this->Session->read('locations_id_list'));
+        }
+        $this->Paginator->settings = array(
+            'limit' => Configure::read('Application.rowLimit'), //Limit of records 
+            'conditions' => $condition,
+            'order' => array('location_name' => 'DESC')
+        );
+        unset($condition);
+        $this->Usage->recursive = 0;
+        $this->set('locationUsages', $this->paginate('Usage'));
+        $this->set('breadcrumbLabel', 'Coupon Usage');
+        $this->Session->write('link', 'usages');
+    }
+
+    private function _fetchBillingPlan($id) {
+        $tempBillingPlansDetails = $this->BillingPlan->find('first', array(
+            'conditions' => array('id' => $id)
+        ));
+        return $data['Coupon']['BillingPlan'] = $billingPlanDetais = $tempBillingPlansDetails['BillingPlan'];
+    }
+
+    private function _prepairAndInsertToRadCheckAndRadReplayTable($data) {
+        //pr($data);
+        if (isset($data['Coupon']['username']) && $data['Coupon']['username'] != '') {
+            $this->_insertToRadReplyTable($data['Coupon']['username'], 'Acct-Interim-Interval', ':=', 900);
+            if (isset($data['Coupon']['password']) && $data['Coupon']['password'] != '') {
+                $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Cleartext-Password', ':=', $data['Coupon']['password']);
+            }
+            if (isset($data['Coupon']['calling_station_id']) && !$data['Coupon']['calling_station_id'] != '') {
+                $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Calling-Station-Id', '==', $data['Coupon']['calling_station_id']);
+            }
+            if (isset($data['Coupon']['called_station_id']) && $data['Coupon']['called_station_id'] != '') {
+                $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Called-Station-Id', '==', $data['Coupon']['called_station_id']);
+            }
+
+            if (isset($data['Coupon']['BillingPlan']['time_bp']) && $data['Coupon']['BillingPlan']['time_bp'] != '' && $data['Coupon']['BillingPlan']['time_bp'] > 0) {
+                $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Max-All-Session', ':=', ($data['Coupon']['BillingPlan']['time_bp'] * 60));
+            }
+            
+//            if (isset($data['Coupon']['BillingPlan']['maximum_octet_bp']) && $data['Coupon']['BillingPlan']['maximum_octet_bp'] != '' && $data['Coupon']['BillingPlan']['maximum_octet_bp'] > 0) {
+//                $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Mikrotik-Total-Limit', ':=', ($data['Coupon']['BillingPlan']['maximum_octet_bp'] * 1048576));
+//            }
+
+            if (isset($data['Coupon']['BillingPlan']['maximum_time_bp']) && $data['Coupon']['BillingPlan']['maximum_time_bp'] != '' && $data['Coupon']['BillingPlan']['maximum_time_bp'] > 0) {
+                $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Expire-After', ':=', $data['Coupon']['BillingPlan']['maximum_time_bp'] * 60);
+            }
+
+            if (isset($data['Coupon']['BillingPlan']['name_bp'])) {
+                if ($data['Coupon']['BillingPlan']['name_bp'] == 'complimentary' && isset($data['Coupon']['FreeUser']['status']) && $data['Coupon']['FreeUser']['status'] != '') {
+                    $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Expiration', ':=', $data['Coupon']['FreeUser']['status']);
+                } else {
+                    $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Expiration', ':=', date('d M Y H:i:s', strtotime("+2 years")));
+                }
+            }
+            $tempNASListArray = $this->Session->read('location_nas_list');
+            if ($this->Session->check('location_nas_list') && $this->Session->check('choosed_location_id') && $this->Session->check('location_nas_list') && strtolower($tempNASListArray[$this->Session->read('choosed_location_id')]) == 'mikrotik') {
+
+                if (isset($data['Coupon']['BillingPlan']['maximum_octet_bp']) && $data['Coupon']['BillingPlan']['maximum_octet_bp'] != '' && $data['Coupon']['BillingPlan']['maximum_octet_bp'] > 0) {
+                    $this->_insertToRadCkeckTable($data['Coupon']['username'], 'Mikrotik-Total-Limit', ':=', $this->_convertToByte($data['Coupon']['BillingPlan']['maximum_octet_bp'], 'MB'));
+                    $this->_insertToRadReplyTable($data['Coupon']['username'], 'Mikrotik-Total-Limit', ':=', $this->_convertToByte($data['Coupon']['BillingPlan']['maximum_octet_bp'], 'MB'));
+                }
+                if (isset($data['Coupon']['BillingPlan']['bandwidth_upload_bp']) && $data['Coupon']['BillingPlan']['bandwidth_upload_bp'] != '' && $data['Coupon']['BillingPlan']['bandwidth_download_bp'] > 0 && isset($data['Coupon']['BillingPlan']['bandwidth_download_bp']) && $data['Coupon']['BillingPlan']['bandwidth_download_bp'] != '' && $data['Coupon']['BillingPlan']['bandwidth_download_bp'] > 0) {
+                    $this->_insertToRadReplyTable($data['Coupon']['username'], 'Mikrotik-Rate-Limit', ':=', $data['Coupon']['BillingPlan']['bandwidth_upload_bp'] . 'k /' . $data['Coupon']['BillingPlan']['bandwidth_download_bp'] . 'k');
+                }
+            }
+            unset($tempNASListArray);
+            if (isset($data['Coupon']['BillingPlan']['redirection_url_bp']) && $data['Coupon']['BillingPlan']['redirection_url_bp'] != '') {
+                $this->_insertToRadReplyTable($data['Coupon']['username'], 'WISPr-Redirection-URL', ':=', $data['Coupon']['BillingPlan']['redirection_url_bp']);
+            }
+            if (isset($data['Coupon']['BillingPlan']['cat_bp']) && $data['Coupon']['BillingPlan']['cat_bp'] == 'special' && isset($data['Coupon']['BillingPlan']['simultanous_bp']) && $data['Coupon']['BillingPlan']['simultanous_bp'] != '' && $data['Coupon']['BillingPlan']['simultanous_bp'] > 0) {
+                $this->_insertToRadReplyTable($data['Coupon']['username'], 'Port-Limit', ':=', $data['Coupon']['BillingPlan']['simultanous_bp']);
+            }
+            if (isset($data['Coupon']['BillingPlan']['admertise_url']) && $data['Coupon']['BillingPlan']['admertise_url'] != '') {
+                $this->_insertToRadReplyTable($data['Coupon']['username'], 'Mikrotik-Advertise-URL', ':=', $data['Coupon']['BillingPlan']['admertise_url']);
+            }
+            if (isset($data['Coupon']['BillingPlan']['admertise_interval']) && $data['Coupon']['BillingPlan']['admertise_interval'] != '') {
+                $this->_insertToRadReplyTable($data['Coupon']['username'], 'Mikrotik-Advertise-Interval', ':=', $data['Coupon']['BillingPlan']['admertise_interval']);
+            }
+        }
+    }
+
+    private function _convertToByte($value, $type) {
+        $convertedValue = 0;
+        switch ($type) {
+            case 'GB':
+                $convertedValue = $value * 1024 * 1024 * 1024;
+                break;
+            case 'Gb':
+                $convertedValue = ((float) $value / 8) * 1024 * 1024 * 1024;
+                break;
+            case 'MB':
+                $convertedValue = $value * 1024 * 1024;
+                break;
+            case 'Mb':
+                $convertedValue = ((float) $value / 8) * 1024 * 1024;
+                break;
+            case 'KB':
+                $convertedValue = $value * 1024;
+                break;
+            case 'Kb':
+                $convertedValue = ((float) $value / 8) * 1024;
+                break;
+            case 'B':
+                $convertedValue = $value;
+                break;
+            case 'b':
+                $convertedValue = ((float) $value / 8);
+                break;
+            default:
+                break;
+        }
+        return $convertedValue;
+    }
+
+    private function _insertToRadCkeckTable($userName, $attribute, $operation, $value) {
+        $data = array();
+        $data['Radcheck']['username'] = $userName;
+        $data['Radcheck']['attribute'] = $attribute;
+        $data['Radcheck']['op'] = $operation;
+        $data['Radcheck']['value'] = $value;
+        $this->Radcheck->create();
+        if ($this->Radcheck->save($data)) {
+            
+        }
+        $this->Radcheck->clear();
+    }
+
+    private function _updateRadCheckTable($userName, $attribute, $value) {
+        $data['Radcheck']['value'] = $value;
+        $data['Radcheck']['op'] = ':=';
+        $data['Radcheck']['username'] = $userName;
+        $data['Radcheck']['attribute'] = $attribute;
+        $this->Radcheck->create();
+        $this->Radcheck->save($data);
+        $this->Radcheck->clear();
+    }
+
+    private function _insertToRadReplyTable($userName, $attribute, $operation, $value) {
+        $data = array();
+        $data['Radreply']['username'] = $userName;
+        $data['Radreply']['attribute'] = $attribute;
+        $data['Radreply']['op'] = $operation;
+        $data['Radreply']['value'] = $value;
+        $this->Radreply->create();
+        if ($this->Radreply->save($data)) {
+            
+        }
+    }
+
+    private function _createDeliveryChallan($locationId, $data) {
+        $tempLocationScratchCardPriceArray = $this->Session->read('location_scratch_card_price');
+        $tempIsRevenueShared = $this->Session->read('is_revenue_shared');
+        $this->Session->write('pdfData', $tempLocationScratchCardPriceArray[$locationId] . '--' . $tempIsRevenueShared[$locationId]);
+        unset($tempLocationScratchCardPriceArray);
+        unset($tempIsRevenueShared);
+        $this->_exportDeleveryChallanToPdf($locationId, $data);
+        $pdfFileName = $this->Session->read('challan_pdf') . '.pdf';
+        $file = new File("Challans/" . $pdfFileName);
+        $deliveryData['DeliveryChallan']['location_id'] = $locationId;
+        $deliveryData['DeliveryChallan']['month'] = date('m');
+        $deliveryData['DeliveryChallan']['year'] = date('Y');
+        $deliveryData['DeliveryChallan']['type'] = 'application/pdf';
+        $deliveryData['DeliveryChallan']['challan_name'] = $pdfFileName;
+        $deliveryData['DeliveryChallan']['size'] = $file->size(); //filesize("Challans/".$pdfFileName);
+        $deliveryData['DeliveryChallan']['challan'] = $file->read();
+        $file->close();
+        if ($this->DeliveryChallan->save($deliveryData)) {
+            //$this->Session->setFlash(__('Please select success'), 'flash_fail');
+            $this->_emailChallan($pdfFileName, $locationId);
+            //$file->delete();
+        }
+        $this->redirect(array('action' => 'bindCouponsWithLocation'));
+    }
+
+    private function _exportDeleveryChallanToPdf($locationId, $data) {
+        $this->set('data', $data);
+        $this->set('locationId', $locationId);
+        $tempLocationListArray = $this->Session->read('locations_list');
+        $tempIsRevenueSharedArray = $this->Session->read('is_revenue_shared');
+        $tempLocationScratchCardPriceListArray = $this->Session->read('location_scratch_card_price');
+        $locationAddress = $this->Location->findById($locationId, array('fields' => 'Location.name', 'Location.address1', 'Location.address2', 'Location.location_city', 'Location.state', 'Location.post_code', 'Location.email', 'Location.phone1'));
+        $locationAddressString = '';
+        if (count($locationAddress) > 0) {
+            if ($locationAddress['Location']['name'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['name'] . '<br/>';
+            }
+            if ($locationAddress['Location']['address1'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['address1'] . '<br/>';
+            }
+            if ($locationAddress['Location']['address2'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['address2'] . '<br/>';
+            }
+            if ($locationAddress['Location']['location_city'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['location_city'] . ', ';
+            }
+            if ($locationAddress['Location']['state'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['state'] . '<br/>';
+            }
+            if ($locationAddress['Location']['post_code'] != '') {
+                $locationAddressString = $locationAddressString . 'PIN-' . $locationAddress['Location']['post_code'] . '<br/>';
+            }
+            if ($locationAddress['Location']['email'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['email'] . '<br/>';
+            }
+            if ($locationAddress['Location']['phone1'] != '') {
+                $locationAddressString = $locationAddressString . $locationAddress['Location']['phone1'] . '<br/>';
+            }
+            $locationAddressString = $locationAddressString . '<br/><br/>';
+        }
+        unset($locationAddress);
+        $this->set('locationName', $tempLocationListArray[$locationId]);
+        $this->set('locationType', $tempIsRevenueSharedArray[$locationId]);
+        $this->set('scratchCardPrice', $tempLocationScratchCardPriceListArray[$locationId]);
+        $this->set('location name', $tempLocationListArray[$this->Session->read('choosed_location_id')]);
+        $this->set('wifonicAddress', Configure::read('Application.wifonicAddress'));
+        $this->set('title', 'Scratch Card Delivery Challan');
+        $this->set('locationAddress', $locationAddressString);
+        $fileName = $this->Session->read('challan_pdf');
+        unset($tempIsRevenueSharedArray);
+        unset($tempLocationListArray);
+        unset($tempLocationScratchCardPriceListArray);
+        $this->set('fileName', $fileName);
+        $this->Session->write('challan_pdf', $fileName);
+        $this->layout = 'pdf'; //this will use the pdf.ctp layout
+        $this->render('export_delevery_challan_to_pdf');
+        $this->layout = null;
+        $this->autoLayout = false;
+        return 0;
+    }
+
+    private function _emailChallan($fileName, $locationId) {
+        try {
+            $tempLocationEmailListArray = $this->Session->read('location_email_id');
+            $tempLocationListArray = $this->Session->read('locations_list');
+            $email = new CakeEmail('smtp');
+            $email->emailFormat('both');
+            //$email->from(array('abhayapatel@wifonic.com' => 'WiFonic Technologies Pvt. Ltd.'));
+            if ($this->Session->check('location_email_id') && array_key_exists($locationId, $tempLocationEmailListArray) && $tempLocationEmailListArray[$locationId] != '') {
+                $email->to($tempLocationEmailListArray[$locationId]);
+            } else {
+                $email->to('info@wifonic.com');
+            }
+            $email->subject($tempLocationListArray[$locationId] . '!! Notification of Scratch Cards dispach by WiFonic');
+
+            $email->message('Dear Customer,<br>
+                        We Thank you for your continued patronage.<br>
+                        We have sent you batch of Scratch Cards as requested by you.<br>
+                        Delivery Challan is attached along with this email for your reference.<br>
+                        Assuring our best attention at all times.<br><br>
+                        --<br>
+                        Wifonic Technologies Pvt. Ltd.'
+            );
+            unset($tempLocationEmailListArray);
+            unset($tempLocationListArray);
+            $email->attachments('./Challans/' . $fileName);
+            //$email->send('Custom message'); NO SEND EMAIL uncomment on production server
+        } catch (Exception $ex) {
+            //throwException($ex);
+        }
+    }
+
+    public function printGeneratedCoupon() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        if ($this->request->is('post')) {
+            $this->_printCoupon($this->request->data['Coupon']['first_cid'], $this->request->data['Coupon']['last_cid'], $this->Session->read('choosed_location_id'));
+        }
+    }
+
+    private function _printCoupon($fastCId, $lastCId, $lId) {//'logo', 'logo_name', 'logo_type'
+        //$couponDls = array();
+        //$couponDetails = array();
+        if ($lastCId !== null && $lastCId !== '' && ($fastCId < $lastCId)) {
+            $this->Coupon->recursive = -1;
+            $couponDetails = $this->Coupon->find('all', array('fields' => array('sn', 'username', 'password', 'duration', 'price', 'location_id'),
+                'conditions' => array('id >=' => $fastCId, 'id <=' => $lastCId, 'location_id' => $lId)));
+            if (count($couponDetails) > 0) {
+                $this->set('couponDetails', $couponDetails);
+            }
+        } else {
+            $this->Coupon->recursive = -1;
+            $couponDetails = $this->Coupon->find('first', array('filds' => array('sn', 'username', 'password', 'duration', 'price', 'location_id'),
+                'conditions' => array('id' => $fastCId, 'location_id' => $lId)));
+            if (count($couponDetails) > 0) {
+                $x[0] = $couponDetails;
+                $this->set('couponDetails', $x);
+            }
+        }
+
+//        $couponDetails = $this->Coupon->find('first', array('filds' => array('sn', 'username', 'password', 'duration', 'price', 'location_id'),
+//        'conditions' => array('id' => $cId)));
+        $this->Location->recursive = -1;
+        $locationDetails = $this->Location->find('first', array('filds' => array('logo', 'logo_size', 'logo_name'),
+            'conditions' => array('id' => $lId)));
+        if (count($locationDetails) > 0) {
+            if ($locationDetails['Location']['logo'] != '') {
+                $this->set('logo', $locationDetails['Location']['logo']);
+                $tempFileTypeArray = explode('/', $locationDetails['Location']['logo_type']);
+                $filename = 'Temp/' . time() . '.' . $tempFileTypeArray[1];
+                $myfile = fopen($filename, "w");
+                fwrite($myfile, $locationDetails['Location']['logo']);
+                fclose($myfile);
+                $this->set('filename', $filename);
+                $this->set('logo_size', $locationDetails['Location']['logo_size']);
+                $this->set('logo_type', $tempFileTypeArray[1]);
+            } else {
+                $this->set('logo', '');
+                $this->set('filename', '');
+                $this->set('logo_size', '');
+                $this->set('logo_type', '');
+            }
+
+            $tempLocationsListArray = $this->Session->read('locations_list');
+            $this->set('location', $tempLocationsListArray[$lId]);
+
+            $tempUsernameLenthList = $this->Session->read('coupon_username_length_list');
+            $this->set('coupenLength', $tempUsernameLenthList[$lId]);
+
+	    unset($couponDetails);
+            unset($tempLocationsListArray);
+	    unset($tempUsernameLenthList);
+            unset($tempFileTypeArray);
+	if($this->Session->read('choosed_location_id') == '111111' ||
+		 $this->Session->read('choosed_location_id') == '207' ){
+	    $this->layout = 'coupon';
+	    $this->render('windflower_coupons');
+	}else{
+
+            $this->render('print_coupon');
+            $this->Session->write('challan_pdf', $dumpPdf);
+            $this->layout = null;
+            $this->autoLayout = false;
+	}
+        }
+        //$this->redirect(array('controller' => 'pages', 'action' => 'index'));
+        //$this->render('index');
+    }
+
+    public function displayLogoFile($id) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $location = $this->Location->findById($id);
+        $file = $location['Location']['logo'];
+        $size = $location['Location']['logo_size'];
+        $type = $location['Location']['logo_type'];
+        $name = $location['Location']['logo_name'];
+        ob_clean();
+        echo $file;
+    }
+
+    public function printACoupon() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post'))
+            $this->_printCoupon($this->request->data['Coupon']['id'], '', $this->Session->read('choosed_location_id'));
+    }
+
+    public function exportToExcel() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $data = $this->Coupon->find('all', array(
+                'conditions' => array('username' => explode(',', $this->request->data['Coupon']['username'])),
+                'limit' => Configure::read('Application.rowLimit'),
+            ));
+            $tmpUserNameArray = $this->Session->read('location_username_length');
+            $usernameLength = $tmpUserNameArray[$this->Session->read('choosed_location_id')];
+            $this->set('userNameLength', $usernameLength);
+            $this->set('users', $data);
+        }
+    }
+
+    public function exportCoupon($fromDate = null, $toDate = null) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $data = array();
+        if ($this->request->is('POST')) {
+            $fromDate = date('Y-m-d', strtotime($this->request->data['Coupon']['from_date']));
+            $toDate = strtotime($this->request->data['Coupon']['to_date']);
+            $toDate = date("Y-m-d", strtotime("+1 day", $toDate));
+
+	    $fromDateForFile = $this->request->data['Coupon']['from_date'];
+            $toDateForFile   = $this->request->data['Coupon']['to_date'];
+
+            $this->set('fromDateForFile', $fromDateForFile);
+            $this->set('toDateForFile', $toDateForFile);
+
+
+            $condition = array();
+            $condition[] = array('Coupon.location_id' => $this->Session->read('choosed_location_id'));
+            if ($this->request->data['Coupon']['action'] == 'unUsedCouponList') {
+                $condition[] = array('cr_date >=' => $fromDate, 'cr_date <=' => $toDate, 'activated' => '0', 'sn LIKE' => '%SN%');
+            } else {
+                $condition[] = array('active_date >=' => $fromDate, 'active_date <=' => $toDate, 'activated' => '1');
+            }
+            $this->Coupon->recursive = -1;
+            $data = $this->Coupon->find('all', array(
+                'conditions' => $condition,
+                    //'limit' => Configure::read('Application.rowLimit'),
+            ));
+        }
+        $this->set('coupons', $data);
+        Configure::write('debug', '0');
+    }
+
+}

@@ -1,0 +1,74 @@
+
+<!-- The form is placed inside the body of modal -->
+
+<div class="col-md-12">
+    <?php
+    //header('refresh: 2; url=""');
+    echo $this->Form->create('Coupon', array('id' => 'SingleCouponForm',
+        'method' => 'post',
+        'action' => 'add',
+        'class' => 'form-horizontal',
+        'target'=>'_blank',
+        'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+        'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+        'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+    ?>
+    <div class="col-md-8">
+        <?php
+        echo $this->Form->input('desboard', array(
+            'type' =>'hidden',
+            'value' => 1
+        ));
+        echo $this->Form->input('firstname', array(
+            'label' => __('Name'),
+            'data-bv-notempty' => 'true',
+            'data-bv-notempty-message' => "The first name is required and cannot be empty",
+            'data-bv-regexp-regexp' => "^[A-Za-z]{1,}[\.]{0,1}[A-Za-z]{0,}$",
+            'data-bv-regexp-message' => "The first name can only consist of alphabets and numbers",
+        ));
+        ?>
+
+        <?php
+        echo $this->Form->input('cust_id', array(
+            'type'=>'text',
+            'label' => __('Room No.'),
+            'data-bv-notempty' => 'true',
+            'data-bv-notempty-message' => "Room no. is required and cannot be empty",
+            'data-bv-regexp' => "true",
+            'data-bv-regexp-regexp' => "^[A-Za-z0-9]{1,}[\.]{0,1}[A-Za-z0-9]{0,}$",
+            'data-bv-regexp-message' => "The room no. can only consist of alphabets and numbers, with no blank space",
+        ));
+        ?>
+
+        <?php
+        echo $this->Form->input('email', array(
+            'label' => __('Email'),
+        ));
+        ?>
+
+        <?php
+        echo $this->Form->input('mac', array(
+            'label' => __('MAC Address'),
+            //'data-bv-notempty' => 'true',
+            'data-bv-notempty-message' => "MAC is required and cannot be empty",
+            'data-bv-regexp' => "true",
+            'data-bv-regexp-regexp' => "^([0-9A-Fa-f]{2}[:-]?){5}([0-9A-Fa-f]{2})$",
+            'data-bv-regexp-message' => "Enter a valid MAC address",
+        ));
+        ?>
+
+        <?php
+        echo $this->Form->input('billing_plan_id', array(
+            'id' => 'add_user_location_id',
+            'label' => __('Billing Plan'),
+            'type' => 'select',
+            'title' => "Choose a billing plan",
+            'options' => $billing_plans,
+                )
+        );
+        ?>
+
+        <?php echo $this->Form->end(__("Submit"), array('class' => 'btn btn-primary')); ?>
+    </div>
+</div>
+

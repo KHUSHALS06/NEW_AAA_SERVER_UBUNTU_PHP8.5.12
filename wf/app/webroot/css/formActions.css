@@ -1,0 +1,44 @@
+/* 
+    Document   : formLinks
+    Created on : Sep 22, 2014, 11:45:34 AM
+    Author     : Preeti Joseph
+    Description:
+        To display form submit button as text-links or images.
+*/
+
+.action-button {
+    overflow:visible; /* Shrinkwrap the text in IE7- */
+    margin:0;
+    padding:0;
+    border:0;
+    color:#428BCA; /* Match your link colour */
+    background:transparent;
+    font:inherit; /* Inherit font settings (doesn’t work in IE7-) */
+    line-height:normal; /* Override line-height to avoid spacing issues */
+    cursor:pointer; /* Buttons don't make the cursor change in all browsers */
+    -moz-user-select:text; /* Make button text selectable in Gecko */
+}
+/* Make sure keyboard users get visual feedback */
+.action-button:hover,
+.action-button:focus {
+    color:#428BCA;
+    background-color:transparent;
+    text-decoration:underline; /* Make the text look like a link */
+}
+
+.action-button::-moz-focus-inner {
+    padding:0;
+    border:0;
+}
+.action-column{
+    /*position:relative;
+    min-height:1px;*/
+    padding-right:8px;
+    padding-left:8px;
+}
+.action-link{
+    padding-left: 10px;
+}
+
+
+

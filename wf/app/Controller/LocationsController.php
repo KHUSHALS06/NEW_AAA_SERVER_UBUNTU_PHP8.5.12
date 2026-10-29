@@ -1,0 +1,1101 @@
+<?php
+
+/** LocationsController class
+ * 
+ * This class consists of methods for location management
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+/**
+ * Locations Controller
+ *
+ * @property Location $Location
+ * @property PaginatorComponent $Paginator
+ */
+define("TOTAL_STEPS", 4);
+
+class LocationsController extends AppController {
+
+    public $uses = array('Location', 'User', 'Group', 'BillingPlan', 'BusinessPlan', 'CmsLoginpage', 'State', 'LocationsUser');
+
+    /**
+     * Helpers
+     *
+     * @var array
+     */
+    public $helpers = array('Js');
+
+    /**
+     * Components
+     *
+     * @var array
+     */
+    public $components = array('Paginator', 'RequestHandler');
+
+    function beforeFilter() {
+        parent::beforeFilter();
+        if ($this->request->is('ajax')) {
+            $this->layout = 'ajax';
+        }
+    }
+
+    /**
+     * This is the default method for the Locations controller. It fetches all the locations list.
+     *
+     * @return void
+     */
+    public function index() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $conditions = array();
+        if ($this->request->is('POST') && isset($this->request->data['locations']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['locations']['locations_id']);
+        }
+        if ($this->Session->check('addLocation_id')) {
+            $this->Session->delete('addLocation_id');
+        }
+        if ($this->Session->read('choosed_location_id') == '') {
+            $conditions[] = array('LocationsUser.user_id' => $this->Auth->user('id'));
+        } else {
+            $conditions[] = array('LocationsUser.user_id' => $this->Auth->user('id'));
+        }
+        //$conditions[] = array('Location.live' => $this->Auth->user('id'));
+        # Search
+        if (count($this->passedArgs) == 0) {
+            if ($this->Session->check('search_conditions')) {
+                $this->Session->delete('search_conditions');
+            }
+
+            if ($this->request->is('post') && isset($this->request->data['search']) && ($this->request->data['search'] != '') && ($this->request->data[$this->request->data['search']] != '')) {
+                if ($this->request->data['search'] == 'group_id') {
+                    $conditions[] = array('Location.' . $this->request->data['search'] => $this->request->data[$this->request->data['search']]);
+                } else {
+                    $conditions[] = array('Location.' . $this->request->data['search'] . ' LIKE' => '%' . trim($this->request->data[$this->request->data['search']]) . '%');
+                }
+            }
+            $this->Session->write('search_conditions', $conditions);
+        }
+
+        if ($this->Session->check('search_conditions') && count($this->Session->read('search_conditions')) > 0) {
+            //unset($conditions);
+            $conditions = $this->Session->read('search_conditions');
+        }
+
+        $this->Location->bindModel(array('hasOne' => array('LocationsUser')), false);
+
+        //Definign the search criteria for the paginator
+        $this->Paginator->settings = array(
+            'limit' => Configure::read('Application.rowLimit'),
+            'order' => array('Location.location_name' => 'ASC'),
+            'conditions' => $conditions,
+            'order' => array('Location.modified' => 'DESC')
+        );
+        $this->Session->write('addLocation', "");
+        $this->Location->recursive = 0;
+        $this->Location->bindModel(array('hasOne' => array('LocationsUser')));
+        $this->set('locations', $this->Paginator->paginate('Location'));
+        $locationToken = rand(100, 999); //creating a token for checking porpose in view, edit and deacticate/activate action.
+        $this->Session->write('location_token', $locationToken); //Writting the token to session.
+        $this->set("locationToken", $locationToken); //setting the token in view, edit and deacticate/activate form in the index.ctp file.
+        $this->Session->write('link', 'locationsList');
+    }
+
+    /**
+     * View location details
+     *
+     * @throws NotFoundException
+     * @param string $id
+     * @return void
+     */
+    public function view() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->data['Location']['id']) {
+            $options = array('conditions' => array('Location.' . $this->Location->primaryKey => $this->request->data['Location']['id']));
+            $this->set('location', $this->Location->find('first', $options));
+        } else {
+            $this->set('location', '');
+            $this->redirect(array('action' => 'index'));
+        }
+        $this->set('breadcrumbLabel', 'View Location');
+    }
+
+    /**
+     * Create domain for location
+     *
+     * @return void
+     * @access private
+     */
+    function _createDomain($key) {
+        return $key;
+    }
+
+    /**
+     * Create customer ID for location
+     *
+     * @return void
+     * @access private
+     */
+    function _customerId() {
+        $num = array('1', '2', '3', '4', '5', '6', '7', '8', '9', '0');
+        $keyVals = array();
+        $key = array();
+        $keyVals = $num;
+        $cid = '';
+        do {
+            for ($i = 0; $i <= 11; $i++) {
+                $r = rand(0, count($keyVals) - 1);
+                $key[$i] = $keyVals[$r];
+            }
+            $cid = join('', $key);
+            //$q1 = "select * from locations where CustomerID='" . $cid . "'";
+            $result1 = $this->Location->findByCustomerId($cid); //mysql_query($q1);
+            $numrows = count($result1);
+            //echo $cid . "\n";
+        } while ($numrows != 0);
+        return $cid;
+    }
+
+    /**
+     * Step 0, adds location details
+     *
+     * @return void
+     */
+    public function addLocation0() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+
+        if ($this->Session->check('addLocation_id')) {
+            $this->Session->write('Step.id', 0);
+        } else {
+            $this->Session->write('Step.id', 0);
+        }
+        $s = str_replace('addLocation', '', $this->action);
+        $this->set('total_steps', TOTAL_STEPS);
+        if ($this->Session->check('addLocation_id') && ($this->Session->read('addLocation_id') != '')) {
+            $this->request->data['Location']['id'] = $this->Session->read('addLocation_id');
+        }
+        $type = $this->enumToSelectField('Location', 'locations', 'type');
+        $this->set('type', $type);
+        $states = $this->State->find('list', array('fields' => array('State.name', 'State.name')));
+        $this->set('states', $states);
+        if ($this->request->is('POST') && count($this->request->data) > 0) {
+            $this->request->data['Location']['customer_id'] = $this->_customerId();
+            $this->request->data['Location']['location_domain'] = $this->_randomString(15); //$this->request->data('Location.location_name') . $this->_createDomain($this->request->data['Location']['customer_id']);
+            $this->request->data['User'] = $this->User->find('list', array(
+                'fields' => array('id'),
+                'conditions' => array(
+                    'group_id' => $this->Group->find('list', array(
+                        'fields' => array('id'),
+                        'conditions' => array('name' => Configure::read('Application.wifonicGroups'))
+                            )
+            ))));
+            $this->request->data['User']['94'] = '94';//Assign location to Yogesh  
+            
+            if ($this->request->data['Location']['installation_city'] != '') {
+                $this->request->data['Location']['location_city'] = $this->request->data['Location']['installation_city'];
+            }
+
+            if ($this->request->data['Location']['installation_state'] != '') {
+                $this->request->data['Location']['location_state'] = $this->request->data['Location']['installation_state'];
+            }
+            $this->request->data['Location']['location_country'] = 'IN';
+
+            $this->Location->create();
+            if ($this->Location->saveAll($this->request->data)) {
+                $this->log("Location ID: " . $this->Location->getLastInsertID() . " created", 'info');
+                $this->Session->write('Step.id', $s);
+                if ($this->Location->getLastInsertID()) {
+                    $this->Session->write('addLocation_id', $this->Location->getLastInsertID());
+                    $this->request->data['Location']['id'] = $this->Location->getLastInsertID();
+                    $this->_createComplimentoryBillingPlan($this->request->data);
+                    $this->_createDefaultBillingPlans($this->request->data);
+                    $this->_addDefaultLoginPage($this->request->data['Location']['id'], $this->request->data['Location']['location_domain']);
+                }
+                $this->Session->setFlash(__('Location details were added successfully.'), 'flash_success');
+                $this->redirect(array('action' => 'addLocation1'), null, true);
+            } else {
+                $this->Session->setFlash(__("Incorrect data provided."), 'flash_fail');
+            }
+        } else {
+            $params = array(
+                'conditions' => array('Location.id' => $this->Session->read('addLocation_id'))
+            );
+            $this->data = $this->Location->find('first', $params);
+        }
+        //---------------------------------------------------------
+        $options = $this->enumToSelectField('Location', 'locations', 'pms_type'); //Model,table,Fiels
+        //---------------------------------------------------------
+    }
+
+    /**
+     * Step 1, adds commercial details
+     *
+     * @return void
+     */
+    public function addLocation1() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $invoice_day = $this->enumToSelectField('Location', 'locations', 'invoice_day');
+        $this->set('invoice_day', $invoice_day);
+        $auto_renew = array('0' => 'No', '1' => 'Yes'); //$this->enumToSelectField('Location', 'locations', 'auto_renew');
+        $this->set('auto_renew', $auto_renew);
+
+        $this->set('business_type', $this->BusinessPlan->find('list', array('fields' => array('id', 'name'))));
+
+        if (!$this->Session->check('addLocation_id') && ($this->Session->read('addLocation_id') == '')) {
+            $this->redirect(array('action' => 'addLocation0'), null, true);
+        }
+        $s = str_replace('addLocation', '', $this->action);
+        $this->set('total_steps', TOTAL_STEPS);
+
+        if ($this->request->is('POST') && count($this->request->data) > 0 && isset($this->request->data['Location']['revenue_type'])) {
+
+            if ($this->Session->read('addLocation_id')) {
+                $this->request->data['Location']['id'] = $this->Session->read('addLocation_id');
+            }
+            if ($this->request->data['Location']['revenue_type'] == 'r') {
+                $this->request->data['Location']['one_time'] = '0';
+                $this->request->data['Location']['revenue_share'] = '1';
+                $this->request->data['location']['monthly_fixed'] ='0.0';
+            } else if ($this->request->data['Location']['revenue_type'] == 'm') {
+                $this->request->data['Location']['one_time'] = '0';
+                $this->request->data['Location']['revenue_share'] = '0';
+            } else if ($this->request->data['Location']['revenue_type'] == 'a') {
+                $this->request->data['Location']['one_time'] = '1';
+                $this->request->data['Location']['revenue_share'] = '0';
+                $this->request->data['Location']['monthly_fixed'] = '0.0';
+            }
+
+            $this->log($this->request->data['Location']['business_plan_id'], 'info');
+            if (array_key_exists('valid_till', $this->request->data['Location']) && $this->request->data['Location']['valid_till'] != '') {
+                $this->request->data['Location']['valid_till'] = date('Y-m-d', strtotime($this->request->data['Location']['valid_till']));
+                //pr($this->request->data['Location']['valid_till']);
+            }
+            if (array_key_exists('increment_date', $this->request->data['Location']) && $this->request->data['Location']['increment_date'] != '') {
+                $this->request->data['Location']['increment_date'] = date('Y-m-d', strtotime($this->request->data['Location']['increment_date']));
+                //pr($this->request->data['Location']['valid_till']);
+            }
+            if (array_key_exists('one_time_date', $this->request->data['Location']) && $this->request->data['Location']['one_time_date'] != '') {
+                $this->request->data['Location']['one_time_date'] = date('Y-m-d', strtotime($this->request->data['Location']['one_time_date']));
+                //pr($this->request->data['Location']['valid_till']);
+            }
+            //pr($this->request->data['Location']['business_plan_id']);
+            unset($this->request->data['Location']['revenue_type']);
+//            unset($this->request->data['Location']['monthly_fixed']);
+            try {
+                if ($this->Location->save($this->request->data)) {
+                    $this->log("Location commertial were added", 'info');
+                    $this->Session->write('Step.id', $s);
+                    $this->Session->setFlash(__('Commercial details were added successfully.'), 'flash_success');
+                    $this->redirect(array('action' => 'addLocation2'), null, true);
+                } else {
+                    //$this->Session->setFlash(__("ERR_MSG", true));
+                }
+            } catch (Exception $ex) {
+                //pr($ex);
+            }
+        } else {
+            $params = array(
+                'conditions' => array('Location.id' => $this->Session->read('addLocation_id'))
+            );
+            $this->data = $this->Location->find('first', $params);
+        }
+    }
+
+    /**
+     * Step 2, adds contact details
+     *
+     * @return void
+     */
+    public function addLocation2() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if (!$this->Session->check('addLocation_id') && ($this->Session->read('addLocation_id') == '')) {
+            $this->redirect(array('action' => 'addLocation0'), null, true);
+        }
+        $s = str_replace('addLocation', '', $this->action);
+        $this->set('total_steps', TOTAL_STEPS);
+        if ($this->request->is('POST') && count($this->request->data) > 0) {
+            if ($this->Session->read('addLocation_id')) {
+                $this->request->data['Location']['id'] = $this->Session->read('addLocation_id');
+            }
+            if (array_key_exists('valid_till', $this->request->data['Location']) && $this->request->data['Location']['valid_till'] != '') {
+                $this->request->data['Location']['valid_till'] = date('Y-m-d', strtotime($this->request->data['Location']['valid_till']));
+                //pr($this->request->data['Location']['valid_till']);
+            }
+            if (array_key_exists('increment_date', $this->request->data['Location']) && $this->request->data['Location']['increment_date'] != '') {
+                $this->request->data['Location']['increment_date'] = date('Y-m-d', strtotime($this->request->data['Location']['increment_date']));
+                //pr($this->request->data['Location']['increment_date']);
+            }
+
+            if (array_key_exists('one_time_date', $this->request->data['Location']) && $this->request->data['Location']['one_time_date'] != '') {
+                $this->request->data['Location']['one_time_date'] = date('Y-m-d', strtotime($this->request->data['Location']['one_time_date']));
+                //pr($this->request->data['Location']['increment_date']);
+            }
+            if ($this->Location->save($this->request->data)) {
+                $this->log("Contact details were added", 'info');
+                $this->Session->write('Step.id', $s);
+                $this->Session->setFlash(__('Contact details were added successfully.'), 'flash_success');
+                $this->redirect(array('action' => 'addLocation3'), null, true);
+            } else {
+                $this->Session->setFlash(__("Incorrect data provided."), 'flash_fail');
+            }
+        } else {
+            $params = array(
+                'conditions' => array('Location.id' => $this->Session->read('addLocation_id'))
+            );
+            $this->data = $this->Location->find('first', $params);
+        }
+    }
+
+    /**
+     * Step 3, adds billing and installation details
+     *
+     * @return void
+     */
+    public function addLocation3() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $live = array('0' => 'No', '1' => 'Yes'); //$this->enumToSelectField('Location', 'locations', 'live');
+        $this->set('live', $live);
+        if ($this->Session->read('addLocation_id') == '') {
+            $this->redirect(array('action' => 'addLocation0'), null, true);
+        }
+
+        $locationCity = $this->Location->find('first', array(
+            'fields' => array('Location.location_city'),
+            'conditions' => array('Location.id' => $this->Session->read('addLocation_id'))
+        ));
+        $this->set('location_city', $locationCity['Location']['location_city']);
+
+        $s = str_replace('addLocation', '', $this->action);
+        $this->set('total_steps', TOTAL_STEPS);
+        if ($this->request->is('POST') && count($this->request->data) > 0) {
+            if ($this->Session->read('addLocation_id')) {
+                $this->request->data['Location']['id'] = $this->Session->read('addLocation_id');
+            }
+            if (isset($this->request->data['Location']['check_button']) && $this->request->data['Location']['check_button'] == 'yes') {
+                $this->request->data['Location']['installation_name'] = $this->request->data['Location']['name'];
+                $this->request->data['Location']['installation_address1'] = $this->request->data['Location']['address1'];
+                $this->request->data['Location']['installation_address2'] = $this->request->data['Location']['address2'];
+                $this->request->data['Location']['installation_city'] = $this->request->data['Location']['location_city'];
+                $this->request->data['Location']['installation_state'] = $this->request->data['Location']['state'];
+                $this->request->data['Location']['installation_postcode'] = $this->request->data['Location']['post_code'];
+            }
+            if (array_key_exists('live_date', $this->request->data['Location']) && $this->request->data['Location']['live_date'] != '') {
+                $this->request->data['Location']['live_date'] = date('Y-m-d', strtotime($this->request->data['Location']['live_date']));
+                //pr($this->request->data['Location']['increment_date']);
+            }
+            if ($this->Location->save($this->request->data)) {
+                $this->log("Billing details were added", 'info');
+                $this->Session->write('Step.id', $s);
+                $this->Session->setFlash(__('Billing details were added successfully.'), 'flash_success');
+                $this->redirect(array('action' => 'addLocation4'), null, true);
+            } else {
+                $this->Session->setFlash(__("Incorrect data provided."), 'flash_fail');
+            }
+        } else {
+            $params = array(
+                'conditions' => array('Location.id' => $this->Session->read('addLocation_id'))
+            );
+            $this->data = $this->Location->find('first', $params);
+        }
+    }
+
+    /**
+     * Step 4, adds configuration details
+     *
+     * @return void
+     */
+    public function addLocation4() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $router_management = array('0' => 'No', '1' => 'Yes'); //$this->enumToSelectField('Location', 'locations', 'router_management');
+        $this->set('router_management', $router_management);
+
+        if (!$this->Session->check('addLocation_id') && ($this->Session->read('addLocation_id') == '')) {
+            $this->redirect(array('action' => 'addLocation0'), null, true);
+        }
+        $s = str_replace('addLocation', '', $this->action);
+        $this->set('total_steps', TOTAL_STEPS);
+        if ($this->request->is('POST') && count($this->request->data) > 0) {
+            if ($this->Session->read('addLocation_id')) {
+                $this->request->data['Location']['id'] = $this->Session->read('addLocation_id');
+            }
+
+            /* Check if logo file is uploaded while edit */
+            if ($this->request->data['Location']['logo_file']['name'] == '') {
+                unset($this->request->data['Location']['logo_name']);
+            } else {
+                $this->request->data['Location']['logo_name'] = $this->request->data['Location']['logo_file']['name'];
+            }
+            if ($this->request->data['Location']['logo_file']['type'] == '') {
+                unset($this->request->data['Location']['logo_type']);
+            } else {
+                $this->request->data['Location']['logo_type'] = $this->request->data['Location']['logo_file']['type'];
+            }
+            if ($this->request->data['Location']['logo_file']['size'] == '') {
+                unset($this->request->data['Location']['logo_size']);
+            } else {
+                $this->request->data['Location']['logo_size'] = $this->request->data['Location']['logo_file']['size'];
+            }
+            if ($this->request->data['Location']['logo_file']['tmp_name'] == '') {
+                unset($this->request->data['Location']['logo']);
+            } else {
+                $this->request->data['Location']['logo'] = file_get_contents($this->request->data['Location']['logo_file']['tmp_name']);
+            }
+
+            /* Check if backup file is uploaded while edit */
+            if ($this->request->data['Location']['backup_file']['name'] == '') {
+                unset($this->request->data['Location']['backup_name']);
+            } else {
+                $this->request->data['Location']['backup_name'] = $this->request->data['Location']['backup_file']['name'];
+            }
+            if ($this->request->data['Location']['backup_file']['type'] == '') {
+                unset($this->request->data['Location']['backup_type']);
+            } else {
+                $this->request->data['Location']['backup_type'] = $this->request->data['Location']['backup_file']['type'];
+            }
+            if ($this->request->data['Location']['backup_file']['size'] == '') {
+                unset($this->request->data['Location']['backup_size']);
+            } else {
+                $this->request->data['Location']['backup_size'] = $this->request->data['Location']['backup_file']['size'];
+            }
+            if ($this->request->data['Location']['backup_file']['tmp_name'] == '') {
+                unset($this->request->data['Location']['backup']);
+            } else {
+                $this->request->data['Location']['backup'] = file_get_contents($this->request->data['Location']['backup_file']['tmp_name']);
+            }
+
+            /* Check if config file is uploaded while edit */
+            if ($this->request->data['Location']['config_file']['name'] == '') {
+                unset($this->request->data['Location']['config_name']);
+            } else {
+                $this->request->data['Location']['config_name'] = $this->request->data['Location']['config_file']['name'];
+            }
+            if ($this->request->data['Location']['config_file']['type'] == '') {
+                unset($this->request->data['Location']['config_type']);
+            } else {
+                $this->request->data['Location']['config_type'] = $this->request->data['Location']['config_file']['type'];
+            }
+            if ($this->request->data['Location']['config_file']['size'] == '') {
+                unset($this->request->data['Location']['config_size']);
+            } else {
+                $this->request->data['Location']['config_size'] = $this->request->data['Location']['config_file']['size'];
+            }
+            if ($this->request->data['Location']['config_file']['tmp_name'] == '') {
+                unset($this->request->data['Location']['config']);
+            } else {
+                $this->request->data['Location']['config'] = file_get_contents($this->request->data['Location']['logo_file']['tmp_name']);
+            }
+            if ($this->Location->save($this->request->data)) {
+                $this->log("Configuration details were added", 'info');
+                $this->Session->write('Step.id', $s);
+                $this->Session->setFlash(__('Configuration details were added successfully.'), 'flash_success');
+                $this->Session->delete('addLocation_id');
+                $this->redirect(array('action' => 'index'), null, true);
+            } else {
+                $this->Session->setFlash(__("Incorrect data provided."), 'flash_fail');
+            }
+        } else {
+            $params = array(
+                'conditions' => array('Location.id' => $this->Session->read('addLocation_id'))
+            );
+            $this->data = $this->Location->find('first', $params);
+        }
+    }
+
+    /**
+     * Edit location details
+     *
+     * @throws NotFoundException
+     * @param string $id
+     * @return void
+     */
+    public function edit() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $invoice_day = $this->enumToSelectField('Location', 'locations', 'invoice_day');
+        $this->set('invoice_day', $invoice_day);
+        $auto_renew = array('0' => 'No', '1' => 'Yes'); //$this->enumToSelectField('Location', 'locations', 'auto_renew');
+        $this->set('auto_renew', $auto_renew);
+        $this->set('breadcrumbLabel', 'Edit location');
+        $router_management = array('0' => 'No', '1' => 'Yes'); //$this->enumToSelectField('Location', 'locations', 'router_management');
+        $this->set('router_management', $router_management);
+        $type = $this->enumToSelectField('Location', 'locations', 'type');
+        $this->set('type', $type);
+        $states = $this->State->find('list', array('fields' => array('State.name', 'State.name')));
+        $this->set('states', $states);
+        $this->set('business_type', $this->BusinessPlan->find('list', array('fields' => array('id', 'name'))));
+
+        if ($this->request->is('post')) {
+            $this->set('location_id', $this->request->data['Location']['id']);
+            if (isset($this->request->data['Location']['edit_location_token']) && $this->request->data['Location']['edit_location_token'] == '1') {
+                //unset($this->request->data['Location']['monthly_fixed']);
+                /* Check if logo file is uploaded while edit */
+                if (array_key_exists('logo_file', $this->request->data['Location'])) {
+                    if ($this->request->data['Location']['logo_file']['name'] == '') {
+                        unset($this->request->data['Location']['logo_name']);
+                    } else {
+                        $this->request->data['Location']['logo_name'] = $this->request->data['Location']['logo_file']['name'];
+                    }
+                    if ($this->request->data['Location']['logo_file']['type'] == '') {
+                        unset($this->request->data['Location']['logo_type']);
+                    } else {
+                        $this->request->data['Location']['logo_type'] = $this->request->data['Location']['logo_file']['type'];
+                    }
+                    if ($this->request->data['Location']['logo_file']['size'] == '') {
+                        unset($this->request->data['Location']['logo_size']);
+                    } else {
+                        $this->request->data['Location']['logo_size'] = $this->request->data['Location']['logo_file']['size'];
+                    }
+                    if ($this->request->data['Location']['logo_file']['tmp_name'] == '') {
+                        unset($this->request->data['Location']['logo']);
+                    } else {
+                        $this->request->data['Location']['logo'] = file_get_contents($this->request->data['Location']['logo_file']['tmp_name']);
+                    }
+                }
+
+                /* Check if backup file is uploaded while edit */
+                if (array_key_exists('backup_file', $this->request->data['Location'])) {
+                    if ($this->request->data['Location']['backup_file']['name'] == '') {
+                        unset($this->request->data['Location']['backup_name']);
+                    } else {
+                        $this->request->data['Location']['backup_name'] = $this->request->data['Location']['backup_file']['name'];
+                    }
+                    if ($this->request->data['Location']['backup_file']['type'] == '') {
+                        unset($this->request->data['Location']['backup_type']);
+                    } else {
+                        $this->request->data['Location']['backup_type'] = $this->request->data['Location']['backup_file']['type'];
+                    }
+                    if ($this->request->data['Location']['backup_file']['size'] == '') {
+                        unset($this->request->data['Location']['backup_size']);
+                    } else {
+                        $this->request->data['Location']['backup_size'] = $this->request->data['Location']['backup_file']['size'];
+                    }
+                    if ($this->request->data['Location']['backup_file']['tmp_name'] == '') {
+                        unset($this->request->data['Location']['backup']);
+                    } else {
+                        $this->request->data['Location']['backup'] = file_get_contents($this->request->data['Location']['backup_file']['tmp_name']);
+                    }
+                }
+
+                /* Check if config file is uploaded while edit */
+                if (array_key_exists('config_file', $this->request->data['Location'])) {
+                    if ($this->request->data['Location']['config_file']['name'] == '') {
+                        unset($this->request->data['Location']['config_name']);
+                    } else {
+                        $this->request->data['Location']['config_name'] = $this->request->data['Location']['config_file']['name'];
+                    }
+                    if ($this->request->data['Location']['config_file']['type'] == '') {
+                        unset($this->request->data['Location']['config_type']);
+                    } else {
+                        $this->request->data['Location']['config_type'] = $this->request->data['Location']['config_file']['type'];
+                    }
+                    if ($this->request->data['Location']['config_file']['size'] == '') {
+                        unset($this->request->data['Location']['config_size']);
+                    } else {
+                        $this->request->data['Location']['config_size'] = $this->request->data['Location']['config_file']['size'];
+                    }
+                    if ($this->request->data['Location']['config_file']['tmp_name'] == '') {
+                        unset($this->request->data['Location']['config']);
+                    } else {
+                        $this->request->data['Location']['config'] = file_get_contents($this->request->data['Location']['config_file']['tmp_name']);
+                    }
+                }
+
+                //Checking any null entry to unset before entereing to database
+                foreach ($this->request->data['Location'] as $key => $value) {
+                    if ($value == '') {
+                        unset($this->request->data['Location'][$key]);
+                    }
+                }
+
+                //Checking revenue type
+                if (array_key_exists('revenue_type', $this->request->data['Location'])) {
+                    if ($this->request->data['Location']['revenue_type'] == 'r') {
+                        $this->request->data['Location']['one_time'] = '0';
+                        $this->request->data['Location']['revenue_share'] = '1';
+                    } else if ($this->request->data['Location']['revenue_type'] == 'm') {
+                        $this->request->data['Location']['one_time'] = '0';
+                        $this->request->data['Location']['revenue_share'] = '0';
+                    } else if ($this->request->data['Location']['revenue_type'] == 'a') {
+                        $this->request->data['Location']['one_time'] = '1';
+                        $this->request->data['Location']['revenue_share'] = '0';
+                    }
+                }
+
+                // changing datae format before saving
+                if (array_key_exists('valid_till', $this->request->data['Location']) && $this->request->data['Location']['valid_till'] != '') {
+                    $this->request->data['Location']['valid_till'] = date('Y-m-d', strtotime($this->request->data['Location']['valid_till']));
+                    //pr($this->request->data['Location']['valid_till']);
+                }
+                if (array_key_exists('increment_date', $this->request->data['Location']) && $this->request->data['Location']['increment_date'] != '') {
+                    $this->request->data['Location']['increment_date'] = date('Y-m-d', strtotime($this->request->data['Location']['increment_date']));
+                    //pr($this->request->data['Location']['increment_date']);
+                }
+                if (array_key_exists('live_date', $this->request->data['Location']) && $this->request->data['Location']['live_date'] != '') {
+                    $this->request->data['Location']['live_date'] = date('Y-m-d', strtotime($this->request->data['Location']['live_date']));
+                    //pr($this->request->data['Location']['increment_date']);
+                }
+                if (array_key_exists('one_time_date', $this->request->data['Location']) && $this->request->data['Location']['one_time_date'] != '') {
+                    $this->request->data['Location']['one_time_date'] = date('Y-m-d', strtotime($this->request->data['Location']['one_time_date']));
+                    //pr($this->request->data['Location']['increment_date']);
+                }
+                if ($this->Location->save($this->request->data)) {
+                    $this->log("Location details updated", 'info');
+                    $this->Session->setFlash(__('The location has been saved.'), 'flash_success');
+                } else {
+                    $this->Session->setFlash(__('The location could not be updated. Please, try again.'), 'flash_fail');
+                }
+            } else {
+                
+            }
+            $this->set('location_id', $this->request->data['Location']['id']);
+            $options = array('conditions' => array('Location.id' => $this->request->data['Location']['id']));
+            $this->request->data = $this->Location->find('first', $options);
+//            pr($this->request->data['Location']['increment_date']);
+//            pr($this->request->data['Location']['increment_date']);
+//            pr($this->request->data['Location']['revenue_share']);
+
+            if (array_key_exists('valid_till', $this->request->data['Location']) && $this->request->data['Location']['valid_till'] != '') {
+                $this->request->data['Location']['valid_till'] = date('d-m-Y', strtotime($this->request->data['Location']['valid_till']));
+                //pr($this->request->data['Location']['valid_till']);
+            }
+            if (array_key_exists('increment_date', $this->request->data['Location']) && $this->request->data['Location']['increment_date'] != '') {
+                $this->request->data['Location']['increment_date'] = date('d-m-Y', strtotime($this->request->data['Location']['increment_date']));
+                //pr($this->request->data['Location']['increment_date']);
+            }
+            if (array_key_exists('live_date', $this->request->data['Location']) && $this->request->data['Location']['live_date'] != '') {
+                $this->request->data['Location']['live_date'] = date('d-m-Y', strtotime($this->request->data['Location']['live_date']));
+                //pr($this->request->data['Location']['increment_date']);
+            }
+            if (array_key_exists('one_time_date', $this->request->data['Location']) && $this->request->data['Location']['one_time_date'] != '') {
+                $this->request->data['Location']['one_time_date'] = date('d-m-Y', strtotime($this->request->data['Location']['one_time_date']));
+                //pr($this->request->data['Location']['increment_date']);
+            }
+//            pr('------');
+//            pr($this->request->data['Location']['one_time']);
+//            pr($this->request->data['Location']['revenue_share']);
+//            pr('------');
+
+            if ($this->request->data['Location']['one_time'] == '0' && $this->request->data['Location']['revenue_share'] == '1') {
+                $this->request->data['Location']['revenue_type'] = 'r';
+            } else if ($this->request->data['Location']['one_time'] == '0' && $this->request->data['Location']['revenue_share'] == '0') {
+                $this->request->data['Location']['revenue_type'] = 'm';
+            } else if ($this->request->data['Location']['one_time'] == '1' && $this->request->data['Location']['revenue_share'] == '0') {
+                $this->request->data['Location']['revenue_type'] = 'a';
+            }
+
+//            pr($this->request->data['Location']['revenue_type']);
+
+            $this->set('location_city', $this->request->data['Location']['location_city']);
+            $location_name = $this->request->data['Location']['name'];
+            $installation_name = $this->request->data['Location']['installation_name'];
+            if ($location_name == $installation_name) {
+                $this->set('installAddSameAsBillAdd', 'true');
+            } else {
+                $this->set('installAddSameAsBillAdd', 'false');
+            }
+        } else {
+            $this->set('location_id', '');
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    /**
+     * Inline edit the name of the contact person
+     *
+     * @return void
+     */
+    public function updateContactPersonName() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set Location model for edit
+            $this->Location->read(null, $data['pk']);
+            # Set the contact person name and echo it in updateContactPersonName.ctp
+            $this->Location->set($data['name'], $data['value']);
+            if ($this->Location->validates(array('fieldList' => array('contact_persons1')))) {
+                if ($this->Location->saveField($data['name'], $data['value'])) {
+                    //$this->Location->set($data['name'], $data['value']);
+                    $this->log("Contact Person Name updated, ID =" . $data['pk'], 'info');
+                }
+            } else {
+                // didn't validate logic
+                //$errors = $this->User->validationErrors;
+            }
+        }
+    }
+
+    /**
+     * Inline edit the post of the contact person
+     *
+     * @return void
+     */
+    public function updateContactPersonPost() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set Location model for edit
+            $this->Location->read(null, $data['pk']);
+            # Set the contact person post and echo it in updateContactPersonPost.ctp
+            $this->Location->set($data['name'], $data['value']);
+            if ($this->Location->validates(array('fieldList' => array('contact_person_post1')))) {
+                if ($this->Location->saveField($data['name'], $data['value'])) {
+                    //$this->Location->set($data['name'], $data['value']);
+                    $this->log("Contact Person Post updated, ID =" . $data['pk'], 'info');
+                }
+            } else {
+                // didn't validate logic
+                //$errors = $this->User->validationErrors;
+            }
+        }
+    }
+
+    /**
+     * Inline edit the post of the contact person
+     *
+     * @return void
+     */
+    public function updateInstallationState() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set Location model for edit
+            $this->Location->read(null, $data['pk']);
+            # Set the email and echo it in updateEmail.ctp
+            $this->Location->set($data['name'], $data['value']);
+            if ($this->Location->validates(array('fieldList' => array('instalation_state')))) {
+                if ($this->Location->saveField($data['name'], $data['value'])) {
+                    //$this->Location->set($data['name'], $data['value']);
+                    $this->log("State updated, ID =" . $data['pk'], 'info');
+                }
+            } else {
+                // didn't validate logic
+                //$errors = $this->User->validationErrors;
+            }
+        }
+    }
+
+    /**
+     * Inline edit the location name
+     *
+     * @return void
+     */
+    public function updateLocationName() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            # Set Location model for edit
+            $this->Location->read(null, $data['pk']);
+            # Set the location name and echo it in updateLocationName.ctp
+            $this->Location->set($data['name'], $data['value']);
+            if ($this->Location->validates(array('fieldList' => array('location_name')))) {
+                if ($this->Location->saveField($data['name'], $data['value'])) {
+                    //$this->Location->set($data['name'], $data['value']);
+                    $this->log("locationName updated, ID =" . $data['pk'], 'info');
+                }
+            } else {
+                // didn't validate logic
+                //$errors = $this->User->validationErrors;
+            }
+        }
+    }
+
+    /**
+     * Creates Complimentary billing plan
+     * 
+     * @param array $locationDetails details of location and billing plan
+     * @return string, returns 'success' if data is saved in database
+     * @access private
+     */
+    function _createComplimentoryBillingPlan($locationDetails) {
+        $data = array();
+        $data['BillingPlan']['name_bp'] = 'complimentary';
+        $data['BillingPlan']['time_bp'] = '86400';
+        $data['BillingPlan']['price_bp'] = '0';
+        $data['BillingPlan']['type_bp'] = 'time';
+        $data['BillingPlan']['location_id'] = $locationDetails['Location']['id'];
+        $data['BillingPlan']['timetofinish_bp'] = '0';
+        $data['BillingPlan']['simultanous_bp'] = '0';
+        $data['BillingPlan']['maximum_time_bp'] = '86400';
+        $data['BillingPlan']['maximum_octet_bp'] = '0';
+        $data['BillingPlan']['expiration_date_bp'] = date('Y-m-d', strtotime("+60 days"));
+        $data['BillingPlan']['bandwidth_upload_bp'] = '0';
+        $data['BillingPlan']['bandwidth_download_bp'] = '0';
+        $data['BillingPlan']['bublish_bp'] = '0';
+        $data['BillingPlan']['cat_bp'] = 'special';
+        $data['BillingPlan']['currency_bp'] = 'INR';
+        $data['BillingPlan']['login_display'] = '0';
+        if ($this->BillingPlan->save($data)) {
+            return 'success';
+        }
+    }
+
+    function _createDefaultBillingPlans($locationDetails) {
+        $bp = Configure::read('DefaultBillingPlans');
+        if ($bp != '') {
+            for ($i = 0; $i < count($bp); $i++) {
+                $data = array();
+                $data['BillingPlan']['name_bp'] = $bp[$i]['name_bp'];
+                $data['BillingPlan']['time_bp'] = $bp[$i]['time_bp'];
+                $data['BillingPlan']['price_bp'] = $bp[$i]['price_bp'];
+                $data['BillingPlan']['type_bp'] = $bp[$i]['type_bp'];
+                $data['BillingPlan']['location_id'] = $locationDetails['Location']['id'];
+                $data['BillingPlan']['timetofinish_bp'] = $bp[$i]['timetofinish_bp'];
+                $data['BillingPlan']['simultanous_bp'] = $bp[$i]['simultanous_bp'];
+                $data['BillingPlan']['maximum_time_bp'] = $bp[$i]['maximum_time_bp'];
+                $data['BillingPlan']['maximum_octet_bp'] = $bp[$i]['maximum_octet_bp'];
+                $data['BillingPlan']['expiration_date_bp'] = $bp[$i]['expiration_date_bp'];
+                $data['BillingPlan']['bandwidth_upload_bp'] = $bp[$i]['bandwidth_upload_bp'];
+                $data['BillingPlan']['bandwidth_download_bp'] = $bp[$i]['bandwidth_download_bp'];
+                $data['BillingPlan']['bublish_bp'] = $bp[$i]['bublish_bp'];
+                $data['BillingPlan']['cat_bp'] = $bp[$i]['cat_bp'];
+                $data['BillingPlan']['currency_bp'] = $bp[$i]['currency_bp'];
+                $data['BillingPlan']['login_display'] = $bp[$i]['login_display'];
+                $this->BillingPlan->create();
+                $this->BillingPlan->save($data);
+                $this->BillingPlan->clear();
+            }
+        }
+    }
+
+    /**
+     * Creates random string
+     * 
+     * @param integer $length details of location and billing plan
+     * @return string
+     * @access private
+     */
+    function _randomString($length) { {
+            do {
+                $string = md5(time());
+                $highest_startpoint = 32 - $length;
+                $randomString = substr($string, rand(0, $highest_startpoint), $length);
+                //$q1 = "select * from locations where LocationDomain='" . $randomString . "'";
+                //$result1 = mysql_query($q1);
+                //$numrows = mysql_num_rows($result1);
+                $numrows = 0;
+            } while ($numrows != 0);
+            return $randomString;
+        }
+    }
+
+    /**
+     * Display the logo
+     * 
+     * @param integer $id
+     * @return void
+     */
+    public function displayLogoFile($id) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $location = $this->Location->findById($id);
+        $file = $location['Location']['logo'];
+        $size = $location['Location']['logo_size'];
+        $type = $location['Location']['logo_type'];
+        $name = $location['Location']['logo_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+        $this->set('logoFile', $file);
+    }
+
+    /**
+     * Display the backup file
+     * 
+     * @param integer $id
+     * @return void
+     */
+    public function displayBackupFile($id) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $location = $this->Location->findById($id);
+        $file = $location['Location']['backup'];
+        $size = $location['Location']['backup_size'];
+        $type = $location['Location']['backup_type'];
+        $name = $location['Location']['backup_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: application/zip");
+        header('Content-Transfer-Encoding: binary');
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+        while (!feof($file)) {
+            readfile("$file");
+            exit;
+            fclose($file);
+            exit;
+        }
+    }
+
+    /**
+     * Display the config file
+     * 
+     * @param integer $id
+     * @return void
+     */
+    public function displayConfigFile($id) {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $location = $this->Location->findById($id);
+        $file = $location['Location']['config'];
+        $size = $location['Location']['config_size'];
+        $type = $location['Location']['config_type'];
+        $name = $location['Location']['config_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+    }
+
+    /**
+     * Deactivate the location
+     *
+     * @return void
+     */
+    public function deactivate() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            if ($this->request->data['Location']['id'] != '') {
+                $this->Location->id = $this->request->data['Location']['id'];
+                if ($this->Location->exists()) {
+                    if ($this->Location->saveField('status', 0)) {
+                        $this->log("Location ID: " . $this->request->data['Location']['id'] . " deactivated", 'info');
+                        
+
+                        // edited on 9thSept
+                        $tmpUser = $this->LocationsUser->find('all', array(
+                            'fields' => array('User.id', 'User.username', 'User.group_id',),
+                            'conditions' => array('LocationsUser.location_id' => $this->request->data['Location']['id'])
+                                )
+                        );
+                        foreach ($tmpUser as $value) {
+                            $this->User->updateAll(array('status' => "'0'"), array('User.id' => $value['User']['id'], 'User.id !=' => '94', 'Group.name' => Configure::read('Application.clientGroups')));
+                        }
+                        // End 
+
+                        $this->Session->setFlash(__('Location ' . $this->request->data['Location']['location_name'] . ' is de-activated'), 'flash_success');
+                        //$this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to de-activate'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid location id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a location id.'), 'flash_fail');
+            }
+        }
+    }
+
+    /**
+     * Activate the location
+     *
+     * @return void
+     */
+    public function activate() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        if ($this->request->is('post')) {
+            if ($this->request->data['Location']['id'] != '') {
+                $this->Location->id = $this->request->data['Location']['id'];
+                if ($this->Location->exists()) {
+                    if ($this->Location->updateAll(array('status' => "'1'"), array('Location.id' => $this->Location->id))) {
+
+                        $this->log("Location ID: " . $this->request->data['Location']['id'] . " activated", 'info');
+                        $tmpUser = $this->LocationsUser->find('all', array(
+                            'fields' => array('User.id', 'User.username', 'User.group_id',),
+                            'conditions' => array('LocationsUser.location_id' => $this->request->data['Location']['id'])
+                                )
+                        );
+                        foreach ($tmpUser as $value) {
+                            $this->User->updateAll(array('status' => "'0'"), array('User.id' => $value['User']['id'], 'User.id !=' => '94', 'Group.name' => Configure::read('Application.clientGroups')));
+                        }
+                        $this->Session->setFlash(__('Location ' . $this->request->data['Location']['location_name'] . ' is activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to activate'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid location id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a location id.'), 'flash_fail');
+            }
+        }
+    }
+
+    private function _addDefaultLoginPage($cId = null, $domain = null) {
+        $cmsLoginpage = array();
+        $cmsLoginpage['CmsLoginpage']['location_id'] = $cId;
+        $cmsLoginpage['CmsLoginpage']['location_domain'] = $domain;
+
+        //Setting logo file....
+        $cmsLoginpage['CmsLoginpage']['logo_name'] = 'logo_loginpage.png';
+        $cmsLoginpage['CmsLoginpage']['logo_size'] = filesize('img/logo_loginpage.png');
+        $cmsLoginpage['CmsLoginpage']['logo_type'] = image_type_to_mime_type(exif_imagetype('img/logo_loginpage.png'));
+        $cmsLoginpage['CmsLoginpage']['logo'] = file_get_contents('img/logo_loginpage.png');
+
+        //Setting background inamge....
+        $cmsLoginpage['CmsLoginpage']['background_name'] = 'background_loginpage.png';
+        $cmsLoginpage['CmsLoginpage']['background_size'] = filesize('img/background_loginpage.png');
+        $cmsLoginpage['CmsLoginpage']['background_type'] = image_type_to_mime_type(exif_imagetype('img/background_loginpage.png'));
+        $cmsLoginpage['CmsLoginpage']['background'] = file_get_contents('img/background_loginpage.png');
+
+        $cmsLoginpage['CmsLoginpage']['bg_color'] = '#9E3523';
+        $cmsLoginpage['CmsLoginpage']['font_color'] = '#FFFAF0';
+        $cmsLoginpage['CmsLoginpage']['notice'] = Configure::read('LoginPage.notice');
+
+        $cmsLoginpage['CmsLoginpage']['login_url'] = '';
+        $cmsLoginpage['CmsLoginpage']['terms_and_conditions'] = Configure::read('LoginPage.TermsAdnConditions');
+        $cmsLoginpage['CmsLoginpage']['footer'] = Configure::read('LoginPage.Footer');
+        $cmsLoginpage['CmsLoginpage']['tariff_display'] = '1';
+        $cmsLoginpage['CmsLoginpage']['visibility'] = '0';
+        $cmsLoginpage['CmsLoginpage']['created'] = date('Y-m-d');
+        $this->CmsLoginpage->save($cmsLoginpage);
+    }
+
+}

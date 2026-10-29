@@ -1,0 +1,581 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<?php
+//echo $this->Html->script('jquery.min.js');
+echo $this->Html->script('jqPlot/jquery.jqplot.min.js');
+echo $this->Html->css('jqPlot/jquery.jqplot.min.css');
+echo $this->Html->script('jqPlot/plugins/jqplot.barRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.categoryAxisRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.pointLabels.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.dateAxisRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.json2.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.pieRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.enhancedLegendRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.logAxisRenderer');
+
+echo $this->Html->script('jqPlot/plugins/jqplot.canvasTextRenderer');
+echo $this->Html->script('jqPlot/plugins/jqplot.canvasAxisTickRenderer');
+echo $this->Html->script('jqPlot/plugins/jqplot.highlighter');
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#BatchCouponForm').bootstrapValidator();
+        $('#SingleCouponForm').bootstrapValidator();
+        $("#addSingleUserCoupon").click(function() { //alert($("#pagesLocationsId").val())
+            if ($("#pagesLocationsId").val() == '') {
+                //alert($("#pagesLocationsId").val());
+                $('#locationError').attr('style', 'display: block');
+                $(this).attr('data-toggle', '');
+            } else {
+                $('#locationError').attr('style', 'display: none');
+                $(this).attr('data-toggle', 'modal');
+            }
+        });
+        $("#addBatchCoupon").click(function() { //alert($("#pagesLocationsId").val())
+            if ($("#pagesLocationsId").val() == '') {
+                //alert($("#pagesLocationsId").val());
+                $('#locationError').attr('style', 'display: block');
+                $(this).attr('data-toggle', '');
+            } else {
+                $('#locationError').attr('style', 'display: none');
+                $(this).attr('data-toggle', 'modal');
+            }
+        });
+        if ($("#pagesLocationsId option:selected").text() == 'ScratchCards') {
+            //alert()
+            $('#couponsQuickPrint').hide();
+            $('#beforeCouponsQuickPrint').hide();
+        } else {
+            $('#couponsQuickPrint').show();
+            $('#beforeCouponsQuickPrint').show();
+        }
+        /*if($("#pagesLocationsId").val() == ''){
+         //alert($("#pagesLocationsId").val());
+         $('#locationError').attr('style', 'display: block');
+         } else {
+         $('#locationError').attr('style', 'display: none');
+         }*/
+        //$('#BatchCouponForm').on('submit', function() {
+        $('#addListItem').modal('hide');
+        //});
+
+    });
+</script>
+<?php
+if ($this->Session->read('choosed_location_id') != '') {
+    ?>
+    <script class="code" type="text/javascript">
+        $(document).ready(function() {
+            var s3 = <?php echo json_encode($totalCouponUsed) ?>;
+            var ticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            plot4 = $.jqplot('barChatCoupn', [s3], {
+                seriesDefaults: {
+                    renderer: $.jqplot.BarRenderer,
+                    pointLabels: {show: true},
+                    
+                },
+                axes: {
+                    xaxis: {
+                        renderer: $.jqplot.CategoryAxisRenderer,
+                        ticks: ticks,
+                    },
+                    yaxis: {
+                        min: 0,
+                        max: <?php echo $maxCoupon ?>
+                    }
+                },
+                highlighter: {show: false}
+            });
+            //        $(window).resize(function() {
+            //            plot4.replot({resetAxes: true});
+            //        });
+        });
+    </script>
+
+    <script class="code" type="text/javascript">
+
+        $(document).ready(function() {
+            $.jqplot._noToImageButton = true;
+            var prevYear = <?php echo '[' . $price . ']' ?>;
+            var currYear = <?php echo '[' . $price . ']' ?>;
+            var plot11 = $.jqplot("chartdiv", [prevYear, currYear], {
+                seriesColors: ["rgba(83, 167, 240, 0.7)", "rgb(107, 25, 107)"],
+                escapeHtml: true,
+                gridPadding: {
+                    top: 10,
+                    bottom: 30,
+                    left: 50,
+                    right: 10
+                },
+                //title: 'Monthly Dell',
+                highlighter: {
+                    show: true,
+                    sizeAdjust: 1,
+                    tooltipOffset: 4
+                },
+                seriesDefaults: {
+                    rendererOptions: {
+                        smooth: true,
+                        animation: {
+                            show: true
+                        }
+                    },
+                    showMarker: true,
+                    pointLabels: {show: true}
+                },
+                series: [
+                    {
+                        fill: true,
+                        label: <?php echo date('Y') ?>
+                    },
+                    {
+                        label: <?php echo date('Y') ?>
+                    }
+                ],
+                axesDefaults: {
+                    rendererOptions: {
+                        baselineWidth: 1.5,
+                        baselineColor: '#444444',
+                        drawBaseline: false
+                    }
+                },
+                axes: {
+                    xaxis: {
+                        renderer: $.jqplot.DateAxisRenderer,
+                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                        tickOptions: {
+                            formatString: "%b",
+                            angle: -30,
+                            fontSize: '7'
+                                    //textColor: '#dddddd'
+                        },
+                        min: "<?php echo date('Y') . '-01'; ?>",
+                        max: "<?php echo date('Y') . '-12'; ?>",
+                        tickInterval: "1 month",
+                        //drawMajorGridlines: false
+                    },
+                    yaxis: {
+                        //renderer: $.jqplot.LogAxisRenderer,
+                        pad: 0,
+                        rendererOptions: {
+                            minorTicks: 1
+                        },
+                        tickOptions: {
+                            //formatString: "$%'d",
+                            showMark: false
+                        }
+                    }
+                }
+            });
+
+            $('.jqplot-highlighter-tooltip').addClass('ui-corner-all')
+        });
+    </script>
+    <script class="code" type="text/javascript">
+        $(document).ready(function() {
+            //$.jqplot.config.enablePlugins = true;
+            var data = <?php echo $totalDataPerMonth ?>;
+            plot3 = $.jqplot('totlDataChat', [data],
+                    {
+                        seriesDefaults: {
+                            // Make this a pie chart.
+                            renderer: jQuery.jqplot.PieRenderer,
+                            rendererOptions: {
+                                // Put data labels on the pie slices.
+                                // By default, labels show the percentage of the slice.
+                                showDataLabels: true
+                            }
+                        },
+                        legend: {show: true, location: 'e'}
+                    }
+            );
+            $(window).resize(function() {
+                plot3.replot({resetAxes: true});
+            });
+        });
+    </script>
+    <script class="code" type="text/javascript">
+        $(document).ready(function() {
+            var s1 = <?php echo json_encode($upload) ?>;
+            var s2 = <?php echo json_encode($download) ?>;
+            var ticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            plot1 = $.jqplot('chart1', [s1, s2], {
+                seriesDefaults: {
+                    renderer: $.jqplot.BarRenderer,
+                    pointLabels: {show: true},
+                },
+                axes: {
+                    xaxis: {
+                        renderer: $.jqplot.CategoryAxisRenderer,
+                        ticks: ticks
+                    },
+                    yaxis: {
+                        tickOptions: {
+                            formatString: '%.2f'
+                        }
+                    }
+                },
+                legend: {
+                    renderer: $.jqplot.EnhancedLegendRenderer,
+                    show: true,
+                    placement: 'outsideGrid',
+                    rendererOptions: {
+                        numberRows: 1,
+                        numberColumns: 2
+                    },
+                    location: 's',
+                    marginTop: '1px',
+                    border: 'none',
+                    labels: ['Download(GB)', 'Upload(GB)']
+                }
+            });
+            $(window).resize(function() {
+                plot1.replot({resetAxes: true});
+            });
+        });
+    </script>
+
+    <script class="code" type="text/javascript">
+        $(document).ready(function() {
+            function closeModel() {
+                //alert('hi');
+                //$('#AddBatchCouponModal').removeClass('in');
+                $('#AddBatchCouponModal').modal("hide");
+                $('#AddSingleUserCouponModal').modal("hide");
+            }
+        });
+    </script>
+
+
+    <?php
+}
+?>
+<?php echo $this->element('locations_list') ?>
+<?php echo $this->Session->flash() ?>
+<!--div class="row">
+    <div class="col-lg-12">
+        <div class="col-lg-8">
+            <h3>Welcome <small><?php //echo AuthComponent::user('username')                                           ?></small></h3>
+        </div>
+    </div>
+</div--><!-- /.row -->
+<div class="alert alert-danger" id="locationError" style="display: none">
+    <a class="close" data-dismiss="alert">×</a>
+    <h4 class="alert-heading">Error!</h4>
+    Please select a location first
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <ol class="breadcrumb">
+            <li class="active"><i class="fa fa-dashboard"></i> Dashboard</li>
+        </ol>
+    </div>
+</div>
+<?php
+$fontClass = 'announcement-font15x';
+//if ($current_month_sell != '') {
+//    if ($current_month_sell < 10) {
+//        $fontClass = 'announcement-heading';
+//    } else if ($current_month_sell < 100) {
+//        $fontClass = 'announcement-font35x';
+//    } else if ($current_month_sell < 1000) {
+//        $fontClass = 'announcement-font30x';
+//    } else if ($current_month_sell < 10000) {
+//        $fontClass = 'announcement-font25x';
+//    } else if ($current_month_sell < 100000) {
+//        $fontClass = 'announcement-font20x';
+//    } else {
+//        $fontClass = 'announcement-font15x';
+//    }
+//}
+?>
+<!-- #info tabs start -->
+<div class="row">
+    <!-- #users panel -->
+    <?php //if (in_array(AuthComponent::user('Group.name'), Configure::read('Application.wifonicGroups')) || AuthComponent::user('Group.name') == Configure::read('Application.admin')) {    ?>
+    <div class="col-lg-3">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-inr fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo ' ' . $current_month_sell ?></p>
+                        <p class="announcement-text">Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php //}    ?>
+    <!-- #locations panel -->
+    <div class="col-lg-3">
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-download fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $current_month_data ?></p>
+                        <p class="announcement-text">Total Data</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- #billing plans panel -->
+    <div class="col-lg-3">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-money fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $billing_plans_count ?></p>
+                        <p class="announcement-text">Billing Plans</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- #coupons panel -->
+    <div class="col-lg-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-ticket fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $current_month_coupon ?></p>
+                        <p class="announcement-text">Coupons</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!-- /.row -->
+<!-- info tabs end -->
+
+
+
+<hr id="beforeCouponsQuickPrint">
+<?php
+if (AuthComponent::user('Group.name') == Configure::read('Application.wf_admin') || AuthComponent::user('Group.name') == Configure::read('Application.admin')) {
+    ?>
+    <div class="row" id="couponsQuickPrint">
+        <div class="panel-group col-lg-12" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h5 class="panel-title">
+                        Useful Quick Links
+                    </h5>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <div class="container">
+                            <div class="col-lg-2">
+                                <div style="position: relative;">
+                                    <i class="fa fa-ticket" style="color:#428BCA; position: absolute;left: -0.9em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Single Coupon'), '#AddSingleUserCouponModal', array(
+                                        //'class' => 'btn btn-default pull-left btn-add-modal',
+                                        'id' => 'addSingleUserCoupon',
+                                        'data-toggle' => 'modal',
+                                    ));
+                                    ?>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <div style="position: relative">
+                                    <i class="fa fa-ticket" style="color:#428BCA; position: absolute;left: -1.2em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Batch Coupons'), '#AddBatchCouponModal', array(
+                                        //'class' => 'btn btn-default pull-left btn-add-modal',
+                                        'id' => 'addBatchCoupon',
+                                        'data-toggle' => 'modal',
+                                            //'style' => 'margin-top: 15px'
+                                    ));
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="col-lg-2">
+                                <div style="position: relative">
+                                    <i class="fa fa-users" style="color:#428BCA; position: absolute;left: -1.2em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Logged-in Users'), array(
+                                        'controller' => 'network_managements',
+                                        'action' => 'loggedInUser'
+                                    ));
+                                    ?>
+                                </div>
+                            </div><div class="col-lg-2">
+                                <div style="position: relative">
+                                    <i class="fa fa-edit" style="color:#428BCA; position: absolute;left: -1.2em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Login Portal'), array(
+                                        'controller' => 'cms_loginpages',
+                                        'action' => 'index'
+                                    ));
+                                    ?>
+                                </div>
+                            </div><div class="col-lg-2">
+                                <div style="position: relative">
+                                    <i class="fa fa-user-plus" style="color:#428BCA; position: absolute;left: -1.2em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Host Bypass'), array(
+                                        'controller' => 'network_managements',
+                                        'action' => 'index'
+                                    ));
+                                    ?>
+                                </div>
+                            </div><div class="col-lg-2">
+                                <div style="position: relative">
+                                    <i class="fa fa-support" style="color:#428BCA; position: absolute;left: -1.2em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Support'), 'http://support.wifonicnetworks.com/', array(
+                                        'target' => '_blank',
+                                    ));
+                                    ?>
+                                </div>
+                            </div>
+                        </div><!-- end of container -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- end of row -->
+    <?php
+//pr($this->session->read('choosed_location_id'));
+}
+?>
+<?php
+if ($this->Session->read('choosed_location_id') != '') {
+    ?>
+    <div class="row">
+        <hr>
+        <div class="panel-group col-lg-6" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading " data-toggle="collapse" data-target="#bar_chat_collaps" aria-expanded="false" aria-controls="gender_collaps">
+                    <h4 class="panel-title">
+                        <a >
+                            <i class="fa fa-bar-chart"></i>
+                            Data Usage
+                        </a>
+                    </h4>
+                </div>
+                <div class="collapse in" id="bar_chat_collaps">
+                    <div id="chart1" class="responsive" style="margin:auto;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-group col-lg-6" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading " data-toggle="collapse" data-target="#pie_chat_collaps_total_data" aria-expanded="false" aria-controls="pie_chat_collaps_total_data">
+                    <h4 class="panel-title">
+                        <a >
+                            <i class="fa fa-pie-chart"></i>
+                            Total Data Usage
+                        </a>
+                    </h4>
+                </div>
+                <div class="collapse in" id="pie_chat_collaps_total_data">
+                    <div id="totlDataChat" style="margin:auto;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-group col-lg-6" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading " data-toggle="collapse" data-target="#bar_chat_collaps_coupon_data" aria-expanded="false" aria-controls="bar_chat_collaps_coupon_data">
+                    <h4 class="panel-title">
+                        <a >
+                            <i class="fa fa-money"></i>
+                            Coupon Usage
+                        </a>
+                    </h4>
+                </div>
+                <div class="collapse in" id="bar_chat_collaps_coupon_data">
+                    <div id="barChatCoupn" style="margin:auto;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-group col-lg-6" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading " data-toggle="collapse" data-target="#pie_chat_collaps" aria-expanded="false" aria-controls="gender_collaps">
+                    <h4 class="panel-title">
+                        <a >
+                            <i class="fa fa-inr"></i>
+			Revenue                            
+                        </a>
+                    </h4>
+                </div>
+                <div class="collapse in" id="pie_chat_collaps">
+                    <div id="chartdiv" style="margin:auto;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.row -->
+    <?php
+}
+?>
+
+<div class="modal fade" id="AddSingleUserCouponModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" id="closeSingleCouponFormModal" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Single User Coupon</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <!-- The form is placed inside the body of modal -->
+                    <?php echo $this->element('add_single_user_coupon'); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="AddBatchCouponModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" id="closeBatchCouponFormModal" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Batch Coupon</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- The form is placed inside the body of modal -->
+                    <?php echo $this->element('add_batch_coupon'); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

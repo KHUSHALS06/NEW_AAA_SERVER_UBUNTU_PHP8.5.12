@@ -1,0 +1,338 @@
+<?php
+
+/** CmsLoginpagesController class
+ * 
+ * This class consists of methods for login page CMS
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class CmsLoginpagesController extends AppController {
+
+    public $helpers = array('Js');
+    public $uses = array('CmsLoginpage', 'BillingPlan', 'Group');
+    public $components = array('Paginator', 'RequestHandler');
+
+    /**
+     * This is the default method for the CmsLoginpages controller, redirecting to the edit page.
+     * 
+     * @return void
+     */
+    public function index() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        //$this->CmsLoginpage->find('all');
+        if ($this->request->is('POST') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+        }
+        $conditions = array();
+        if ($this->Session->read('choosed_location_id') != '') {
+            $conditions = array('CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $conditions = array('CmsLoginpage.location_id' => $this->Session->read('locations_id_list'));
+        }
+        $this->Paginator->settings = array(
+            'fields'=>array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.tariff_display','CmsLoginpage.modified', 'Location.location_name', 'Location.location_domain',),
+            'limit' => Configure::read('Application.rowLimit'),
+            'conditions' => $conditions,
+            'order' => array('CmsLoginpage.modified' => 'DESC')
+        );
+        
+        $this->CmsLoginpage->recursive = 0;
+        $this->set('login_pages', $this->Paginator->paginate('CmsLoginpage'));
+        //$this->redirect(array('action' => 'edit'));
+    }
+
+    /**
+     * This method fetches the login CMS contents.
+     * If a particular location is set then it fetches the login CMS contents associated to that particular location.
+     * 
+     * @return void
+     */
+    public function edit() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+        if ($this->request->is('post')) {
+            $this->set('loginPageDetails', $this->CmsLoginpage->find('all', array(
+                        'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.footer', 'CmsLoginpage.terms_and_conditions', 'CmsLoginpage.tariff_display', 'CmsLoginpage.notice', 'CmsLoginpage.bg_color', 'CmsLoginpage.font_color','Location.location_name'),
+                        'conditions' => array('CmsLoginpage.id' => $this->request->data['CmsLoginpage']['id']))
+            ));
+            if (count($this->request->data['CmsLoginpage']) > 1) {
+                $logoSize = true;
+                $message = '';
+                if ($this->request->data['CmsLoginpage']['logo_file']['name'] != '') {
+                    $this->request->data['CmsLoginpage']['logo_name'] = $this->request->data['CmsLoginpage']['logo_file']['name'];
+                    $this->request->data['CmsLoginpage']['logo_type'] = $this->request->data['CmsLoginpage']['logo_file']['type'];
+                    $this->request->data['CmsLoginpage']['logo_size'] = $this->request->data['CmsLoginpage']['logo_file']['size'];
+                    if ($this->request->data['CmsLoginpage']['logo_size'] > 51200) {
+                        $logoSize = false;
+                        if ($message == '') {
+                            $message = 'Logo image file must be less than 50KB & dimention must be 250 x 100';
+                        }
+                    } else {
+                        list($width, $height) = getimagesize($this->request->data['CmsLoginpage']['logo_file']['tmp_name']);
+                        $this->set('w', $width);
+                        $this->set('h', $height);
+                        if ($width != 250 || $height != 100) {
+                            if ($message == '') {
+                                $message = 'Logo image dimention must be 250 x 100';
+                            }
+                        }
+                    }
+                    $this->request->data['CmsLoginpage']['logo'] = file_get_contents($this->request->data['CmsLoginpage']['logo_file']['tmp_name']);
+                }
+                if ($this->request->data['CmsLoginpage']['background_file']['name'] != '') {
+                    $this->request->data['CmsLoginpage']['background_name'] = $this->request->data['CmsLoginpage']['background_file']['name'];
+                    $this->request->data['CmsLoginpage']['background_type'] = $this->request->data['CmsLoginpage']['background_file']['type'];
+                    $this->request->data['CmsLoginpage']['background_size'] = $this->request->data['CmsLoginpage']['background_file']['size'];
+                    if ($this->request->data['CmsLoginpage']['background_size'] > 1048576) {
+                        $logoSize = false;
+                        if ($message == '') {
+                            $message = 'Background file must be less than 1Mb $ dimention must be 1 x 100';
+                        }
+                    } else {
+                        list($width, $height) = getimagesize($this->request->data['CmsLoginpage']['logo_file']['tmp_name']);
+                        if ($width <= 1080 || $height <= 630) {
+                            if ($message == '') {
+                                $message = 'Background image dimention must be greater than 1080 x 630';
+                            } else {
+                                $message = $message . '<br>Background image dimention must be greater than 1080 x 630';
+                            }
+                        }
+                    }
+                    $this->request->data['CmsLoginpage']['background'] = file_get_contents($this->request->data['CmsLoginpage']['background_file']['tmp_name']);
+                }
+                if ($logoSize == false) {
+                    $this->Session->setFlash($message, 'flash_fail');
+                }
+
+                if ($this->CmsLoginpage->save($this->request->data)) {
+                    $this->Session->setFlash('Loging page successfully updated', 'flash_success');
+                    $this->redirect(array('action' => 'index'));
+                }
+            }
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    public function resetTheme() {
+        if ($this->request->is('post')) {
+            $cmsLoginpage = array();
+            $cmsLoginpage['CmsLoginpage']['id'] = $this->request->data['CmsLoginpage']['id'];
+            //Setting logo file....
+            $cmsLoginpage['CmsLoginpage']['logo_name'] = 'logo_loginpage.png';
+            $cmsLoginpage['CmsLoginpage']['logo_size'] = filesize('img/logo_loginpage.png');
+            $cmsLoginpage['CmsLoginpage']['logo_type'] = image_type_to_mime_type(exif_imagetype('img/logo_loginpage.png'));
+            $cmsLoginpage['CmsLoginpage']['logo'] = file_get_contents('img/logo_loginpage.png');
+
+            $cmsLoginpage['CmsLoginpage']['background_name'] = 'background_loginpage.jpg';
+            $cmsLoginpage['CmsLoginpage']['background_size'] = filesize('img/background_loginpage.jpg');
+            $cmsLoginpage['CmsLoginpage']['background_type'] = image_type_to_mime_type(exif_imagetype('img/background_loginpage.jpg'));
+            $cmsLoginpage['CmsLoginpage']['background'] = file_get_contents('img/background_loginpage.jpg');
+
+            $cmsLoginpage['CmsLoginpage']['bg_color'] = '#9E3523';
+            $cmsLoginpage['CmsLoginpage']['font_color'] = '#FFFAF0';
+
+            $cmsLoginpage['CmsLoginpage']['login_url'] = '';
+            $cmsLoginpage['CmsLoginpage']['terms_and_conditions'] = Configure::read('LoginPage.TermsAdnConditions');
+            $cmsLoginpage['CmsLoginpage']['footer'] = Configure::read('LoginPage.Footer');
+            $cmsLoginpage['CmsLoginpage']['tariff_display'] = '1';
+            $cmsLoginpage['CmsLoginpage']['visibility'] = '0';
+            $cmsLoginpage['CmsLoginpage']['created'] = date('Y-m-d');
+            if ($this->CmsLoginpage->save($cmsLoginpage)) {
+                $this->Session->setFlash('Loging page successfully reset to default', 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            }
+        }else{
+            $this->redirect(array('action' => 'index'));
+        }
+
+
+
+        //Setting background inamge....
+    }
+
+    public function displayLogo($cId = null) {
+        $cmsLoginpage = $this->CmsLoginpage->findById($cId);
+        $file = $cmsLoginpage['CmsLoginpage']['logo'];
+        $size = $cmsLoginpage['CmsLoginpage']['logo_size'];
+        $type = $cmsLoginpage['CmsLoginpage']['logo_type'];
+        $name = $cmsLoginpage['CmsLoginpage']['logo_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+        $this->set('logoFile', $file);
+    }
+
+    public function displayBackGround($cId = null) {
+        $cmsLoginpage = $this->CmsLoginpage->findById($cId);
+        //pr($cmsLoginpage);
+        $file = $cmsLoginpage['CmsLoginpage']['background'];
+        $size = $cmsLoginpage['CmsLoginpage']['background_size'];
+        $type = $cmsLoginpage['CmsLoginpage']['background_type'];
+        $name = $cmsLoginpage['CmsLoginpage']['background_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+        $this->set('logoFile', $file);
+    }
+
+    /**
+     * TinyMCE editor
+     * 
+     * @return void
+     */
+    public function editor() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        ////pr('hi'.$this->Session->read('choosed_location_id'));
+        if ($this->request->is('post') && isset($this->request->data['CmsLoginpage']['block_title'])) {
+            $this->set('login_block_title', $this->request->data['CmsLoginpage']['block_title']);
+        }
+        if ($this->request->is('post') && isset($this->request->data['CmsLoginpage']['block_title'])) {
+            $this->set('title', $this->request->data['CmsLoginpage']['content']);
+        }
+        if ($this->Session->read('choosed_location_id') != '') {
+            $this->set('locationId', $this->Session->read('choosed_location_id'));
+            $tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            $this->set('locationDomain', $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')]);
+        }
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            $this->set('locationId', $this->request->data['cms_loginpages']['locations_id']);
+            $tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            $this->set('locationDomain', $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')]);
+        }
+        if (count($this->request->data) == 0 && $this->Session->read('choosed_location_id') == '') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+        }
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            if ($this->request->data['cms_loginpages']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+            }
+        }
+        $this->Session->write('link', 'editor');
+    }
+
+    /**
+     * Display the edited contents
+     * 
+     * @return void
+     */
+    public function display() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+        }
+        if (count($this->request->data) == 0 && $this->Session->read('choosed_location_id') == '') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+        }
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            if ($this->request->data['cms_loginpages']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+            }
+        } else {
+
+            $this->request->data['CmsLoginpage']['location_id'] = $this->Session->read('choosed_location_id');
+            $tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            $this->request->data['CmsLoginpage']['location_domain'] = $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')];
+            //$this->request->data['CmsLoginpage']['header'] = $this->request->data['CmsLoginpage']['header'];
+            ////pr($this->request->data);
+
+            if ($this->request->is('post') && isset($this->request->data['CmsLoginpage']['login_block_title'])) {
+
+                $LoginHeaderDetails = $this->CmsLoginpage->find('first', array(
+                    'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.header', 'CmsLoginpage.tariff', 'CmsLoginpage.footer', 'CmsLoginpage.advertisement'),
+                    'conditions' => array(
+                        'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id')
+                    //'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                    )
+                ));
+                if (count($LoginHeaderDetails) > 0) {
+                    $this->CmsLoginpage->updateAll(array(
+                        'CmsLoginpage.' . $this->request->data['CmsLoginpage']['login_block_title'] => '\'' . $this->request->data['CmsLoginpage'][$this->request->data['CmsLoginpage']['login_block_title']] . '\''
+                            ), array(
+                        'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                            //'CmsLoginpage.location_domain -0' => $this->request->data['CmsLoginpage']['location_domain'],
+                    ));
+                } else {
+                    $this->CmsLoginpage->save($this->request->data);
+                }
+                unset($tempLocationsDomainListArray);
+
+                $this->redirect(array('action' => 'edit'));
+            }
+        }
+    }
+
+    public function imageBrowser() {
+        if (!$this->Acl->check(AuthComponent::user('Group.name'), Inflector::camelize($this->params['controller']) . "/" . $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+
+        $dir = '../webroot/LogoImages';
+        $file_display = array('jpg', 'jpeg', 'png', 'gif');
+
+        if (file_exists($dir) == false) {
+            echo 'Directory "', $dir, '" not found!';
+        } else {
+            //var_dump($dir);
+            $dir_contents = scandir($dir);
+            //var_dump($dir_contents);
+            $filePath = array();
+            $i = 0;
+            foreach ($dir_contents as $file) {
+                $x = explode('.', $file);
+                $x = end($x);
+                $file_type = strtolower($x);
+                $displayString = '';
+
+
+                if ($file !== '.' && $file !== '..' && in_array($file_type, $file_display) == true) {
+                    $name = basename($file);
+                    ////pr($dir.'.'.$name);
+                    $filePath[$i] = $dir . '/' . $name;
+                    $i++;
+                    ////pr("<img class='thumnelImage' height='100px' width='100px' src='img.php?name={$name}' />");
+                    //$displayString = $displayString. "<img class='thumnelImage' height='100px' width='100px' src='img.php?name={$name}' />";
+                }
+            }
+            $this->set('filePaths', $filePath);
+        }
+    }
+
+    public function preview() {
+        $this->layout = "preview";
+        if ($this->request->is('post') && key_exists($key, $search)) {
+            $pvData = $this->CmsLoginpage->find('all', array(
+                'fields' => array('Location.id', 'Location.location_name', 'Location.location_domain', 'CmsLoginpage.id', 'CmsLoginpage.footer', 'CmsLoginpage.terms_and_conditions', 'CmsLoginpage.notice', 'CmsLoginpage.bg_color', 'CmsLoginpage.font_color'),
+                'conditions' => array('CmsLoginpage.id' => $this->request->data['CmsLoginpage']['id'])
+            ));
+            $this->set('loginCms', $pvData);
+        }else{
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+}
+?>

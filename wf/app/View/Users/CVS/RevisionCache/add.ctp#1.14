@@ -1,0 +1,215 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $("#add_user_location_id[multiple] option").attr('selected', 'selected');
+        $('#UserGroupId').change(function() {
+            if (($("#add_user_location_id").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer') || ($('#UserGroupId option:selected').text() == 'wf accounts'))) {
+                $("#add_user_location_id option").attr('selected', 'selected');
+            } else if (($("#add_user_location_id").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+                $("#locationsList").attr('style', 'display:none');
+            } else {
+                $("#locationsList").attr('style', 'display:block');
+                $("#add_user_location_id option").removeAttr('selected', 'selected');
+            }
+
+        });
+
+        $("#add_user_location_id[multiple] option").attr('selected', 'selected');
+        $('#UserGroupId').change(function() {
+            if (($("#add_user_location_id").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer') || ($('#UserGroupId option:selected').text() == 'wf accounts'))) {
+                $("#add_user_location_id option").attr('selected', 'selected');
+            } else if (($("#add_user_location_id").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+                $("#locationsList").attr('style', 'display:none');
+            } else {
+                $("#locationsList").attr('style', 'display:block');
+                $("#add_user_location_id option").removeAttr('selected', 'selected');
+            }
+
+        });
+
+        $('#submitUser').click(function() {
+            if (($("#add_user_location_id").has('option').length > 0) && (($('#UserGroupId option:selected').text() == 'admin') || ($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer') || ($('#UserGroupId option:selected').text() == 'wf accounts'))) {
+                $("#add_user_location_id option").attr('selected', 'selected');
+            } else if (($("#add_user_location_id").has('option').length == 0) && (($('#UserGroupId option:selected').text() == 'wf noc') || ($('#UserGroupId option:selected').text() == 'wf engineer'))) {
+                $("#locationsList").attr('style', 'display:none');
+            } else {
+                $("#locationsList").attr('style', 'display:block');
+                $("#add_user_location_id option").removeAttr('selected', 'selected');
+            }
+
+        });
+
+        //$('#UserAddForm').bootstrapValidator();
+        $('#UserAddForm').bootstrapValidator({
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                'data[Location][Location][]': {
+                    validators: {
+                        choice: {
+                            min: 1,
+                            //max: 4,
+                            message: 'Please choose one or more locations'
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Users',
+        'link' => '/users'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        echo $this->Form->create('User', array('data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+
+            <?php
+            echo $this->Form->input('username', array(
+                'label' => __('Username'),
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The username is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9_]{1,}[\.]{0,1}[A-Za-z0-9_]{0,}$",
+                'data-bv-regexp-message' => "Username can only consist of alphabets, numbers and underscore, with no blank space",
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('alias', array(
+                'label' => __('Name'),
+                'autocomplete' => 'off',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('email', array(
+                'label' => __('Email'),
+                'autocomplete' => 'off',
+                    //'value' => !empty($user['email']) ? $user['email'] : ''
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('password', array(
+                'label' => __('Password'),
+                'autocomplete' => 'off',
+                'type' => 'password',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "The password is required and cannot be empty",
+                    //'data-bv-identical' => 'true',
+                    //'data-bv-identical-field' => 'data[User][confirmpassword]',
+                    //'data-bv-identical-message' => 'The password and its confirm are not the same'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('confirmpassword', array(
+                'label' => __('Retype Password'),
+                'autocomplete' => 'off',
+                'type' => 'password',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "The retype password is required and cannot be empty",
+                'data-bv-identical' => 'true',
+                'data-bv-identical-field' => 'data[User][password]',
+                'data-bv-identical-message' => 'The password and its confirm are not the same'
+            ));
+            ?>
+
+            <?php
+            //echo $this->Form->input();
+            ?>
+
+            <?php //if (AuthComponent::user('group_id') == '1') { ?>
+            <?php
+            echo $this->Form->input('group_id', array(
+                'label' => __('Group'),
+                'options' => $groups,
+                    //'selected' => !empty($user['group_id']) ? $user['group_id'] : '',
+                    //'onclick' => 'return hello()'
+            ));
+            ?>
+            <?php // } ?>
+
+            <div id="locationsList" style="display: block">
+                <?php //if (Component::user('group_id') == '1') { ?>
+                <?php
+                if ($this->Session->read('choosed_location_name') == '') {
+                    echo $this->Form->input('Location', array(
+                        'id' => 'add_user_location_id',
+                        //'name' => 'locations',
+                        'label' => __('Location'),
+                        'type' => 'select',
+                        'multiple' => 'multiple',
+                        'title' => "Choose one or more locations",
+                        'options' => __('Select Location'),
+                        'options' => $locations,
+                        'required' => 'false'
+                            //'selected' => $temp
+                            )
+                    );
+                } else {
+                    echo $this->Form->input('Location', array(
+                        'type' => 'hidden',
+                        'id' => 'add_user_location_id',
+                        'value' => $this->Session->read('choosed_location_id')
+                            //'name' => 'locations',
+                            //'label' => __('Location'),
+                            //'type' => 'select',
+                            //'multiple' => 'multiple',
+                            //'title' => "Choose one or more locations",
+                            //'options' => __('Select Location'),
+                            //'options' => array($this->Session->read('choosed_location_id') => $this->Session->read('choosed_location_name')),
+                            //'selected' => array($this->Session->read('choosed_location_name'))
+                            )
+                    );
+                }
+                ?>
+                <?php //} ?>
+            </div>
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+                <?php echo $this->Form->end(__("Submit", array('id' => 'submitUser'))); ?>
+            </div>
+        </div>
+    </div>
+</div>
+

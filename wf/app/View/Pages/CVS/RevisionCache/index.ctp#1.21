@@ -1,0 +1,439 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<?php
+//echo $this->Html->script('jquery.min.js');
+echo $this->Html->script('jqPlot/jquery.jqplot.min.js');
+echo $this->Html->css('jqPlot/jquery.jqplot.min.css');
+echo $this->Html->script('jqPlot/plugins/jqplot.barRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.categoryAxisRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.pointLabels.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.dateAxisRenderer.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.json2.min');
+echo $this->Html->script('jqPlot/plugins/jqplot.pieRenderer.min');
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#BatchCouponForm').bootstrapValidator();
+        $('#SingleCouponForm').bootstrapValidator();
+        $("#addSingleUserCoupon").click(function() { //alert($("#pagesLocationsId").val())
+            if ($("#pagesLocationsId").val() == '') {
+                //alert($("#pagesLocationsId").val());
+                $('#locationError').attr('style', 'display: block');
+                $(this).attr('data-toggle', '');
+            } else {
+                $('#locationError').attr('style', 'display: none');
+                $(this).attr('data-toggle', 'modal');
+            }
+        });
+        $("#addBatchCoupon").click(function() { //alert($("#pagesLocationsId").val())
+            if ($("#pagesLocationsId").val() == '') {
+                //alert($("#pagesLocationsId").val());
+                $('#locationError').attr('style', 'display: block');
+                $(this).attr('data-toggle', '');
+            } else {
+                $('#locationError').attr('style', 'display: none');
+                $(this).attr('data-toggle', 'modal');
+            }
+        });
+        if ($("#pagesLocationsId option:selected").text() == 'scratchcards') {
+            //alert()
+            $('#couponsQuickPrint').hide();
+            $('#beforeCouponsQuickPrint').hide();
+        } else {
+            $('#couponsQuickPrint').show();
+            $('#beforeCouponsQuickPrint').show();
+        }
+        /*if($("#pagesLocationsId").val() == ''){
+         //alert($("#pagesLocationsId").val());
+         $('#locationError').attr('style', 'display: block');
+         } else {
+         $('#locationError').attr('style', 'display: none');
+         }*/
+        //$('#BatchCouponForm').on('submit', function() {
+        $('#addListItem').modal('hide');
+        //});
+
+
+    });
+
+</script>
+
+<script class="code" type="text/javascript">
+    $(document).ready(function() {
+        //$.jqplot.config.enablePlugins = true;
+        var data = <?php echo $paiChart ?>;
+        plot2 = $.jqplot('chartdiv', [data],
+                {
+                    seriesDefaults: {
+                        // Make this a pie chart.
+                        renderer: jQuery.jqplot.PieRenderer,
+                        rendererOptions: {
+                            // Put data labels on the pie slices.
+                            // By default, labels show the percentage of the slice.
+                            showDataLabels: true
+                        }
+                    },
+                    legend: {show: true, location: 'e'}
+                }
+        );
+    });
+</script>
+<script class="code" type="text/javascript">
+    $(document).ready(function() {
+        //$.jqplot.config.enablePlugins = true;
+        var s1 = <?php echo json_encode($barChart) ?>;
+        var ticks = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        plot1 = $.jqplot('chart1', [s1], {
+            // Only animate if we're not using excanvas (not in IE 7 or IE 8)..
+            animate: !$.jqplot.use_excanvas,
+            seriesDefaults: {
+                renderer: $.jqplot.BarRenderer,
+                pointLabels: {show: true}
+            },
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.CategoryAxisRenderer,
+                    ticks: ticks
+                }
+            },
+            highlighter: {show: false}
+        });
+    });
+    function closeModel() {
+        //alert('hi');
+        //$('#AddBatchCouponModal').removeClass('in');
+        $('#AddBatchCouponModal').modal("hide");
+        $('#AddSingleUserCouponModal').modal("hide");
+    }
+</script>
+
+<script class="code" type="text/javascript">
+    $(document).ready(function() {
+//        $('#bar_chat_collaps').removeClass('in');
+//        $('#bar_chat_collaps').removeClass('active');
+//        $('#pie_chat_collaps').removeClass('in');
+//        $('#pie_chat_collaps').removeClass('active');
+    });
+</script>
+
+<?php echo $this->element('locations_list') ?>
+<?php echo $this->Session->flash() ?>
+<!--div class="row">
+    <div class="col-lg-12">
+        <div class="col-lg-8">
+            <h3>Welcome <small><?php //echo AuthComponent::user('username')                   ?></small></h3>
+        </div>
+    </div>
+</div--><!-- /.row -->
+<div class="alert alert-danger" id="locationError" style="display: none">
+    <a class="close" data-dismiss="alert">×</a>
+    <h4 class="alert-heading">Error!</h4>
+    Please select a location first
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <ol class="breadcrumb">
+            <li class="active"><i class="fa fa-dashboard"></i> Dashboard</li>
+        </ol>
+    </div>
+</div>
+<?php 
+$fontClass='';
+if($coupons_count<1000){
+    $fontClass = 'announcement-heading';
+}else if($coupons_count<10000){
+    $fontClass = 'announcement-font35x';
+}else if ($coupons_count<100000) {
+    $fontClass = 'announcement-font30x';
+}else if($coupons_count<1000000){
+    $fontClass = 'announcement-font25x';
+}else if($coupons_count<10000000){
+    $fontClass = 'announcement-font20x';
+}else{
+    $fontClass = 'announcement-font15x';
+}
+    
+?>
+<!-- #info tabs start -->
+<div class="row">
+    <!-- #users panel -->
+    <?php //if (in_array(AuthComponent::user('Group.name'), Configure::read('Application.wifonicGroups')) || AuthComponent::user('Group.name') == Configure::read('Application.admin')) { ?>
+    <div class="col-lg-3">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-users fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $users_count ?></p>
+                        <p class="announcement-text">Users</p>
+                    </div>
+                </div>
+            </div>
+            <?php
+            if (in_array(AuthComponent::user('Group.name'), Configure::read('Application.wifonicGroups')) || in_array(AuthComponent::user('Group.name'), Configure::read('Application.clientGroups'))) {
+                ?>
+                <a href="<?php echo $this->params->webroot ?>users">
+                    <div class="panel-footer announcement-bottom">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                View
+                            </div>
+                            <div class="col-xs-6 text-right">
+                                <i class="fa fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <?php
+            }
+            ?>
+
+        </div>
+    </div>
+    <?php //} ?>
+    <!-- #locations panel -->
+    <div class="col-lg-3">
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-map-marker fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $locations_count ?></p>
+                        <p class="announcement-text">Customers</p>
+                    </div>
+                </div>
+            </div>
+            <?php
+            if (in_array(AuthComponent::user('Group.name'), Configure::read('Application.wifonicGroups')) || in_array(AuthComponent::user('Group.name'), Configure::read('Application.clientGroups'))) {
+                ?>
+                <a href="<?php echo $this->params->webroot ?>locations">
+                    <div class="panel-footer announcement-bottom">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                View
+                            </div>
+                            <div class="col-xs-6 text-right">
+                                <i class="fa fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <?php
+            }
+            ?>
+        </div>
+    </div>
+
+    <!-- #billing plans panel -->
+    <div class="col-lg-3">
+        <div class="panel panel-warning">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-money fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $billing_plans_count ?></p>
+                        <p class="announcement-text">Billing Plans</p>
+                    </div>
+                </div>
+            </div>
+            <?php
+            if (AuthComponent::user('Group.name') == Configure::read('Application.wf_admin') || AuthComponent::user('Group.name') == Configure::read('Application.admin')) {
+                ?>
+                <a href="<?php echo $this->params->webroot ?>billing_plans">
+                    <div class="panel-footer announcement-bottom">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                View
+                            </div>
+                            <div class="col-xs-6 text-right">
+                                <i class="fa fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <?php
+            }
+            ?>
+        </div>
+    </div>
+
+    <!-- #coupons panel -->
+    <div class="col-lg-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <i class="fa fa-ticket fa-5x"></i>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <p class="<?php echo $fontClass ?>"><?php echo $coupons_count ?></p>
+                        <p class="announcement-text">Coupons</p>
+                    </div>
+                </div>
+            </div>
+            <?php
+            if (in_array(AuthComponent::user('Group.name'), Configure::read('Application.wifonicGroups')) || in_array(AuthComponent::user('Group.name'), Configure::read('Application.clientGroups'))) {
+                ?>
+                <a href="<?php echo $this->params->webroot ?>coupons/unusedCouponList">
+                    <div class="panel-footer announcement-bottom">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                View
+                            </div>
+                            <div class="col-xs-6 text-right">
+                                <i class="fa fa-arrow-circle-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <?php
+            }
+            ?>
+        </div>
+    </div>
+</div><!-- /.row -->
+<!-- info tabs end -->
+
+
+
+<hr id="beforeCouponsQuickPrint">
+<?php
+if (AuthComponent::user('Group.name') == Configure::read('Application.wf_admin') || AuthComponent::user('Group.name') == Configure::read('Application.admin')) {
+    ?>
+    <div class="row" id="couponsQuickPrint">
+        <div class="panel-group col-lg-3" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h5 class="panel-title">
+                        Coupons Quick Print
+                    </h5>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <div class="container">
+                            <div class="col-lg-6">
+                                <div style="position: relative;">
+                                    <i class="fa fa-user" style="color:#428BCA; position: absolute;left: -0.9em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Single'), '#AddSingleUserCouponModal', array(
+                                        //'class' => 'btn btn-default pull-left btn-add-modal',
+                                        'id' => 'addSingleUserCoupon',
+                                        'data-toggle' => 'modal',
+                                    ));
+                                    ?>
+                                </div>
+
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div style="position: relative">
+                                    <i class="fa fa-users" style="color:#428BCA; position: absolute;left: -1.2em; top:0.3em"></i>
+                                    <?php
+                                    echo $this->Html->link(
+                                            __('Batch'), '#AddBatchCouponModal', array(
+                                        //'class' => 'btn btn-default pull-left btn-add-modal',
+                                        'id' => 'addBatchCoupon',
+                                        'data-toggle' => 'modal',
+                                            //'style' => 'margin-top: 15px'
+                                    ));
+                                    ?>
+                                </div>
+                            </div>
+                        </div><!-- end of container -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- end of row -->
+    <?php
+}
+?>
+
+<div class="row">
+    <hr>
+    <div class="panel-group col-lg-6" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading " data-toggle="collapse" data-target="#bar_chat_collaps" aria-expanded="false" aria-controls="gender_collaps">
+                <h4 class="panel-title">
+                    <a >
+                        <i class="fa fa-ticket"></i>
+                        Used Coupon Distribution
+                    </a>
+                </h4>
+            </div>
+            <div class="collapse in" id="bar_chat_collaps">
+                <div id="chart1" style="height:400px;width:500px; margin:auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-group col-lg-6" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading " data-toggle="collapse" data-target="#pie_chat_collaps" aria-expanded="false" aria-controls="gender_collaps">
+                <h4 class="panel-title">
+                    <a >
+                        <i class="fa fa-money"></i>
+                        Billing Plan Distribution
+                    </a>
+                </h4>
+            </div>
+            <div class="collapse in" id="pie_chat_collaps">
+                <div id="chartdiv" style="height:400px;width:500px; margin:auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!-- /.row -->
+
+
+<div class="modal fade" id="AddSingleUserCouponModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" id="closeSingleCouponFormModal" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Single User Coupon</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <!-- The form is placed inside the body of modal -->
+                    <?php echo $this->element('add_single_user_coupon'); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="AddBatchCouponModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" id="closeBatchCouponFormModal" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Batch Coupon</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- The form is placed inside the body of modal -->
+                    <?php echo $this->element('add_batch_coupon'); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

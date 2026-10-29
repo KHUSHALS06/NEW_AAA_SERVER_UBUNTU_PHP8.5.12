@@ -1,0 +1,150 @@
+<?php
+/**
+ * This ctp consists of form to add cheque details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@gmail.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        // JQuery datepicker for instrument date
+        $('#instrument_date').datepicker({
+            dateFormat: 'yy-mm-dd',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true
+        });
+        
+        // Revalidate the date when user changes it
+        $('#instrument_date')
+        .change(function(e) { 
+            $('#ChequeAddForm').bootstrapValidator('revalidateField', 'data[Cheque][instrument_date]');
+        });
+        
+        // Validate the form with Bootstrap validator
+        $('#ChequeAddForm').bootstrapValidator();
+        
+    });
+
+</script>
+<?php echo $this->element('locations_list') ?>
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Payment',
+        'link' => '/cheques'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+echo $this->Session->flash();
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        // Create form and define validation icons for the form
+        echo $this->Form->create('Cheque', array('method' => 'post', 'action' => 'add', 'type' => 'file',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+
+            <?php
+            echo $this->Form->input('instrument_date', array(
+                'label' => __('Instrument Date'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'id' => 'instrument_date',
+                'readOnly' => true,
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Instrument Date is required and cannot be empty",
+                'data-bv-date' => "true",
+                'data-bv-date-separator' => '-',
+                'data-bv-date-format' => "YYYY-MM-DD",
+                'data-bv-date-message' => "This is not a valid date. Please use YYYY-MM-DD format"
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('instrument_type', array(
+                'label' => __('Instrument Type'),
+                'type' => 'select',
+                'options' => array('Cheque' => 'Cheque', 'DD' => 'DD', 'Cash' => 'Cash', 'BankTransfer' => 'BankTransfer', 'TDSCertificate' => 'TDSCertificate', 'PayOrder' => 'PayOrder', 'Other' => 'Other'),
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('instrument_number', array(
+                'label' => __('Instrument Number'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "Instrument number is required and cannot be empty",
+                'data-bv-integer' => 'true',
+                'data-bv-integer-message' => 'Instrument number can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('description', array(
+                'label' => __('Instrument Details'),
+                'type' => 'text',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Instrument Details is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                'data-bv-regexp-message' => "Instrument Details can only consist of alphabets and numbers",
+            ));
+            ?>
+
+
+            <?php
+            echo $this->Form->input('amount', array(
+                'label' => __('Received Amount (Rs.)'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Received Amount is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'Received Amount can only consist of numbers'
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('scan_file', array(
+                'label' => __('Instrument Scan'),
+                'type' => 'file',
+                'id' => 'scanned_file',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "\.(bmp|gif|jpg|jpeg|jpe|png|pdf|BMP|GIF|JPG|JPEG|JPE|PNG|PDF)$",
+                'data-bv-regexp-message' => "The image format is incorrect."
+            ));
+            ?>
+            
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br><?php echo $this->Form->end(__("Submit")); ?>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+

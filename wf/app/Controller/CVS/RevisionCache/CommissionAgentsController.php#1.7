@@ -1,0 +1,441 @@
+<?php
+
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class CommissionAgentsController extends AppController {
+
+    public $helpers = array('Js'); //var $helpers = array('Js','Csv', 'xls', 'PhpExcel');
+    public $components = array('Paginator', 'RequestHandler');
+    public $uses = array('CommissionAgentsLocation', 'CommissionAgent', 'Location');
+
+    public function index() {
+        $condition = array();
+        $this->CommissionAgent->bindModel(array('hasMany' => array('CommissionAgentsLocation')), false);
+        if ($this->request->is('POST') && isset($this->request->data['commission_agents']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['commission_agents']['locations_id']);
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id')!='') {
+            $condition[] = array('CommissionAgentsLocation.location_id' => $this->Session->read('choosed_location_id'));
+        } else {
+            $condition[] = array('CommissionAgentsLocation.location_id' => '');
+        }
+        
+        $this->Paginator->settings = array(
+            'limit' => 10,
+            //'fields' => array('Location.id', 'DISTINCT Location.id' ),
+            'order' => array('CommissionAgent.first_name' => 'ASC'),
+                //'conditions' => array('CommissionAgentsLocation.location_id' => '172'),
+        );
+        $this->set('label', 'Commission Agents');
+        $this->set('breadcrumbLabel', 'Commission Agents');
+        $this->Session->write('link', 'commissionAgentsList');
+        $this->set('commissionAgents', $this->Paginator->paginate('CommissionAgent'));
+    }
+
+    public function add() {
+        if ($this->request->is('POST')) {
+            $this->CommissionAgent->create();
+            if ($this->CommissionAgent->saveAll($this->request->data)) {
+                $this->log("Commission agent added", 'info');
+                $this->Session->setFlash(__('Commission agent added successfully'), 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            }
+        }
+        $this->set('breadcrumbLabel', 'Add Commission Agent');
+    }
+
+    public function assign_location() {
+        if ($this->request->is('post')) {
+            if ($this->request->data['CommissionAgent']['id']!='') {
+                $this->set('commission_agent_id', $this->request->data['CommissionAgent']['id']);
+                $commissionAgent = $this->CommissionAgent->find('first', array(
+                    'fields' => array('CommissionAgent.first_name', 'CommissionAgent.last_name'),
+                    'conditions' => array('CommissionAgent.id' => $this->request->data['CommissionAgent']['id'])
+                        ));
+                $this->set('agent_first_name', $commissionAgent['CommissionAgent']['first_name']);
+                $this->set('agent_last_name', $commissionAgent['CommissionAgent']['last_name']);
+            }
+            if (count($this->request->data['CommissionAgentsLocation'])>0) {
+                $this->CommissionAgentsLocation->create();
+                if ($this->CommissionAgentsLocation->save($this->request->data)) {
+                    $this->log("Location ID: " . $this->request->data['CommissionAgentsLocation']['location_id'] . " assigned to agent " . $this->request->data['CommissionAgent']['id'] . " added", 'info');
+                    $this->Session->setFlash(__('Location assigned successfully'), 'flash_success');
+                    $this->redirect(array('action' => 'index'));
+                }
+                $this->set('commission_agent_id', '');
+            }
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+
+        $this->set('locations', $this->Session->read('locations_list'));
+        $commission_on = $this->enumToSelectField('CommissionAgentsLocation', 'commission_agents_locations', 'commission_on');
+        $this->set('commission_on', $commission_on);
+        $this->set('breadcrumbLabel', 'Assign Agent Loaction');
+    }
+
+    public function view() {
+        $this->set('label', 'View Commission Agent');
+        $this->set('breadcrumbLabel', 'View Commission Agent');
+        if ($this->request->is('POST') && count($this->request->data)>0) {
+
+            $commissionAgentsData = $this->CommissionAgent->findById($this->request->data['CommissionAgent']['id']);
+            $this->set('commissionAgentsData', $commissionAgentsData);
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+    }
+
+    public function edit() {
+        if ($this->request->is('POST') && $this->request->data['CommissionAgent']['id']!='') {
+            if ($this->request->data['CommissionAgent']['first_name']=='') {
+                $commissionAgentsData = $this->CommissionAgent->findById($this->request->data['CommissionAgent']['id']);
+                $this->set('commissionAgentsData', $commissionAgentsData);
+            } else {
+                if ($this->CommissionAgent->saveAll($this->request->data)) {
+                    $this->log("Commission Agent: " . $this->request->data['CommissionAgent']['first_name'] . " " . $this->request->data['CommissionAgent']['last_name'] . " updated by User ID: " . AuthComponent::user('id'), 'info');
+                    $this->Session->setFlash(__('Commission Agent: <strong>' . $this->request->data['CommissionAgent']['first_name'] . " " . $this->request->data['CommissionAgent']['last_name'] . '</strong> updated successfully'), 'flash_success');
+                    //$this->redirect(array('action' => 'index'));
+                }
+            }
+        } else {
+            $this->redirect(array('action' => 'index'));
+        }
+       
+        $this->set('label', 'Edit Commission Agent');
+        $this->set('breadcrumbLabel', 'Edit Commission Agent');
+        $this->Session->write('link', 'editGuest');
+    }
+
+    public function deactivate($id = null) {
+        if ($this->request->is('post')) {
+            if ($this->request->data['CommissionAgent']['id']!='') {
+                $this->CommissionAgent->id = $this->request->data['CommissionAgent']['id'];
+                if ($this->CommissionAgent->exists()) {
+                    if ($this->CommissionAgent->saveField('status', 'inactive')) {
+                        $this->log("Agent deactivated", 'info');
+
+                        $this->Session->setFlash(__('Agent ' . $this->request->data['CommissionAgent']['first_name'] . ' is de-activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to de-activate'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid user id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a user id.'), 'flash_fail');
+            }
+        }
+    }
+
+    public function activate($id = null) {
+
+        if ($this->request->is('post')) {
+            if ($this->request->data['CommissionAgent']['id']!='') {
+                $this->CommissionAgent->id = $this->request->data['CommissionAgent']['id'];
+                if ($this->CommissionAgent->exists()) {
+                    if ($this->CommissionAgent->saveField('status', 'active')) {
+                        $this->log("Agent activated", 'info');
+                        $this->Session->setFlash(__('Agent ' . $this->request->data['CommissionAgent']['first_name'] . ' is activated'), 'flash_success');
+                        $this->redirect(array('action' => 'index'));
+                    } else {
+                        $this->Session->setFlash(__('Unable to activate'), 'flash_fail');
+                        $this->redirect(array('action' => 'index'));
+                    }
+                } else {
+                    $this->Session->setFlash(__('Invalid user id provided'), 'flash_fail');
+                    $this->redirect(array('action' => 'index'));
+                }
+            } else {
+                $this->Session->setFlash(__('Please provide a user id.'), 'flash_fail');
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_city() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('city')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent city updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_email() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('email')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent email updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_first_name() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('first_name')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent first name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_last_name() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('last_name')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent last name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_mobile() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('mobile')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent mobile updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_account_number() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('account_number')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent account number updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_address1() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('address1')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent address1 updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_address2() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('address2')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent address1 updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_bank() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('bank')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent bank name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_branch() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('branch')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent bank branch name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_country() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('country')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent country updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_middle_name() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('middle_name')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent middle name updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_phone() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('phone')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent phone updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_postcode() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('postcode')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent postcode updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+    /* in-line editing using JQuery jedittable plugin */
+
+    public function update_state() {
+        if ($this->request->is('post')) {
+            $data = $this->request->data;
+            $this->CommissionAgent->read(null, $data['pk']);
+            $this->CommissionAgent->set($data['name'], $data['value']);
+            if ($this->CommissionAgent->validates(array('fieldList' => array('state')))) {
+                if ($this->CommissionAgent->saveField($data['name'], $data['value'])) {
+                    $this->CommissionAgent->set($data['name'], $data['value']);
+                    $this->log("Commission agent state updated", 'info');
+                }
+            } else {
+                // didn't validate logic
+            }
+        }
+    }
+
+}
+?>

@@ -1,0 +1,172 @@
+<?php
+/**
+ * This ctp consist of form to add invoice extra details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        // Validate the form with Bootstrap validator
+        $('#InvoiceExtraAddInvoiceExtraForm').bootstrapValidator();
+
+        var previousmonth = '<?php print date("m", strtotime("-1 months")) ?>';
+        //$('#InvoiceExtraMonth option[value="'+previousmonth+'"]').attr("selected","selected");
+        $('#InvoiceExtraMonth').val(previousmonth);
+
+    });
+</script>
+<?php echo $this->element('locations_list') ?>
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Invoice Extra',
+        'link' => '/invoice_extras'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        // Create form and define validation icons for the form
+        echo $this->Form->create('InvoiceExtra', array('method' => 'post', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <div class="row">
+                <div class="col-md-3">
+                    <?php
+                    echo $this->Form->input('month', array(
+                        'label' => __('Month'),
+                        'type' => 'text',
+                        //'options' => $month,
+                        'readOnly' => 'true'
+                    ));
+                    ?>
+                </div>
+
+                <div class="col-md-3">
+                    <?php
+                    echo $this->Form->input('year', array(
+                        'label' => __('Year'),
+                        'type' => 'text',
+                        'readOnly' => 'true',
+                        'value' => date("Y"),
+                        'data-bv-notempty' => "true",
+                        'data-bv-notempty-message' => "Year is required and cannot be empty",
+                        'data-bv-numeric' => 'true',
+                        'data-bv-numeric-message' => 'Year can only consist of numbers'
+                    ));
+                    ?>
+                </div>
+            </div>
+            <?php
+            echo $this->Form->input('title', array(
+                'label' => __('Title'),
+                'type' => 'select',
+                'options' => $title,
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('description', array(
+                'label' => __('Description'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => 'true',
+                'data-bv-notempty-message' => "Description is required and cannot be empty",
+                    //'data-bv-regexp' => "true",
+                    //'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                    //'data-bv-regexp-message' => "Last name can only consist of alphabets and numbers"
+            ));
+            ?>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <?php
+                    echo $this->Form->input('adjustment', array(
+                        'label' => __('Adjustment'),
+                        'type' => 'select',
+                        'options' => array('-' => '-', '+' => '+')
+                    ));
+                    ?>
+                </div>
+            </div>
+
+            <?php
+            echo $this->Form->input('amount', array(
+                'label' => __('Amount (Rs.)'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Amount is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'Amount can only consist of numbers'
+            ));
+            ?>
+            <div class="row">
+                <div class="col-md-3">
+                    <?php
+                    echo $this->Form->input('adjust_in_total', array(
+                        'label' => __('Adjust in Total'),
+                        //'type' => 'text',
+                        'type' => 'select',
+                        'options' => array('0' => 'No', '1' => 'Yes'),
+                        'data-bv-notempty' => "true",
+                        'data-bv-notempty-message' => "The city is required and cannot be empty",
+                    ));
+                    ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <?php
+                    /* echo $this->Form->input('incorporated', array(
+                      'label' => __('Incorporated'),
+                      'type' => 'select',
+                      'options' => array('0' => 'No', '1' => 'Yes'),
+                      'data-bv-notempty' => "true",
+                      'data-bv-notempty-message' => "The city is required and cannot be empty",
+                      )); */
+                    ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-5">
+                    <?php
+                    echo $this->Form->input('internet_payment', array(
+                        'label' => __('Internet Payment'),
+                        'type' => 'select',
+                        'options' => $internet_payment,
+                        'selected' => 'none'
+                    ));
+                    ?>
+                </div>
+            </div>
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br><?php echo $this->Form->end(__("Save")); ?>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+

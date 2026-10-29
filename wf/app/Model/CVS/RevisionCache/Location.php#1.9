@@ -1,0 +1,409 @@
+<?php
+
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppModel', 'Model');
+
+/**
+ * Location Model
+ *
+ */
+class Location extends AppModel {
+
+    /**
+     * Display field
+     *
+     * @var string
+     */
+    public $displayField = 'name';
+    public $belongsTo = array(
+        'BusinessPlan' => array(
+            'className' => 'business_plans',
+            'foreignKey' => 'business_plan_id',
+            'conditions' => '',
+            'fields' => array('id', 'name'),
+            'order' => ''
+        )
+    );
+    public $hasAndBelongsToMany = array(
+        'User' =>
+        array(
+            'className' => 'User',
+            'joinTable' => 'locations_users',
+            'foreignKey' => 'location_id',
+            'associationForeignKey' => 'user_id',
+            'fields' => array('username', 'id'),
+        ),
+            /* 'CommissionAgent' =>
+              array(
+              'className' => 'CommissionAgent',
+              'joinTable' => 'Commission_agents_location',
+              'foreignKey' => 'location_id',
+              'associationForeignKey' => 'commission_agent_id',
+              //'fields' => array('username', 'id'),
+              ) */
+    );
+
+    //public $actsAs = array('Containable');   
+
+    /**
+     * Validation rules
+     *
+     * @var array
+     */
+    public $validate = array(
+        'location_name' => array(
+            'notempty' => array(
+                'rule' => array('notempty'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'location_state' => array(
+            'notempty' => array(
+                'rule' => array('notempty'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'location_city' => array(
+            'notempty' => array(
+                'rule' => array('notempty'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'location_country' => array(
+            'notempty' => array(
+                'rule' => array('notempty'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'location_e164_country' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'committed_revenue' => array(
+            'money' => array(
+                'rule' => array('money'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'revenue_percent' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+            'range' => array(
+                'rule' => array('range'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'monthly_fixed' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'nas' => array(
+            'alphanumeric' => array(
+                'rule' => array('alphanumeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'credit_limit' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'contact_persons1' => array(
+            'rule' => array('custom', '/^[a-zA-Z ]*$/i'),
+            'message'  => 'Only alphabet and space allowed'
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+        ),
+        'contact_persons2' => array(
+            'rule' => array('custom', '/^[a-zA-Z ]*$/i'),
+            'message'  => 'Only alphabet and space allowed'
+            /*
+            'alphanumeric' => array(
+                'rule' => array('alphanumeric'),
+                //'message' => 'Your custom message here',
+                'allowEmpty' => true,
+                'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+             * 
+             */
+        ),
+        'contact_person_post1' => array(
+            'rule' => array('custom', '/^[a-zA-Z ]*$/i'),
+            'message'  => 'Only alphabet and space allowed'
+            /*
+            'alphanumeric' => array(
+                'rule' => array('alphanumeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+             * 
+             */
+        ),
+        'contact_person_post2' => array(
+            'rule' => array('custom', '/^[a-zA-Z ]*$/i'),
+            'message'  => 'Only alphabet and space allowed',
+            'allowEmpty' => true,
+            /*
+            'alphanumeric' => array(
+                'rule' => array('alphanumeric'),
+                //'message' => 'Your custom message here',
+                'allowEmpty' => true,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+             * 
+             */
+        ),
+        /* 'contact_person_mob1' => array(
+          'phone' => array(
+          'rule' => array('phone'),
+          //'message' => 'Your custom message here',
+          //'allowEmpty' => false,
+          //'required' => false,
+          //'last' => false, // Stop validation after this rule
+          //'on' => 'create', // Limit validation to 'create' or 'update' operations
+          ),
+          ), 
+        'contact_person_mob2' => array(
+            'phone' => array(
+                //'rule' => array('phone'),
+                //'message' => 'Your custom message here',
+                'allowEmpty' => true,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+         * 
+         */
+        'email' => array(
+            'email' => array(
+                'rule' => array('email'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'email2' => array(
+            'email' => array(
+                'rule' => array('email'),
+                //'message' => 'Your custom message here',
+                'allowEmpty' => true,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'web' => array(
+        /* 'url' => array(
+          //'rule' => array('url'),
+          //'message' => 'Your custom message here',
+          //'allowEmpty' => false,
+          //'required' => false,
+          //'last' => false, // Stop validation after this rule
+          //'on' => 'create', // Limit validation to 'create' or 'update' operations
+          ), */
+        ),
+        'phone1' => array(
+        /* 'phone' => array(
+          //'rule' => array('phone'),
+          //'message' => 'Your custom message here',
+          //'allowEmpty' => false,
+          //'required' => false,
+          //'last' => false, // Stop validation after this rule
+          //'on' => 'create', // Limit validation to 'create' or 'update' operations
+          ), */
+        ),
+        'phone2' => array(
+        /* 'phone' => array(
+          //'rule' => array('phone'),
+          //'message' => 'Your custom message here',
+          'allowEmpty' => true,
+          //'required' => false,
+          //'last' => false, // Stop validation after this rule
+          //'on' => 'create', // Limit validation to 'create' or 'update' operations
+          ), */
+        ),
+        'fax' => array(
+        //'phone' => array(
+        //'rule' => array('phone'),
+        //'message' => 'Your custom message here',
+        //'allowEmpty' => false,
+        //'required' => false,
+        //'last' => false, // Stop validation after this rule
+        //'on' => 'create', // Limit validation to 'create' or 'update' operations
+        //),
+        ),
+        'name' => array(
+        /* 'alphanumeric' => array(
+          //'rule' => array('alphanumeric'),
+          //'message' => 'Your custom message here',
+          //'allowEmpty' => false,
+          //'required' => false,
+          //'last' => false, // Stop validation after this rule
+          //'on' => 'create', // Limit validation to 'create' or 'update' operations
+          ), */
+        ),
+        'post_code' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'amc' => array(
+            'money' => array(
+                'rule' => array('money'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'one_time_cost' => array(
+            'money' => array(
+                'rule' => array('money'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'valid_till' => array(
+            'date' => array(
+                'rule' => array('date'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+            'notempty' => array(
+                'rule' => array('notempty'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'contract_period' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'scratch_card_price' => array(
+            'money' => array(
+                'rule' => array('money'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'devices_per_occupancy' => array(
+            'numeric' => array(
+                'rule' => array('numeric'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+        'annual_increment' => array(
+            'decimal' => array(
+                'rule' => array('decimal'),
+            //'message' => 'Your custom message here',
+            //'allowEmpty' => false,
+            //'required' => false,
+            //'last' => false, // Stop validation after this rule
+            //'on' => 'create', // Limit validation to 'create' or 'update' operations
+            ),
+        ),
+    );
+
+}

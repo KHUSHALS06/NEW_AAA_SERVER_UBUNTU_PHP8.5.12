@@ -1,0 +1,29 @@
+<?php
+
+class DATABASE_CONFIG {
+
+    public $default = array(
+      'datasource' => 'Database/Mysql',
+      'persistent' => false,
+      'host' => 'localhost',
+      'login' => 'root',
+      'password' => 'root121',
+      'database' => 'wifonichotspotadmin',
+      'prefix' => '',
+      'encoding' => 'utf8'
+      );
+/* 
+      public $default = array(
+        'datasource' => 'Database/Mysql',
+        'persistent' => false,
+        'host' => '192.168.1.222',
+        'login' => 'hotspotadmin',
+        'password' => 'hotspotadmin12',
+        'database' => 'hotspot_admin',
+        'prefix' => '',
+        'encoding' => 'utf8'
+    );
+ * 
+ */
+}
+?>

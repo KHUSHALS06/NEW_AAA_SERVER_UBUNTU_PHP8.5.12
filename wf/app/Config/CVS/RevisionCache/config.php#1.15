@@ -1,0 +1,249 @@
+<?php
+
+$config = array(
+    'Application' => array(
+        'name' => 'WiFonic WiFi HotSpot Service',
+        'version' => 'v0.7',
+        'status' => 1,
+        'maintenance' => 0,
+        'wf_admin' => 'wfadmin',
+        'wf_noc' => 'wfnoc',
+        'wf_account' => 'wfaccount',
+        'wf_engineer' => 'wfengineer',
+        'admin' => 'admin',
+        'gold' => 'gold',
+        'platinum' => 'platinum',
+        'silver' => 'silver',
+        'front office' => 'fom',
+        'account' => 'account',
+        'wifonicGroups' => array('wfadmin', 'wfnoc', 'wfaccount', 'wfengineer'),
+        'clientGroups' => array('admin', 'account', 'fom'),
+        'userGroups' => array('account', 'fom'),
+        'groupAccessableToWfAdmin' => array('wfnoc', 'wfaccount', 'wfengineer','admin','account', 'fom'),
+        'groupAccessableToWfAccount' => array('account', 'fom'),
+        'groupAccessableToWfNoc' => array('admin', 'wfengineer','account', 'fom'),
+        'groupAccessableToWfEngineer' => array('account', 'fom'),
+        'groupAccessableToAdmin' => array('account', 'fom'),
+        'specialBillingPlan' => array('wfadmin', 'wfnoc', 'wfaccount', 'wfengineer'),
+        'wifonicAddress' => "WiFonic Technologies Pvt. Ltd. \n238, 2nd Floor, IJMIMA Commercial Complex \nOff Link Road, Malad (West)\nMumbai-400064 \n Tel: 022-66077300 \n email: info@wifonic.com\n ",
+        'projectPath'=>'HotSpotAdmin',
+        'numberOfFeedbackFields' => 20,
+        'rowLimit' => 30,
+        'scratchCardPrice' => 15,
+    ),
+    'Meta' => array(
+        'title' => 'WiFonic HotSpot Admin',
+        'description' => 'Control Panel for WiFonic Hotspot',
+        'keywords' => 'wifonic,hotspot,control,panel,dashboard',
+    ),
+    'Google' => array(
+        'analytics' => '',
+    ),
+    'Email' => array(
+        'from_email' => 'admin@wifonic.com', //array('{{from_name}}' => '{{from_email}}'),
+        'cc_email' => 'admin@wifonic.com',
+        'contact_mail' => array('{{contact_name}}' => '{{contact_mail}}')
+    ),
+    'DefaultBillingPlans' => array(
+        '0' => array(
+            'name_bp' => '1 Hour',
+            'time_bp' => '60',
+            'price_bp' => '110',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '1',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '60',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 1,
+            'cat_bp' => 'normal',
+            'currency_bp' => 'INR',
+            'login_display' => 1
+        ),
+        '1' => array(
+            'name_bp' => '2 Hour',
+            'time_bp' => '120',
+            'price_bp' => '200',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '0',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '120',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 1,
+            'cat_bp' => 'normal',
+            'currency_bp' => 'INR',
+            'login_display' => 1
+        ),
+        '2' => array(
+            'name_bp' => '1 Day',
+            'time_bp' => '1440',
+            'price_bp' => '550',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '1',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '1440',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 1,
+            'cat_bp' => 'normal',
+            'currency_bp' => 'INR',
+            'login_display' => 1
+        ),
+        '3' => array(
+            'name_bp' => '1 Week',
+            'time_bp' => '10080',
+            'price_bp' => '2200',
+            'type_bp' => 'time',
+            'timetofinish_bp' => '1',
+            'simultanous_bp' => '0',
+            'maximum_time_bp' => '10080',
+            'maximum_octet_bp' => '0',
+            'expiration_date_bp' => date('Y-m-d', strtotime("+60 days")),
+            'bandwidth_upload_bp' => '0',
+            'bandwidth_download_bp' => '0',
+            'bublish_bp' => 1,
+            'cat_bp' => 'normal',
+            'currency_bp' => 'INR',
+            'login_display' => 1
+        )
+    ),
+    'ProjectVariables'=>array(
+        'billingPlanTimeToFinish' => '',
+        'billingPlanPublish' => array('0' => 'No', '1' => 'Yes'),
+        'billingPlanLoginDisplay' => array('0' => 'No', '1' => 'Yes'),
+        'billingPlanisFup' => array('0' => '0', '1' => '1'),
+        'chequesStatus' => array('0' => '0', '1' => '1'),
+        'cmsLoginpagesvisibility' => array('0' => 'No', '1' => 'Yes'),
+        'commissionAgentsStatus' => array('0' => '0', '1' => '1'),
+        'complimentaryBarredStatus' => array('0' => '0', '1' => '1'),
+        'couponsIsFup' => array('0' => 'No', '1'=>'Yes'),
+        'invoicesMonth' => array('1'=>'1', '2' => '2', '3' => '3', '4' =>'4',  '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9', '10'=>'10', '11'=>'11', '12' => '12'),
+        'invoiceExtraMonth' => array('1'=>'1', '2' => '2', '3' => '3', '4' =>'4',  '5' => '5', '6' => '6', '7' => '7', '8' => '8', '9' => '9', '10'=>'10', '11'=>'11', '12' => '12'),
+        'invoiceExtraAdjustment' => array('-' => '-', '+' => '+'),
+        'invoiceExtraAdjustmentInTotal' => array('0' => 'No', '1' => 'Yes'),
+        'locationsRouterManagement' => array('0' => 'No', '1' => 'Yes'),
+        'locationsAutoRenew' => array('0' => 'No', '1' => 'Yes'),
+        'locationsLive' => array('0' => 'No', '1' => 'Yes'),
+        'locationsComplementary' => array('0' => 'No', '1' => 'Yes'),
+        'locationsStatus' => array('0' => 'No', '1' => 'Yes'),
+        'internetSpeed' => array('128' => '128 Kbps', '256' => '256 Kbps', '512' => '512 Kbps', '2048'=>'2 Mbps', '4096' => '4 Mbps', '5120' => '5 Mbps', '6114' => '6 Mbps', '8192'=>'8 Mbps', '10240' => '10 Mbps',  '12288' => '12 Mbps', '16384'=>'16 Mbps', '20480' => '20 Mbps')
+    ),
+    'LoginPage'=>array(
+        'TermsAdnConditions' => '<p><span style="text-decoration: underline;"><strong>Terms of Service:</strong></span></p><p><b>Proper Use</b></p><p>You may use the technology provided to you by this service for the sole
+                                purpose of using the service as described here. You must immediately
+                                notify the WiFonic of any unauthorized use of the service or any other
+                                security breach. You may not use
+                                the service for any other reason, including reselling any aspect of
+                                the service. Other examples of improper activities include, without
+                                limitation:
+                                <ol><li>modifying, adapting, translating, or reverse engineering any portion of the service;</li><li>attempting to break security, access, tamper with or use any unauthorized
+                                areas of the service;</li><li>removing any copyright, trademark or other proprietary rights notices
+                                contained in or on the service;</li><li>authorizing any other adult over 18 to use the service;</li><li>assigning your log in name, password to any other person or computer unit;</li><li>attempting to collect or maintain any information about other users of the service (including usernames and/or email addresses) or other third parties for unauthorized purposes; </li><li>logging onto the service under false or fraudulent pretenses;</li><li>creating or transmitting unwanted electronic communications such as "spam," or chain letters to other users or otherwise interfering with other user&#44;s enjoyment of the service;</li><li>transmitting content that falsely expresses or implies that it is sponsored or endorsed by WiFonic, that infringes, misappropriates or violates the intellectual property, publicity, privacy or other proprietary rights of any party, or that is defamatory, objectionable, unlawful or promotes or encourages illegal activity;</li><li>transmitting any viruses, worms, defects, Trojan Horses or other items of a destructive nature; or </li><li>using the service for any unlawful, harassing, abusive, criminal or fraudulent purpose. </li></ol></p><p>This service does not store the content of your online communications or the content of data transfers. Employees of WiFonic do not access the content of any communications or files users send or receive. We reserve, however, the right to monitor, intercept and disclose any transmissions over or using our facilities, and to provide user
+                                information, or use records, and other related information under certain circumstances (for example, in response to lawful process, orders, subpoenas, or warrants, or to protect our rights, users or property).</p><p><b>Changes to Terms of Service; Termination</b></p><p>We may modify or terminate the service and these Terms of Service and any accompanying policies, for any reason, and without notice, including the right to terminate with or without notice, without liability to you, any user or any third party. Please review these Terms of Service from time to time so that you will be apprised of any changes </p><p>We reserve the right to terminate your use of the service, for any reason, and without notice. Upon any such termination, any and all rights granted to you by WiFonic shall terminate. </p><p><b>Privacy Policy</b></p><p>You understand and agree that WiFonic may access, preserve, and disclose information if required to do so by law or in a good
+                                faith belief that such access preservation or disclosure is reasonably
+                                necessary to comply with legal process or protect the rights and property of WiFonic or the public.
+                                </p><p>WiFonic does not exercise control over sites that you may visit,
+                                or services that you may use, that are not affiliated with WiFonic. 
+                                These other sites and services may place their own cookies or other
+                                files on your computer, collect data, or solicit personal information from
+                                you. You should read the privacy policies of these sites and services to
+                                learn how they handle your personal information.
+                                </p><p><b>Your Responsibilities</b></p><p>You understand that the service, which utilizes wireless technologies,
+                                is not inherently secure and that wireless communications can be intercepted
+                                by technology designed and intended for that purpose. While WiFonic uses
+                                commercially reasonable efforts to provide a secure
+                                service, we cannot guarantee the effectiveness of our efforts. We will not
+                                be liable to you or any other party for any lack of security that may result
+                                from your use of the service.
+                                </p><p>You agree that you are responsible for providing security measures that are
+                                suited for your intended use of the service. For example, you shall
+                                take full responsibility for taking adequate measures to safeguard your data
+                                from loss. Also, other than the technology provided by WiFonic, you must
+                                provide all equipment, technology and software to use the service.
+                                </p><p><b>Content Disclaimer</b></p><p>WiFonic does not control and is not responsible for data,
+                                content, services, or products that you access or download through the 
+                                service. We may, but are not obliged to, block data transmissions to
+                                protect WiFonic or the public.
+                                </p><p><b>Disclaimer of Warranties</b></p><p>WiFonic disclaims any and all responsibility or liability
+                                for the accuracy, content, completeness, legality, reliability, or
+                                operability or availability of information or material displayed in or
+                                accessible through the service. We disclaim any responsibility for
+                                the deletion, failure to store, misdelivery, or untimely delivery of any
+                                information or material. We disclaim any responsibility for any harm
+                                resulting from downloading or accessing any information or material on the
+                                Internet through the service.
+                                </p><p>THE SERVICE, AND ALL MATERIALS, INFORMATION, PRODUCTS AND SERVICES
+                                INCLUDED IN THE  SERVICE ARE PROVIDED "AS IS," WITH NO WARRANTIES
+                                WHATSOEVER. WIFONIC AND ITS SUPPLIERS AND THEIR LICENSORS EXPRESSLY
+                                DISCLAIM TO THE FULLEST EXTENT PERMITTED BY LAW ALL EXPRESS, IMPLIED, AND
+                                STATUTORY WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE WARRANTIES OF
+                                MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT OF
+                                PROPRIETARY RIGHTS. WIFONIC AND ITS SUPPLIERS AND THEIR LICENSORS
+                                DISCLAIM ANY WARRANTIES REGARDING THE SECURITY, RELIABILITY, TIMELINESS, AND
+                                PERFORMANCE OF THE SERVICE. 
+                                </p><p>YOU UNDERSTAND AND AGREE THAT (A) THE  SERVICE WILL NOT BE UNINTERRUPTED
+                                OR ERROR-FREE, (B) THERE IS NO WARRANTY OR GUARANTEE THAT THE SERVICE
+                                WILL OPERATE AT ANY MINIMUM DATA TRANSFER SPEED (C) WIFONIC
+                                HAS NO CONTROL OVER THIRD PARTY NETWORKS OR SITES YOU MAY ACCESS IN THE
+                                COURSE OF YOUR USE OF THE SERVICE, AND (D) YOU DOWNLOAD OR OTHERWISE
+                                OBTAIN MATERIAL OR DATA THROUGH THE USE OF THE SERVICE AT YOUR OWN
+                                DISCRETION AND RISK AND THAT YOU WILL BE SOLELY RESPONSIBLE FOR ANY DAMAGES
+                                TO YOUR COMPUTER SYSTEM OR LOSS OF DATA THAT RESULTS FROM THE DOWNLOAD OF
+                                SUCH MATERIAL OR DATA.
+                                </p>
+                                <p><b>Limitation of Liability</b></p><p>UNDER NO CIRCUMSTANCES SHALL WIFONIC, ITS SUPPLIERS OR THEIR
+                                LICENSORS BE LIABLE TO YOU, ANY USER, OR ANY THIRD PARTY ON ACCOUNT OF YOUR
+                                OR THAT PARTY&#44;S USE OR MISUSE OF OR RELIANCE ON THE  SERVICE ARISING
+                                FROM ANY CLAIM RELATING TO THIS AGREEMENT OR THE SUBJECT MATTER HEREOF. SUCH
+                                LIMITATION OF LIABILITY SHALL APPLY TO PREVENT RECOVERY OF DIRECT, INDIRECT,
+                                INCIDENTAL, CONSEQUENTIAL, SPECIAL, EXEMPLARY, AND PUNITIVE DAMAGES WHETHER
+                                SUCH CLAIM IS BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), OR
+                                OTHERWISE, (EVEN IF WIFONIC, ITS SUPPLIERS OR THEIR LICENSORS
+                                HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES). SUCH LIMITATION OF
+                                LIABILITY SHALL APPLY WHETHER THE DAMAGES ARISE FROM USE OR MISUSE OF AND
+                                RELIANCE ON THE  SERVICE, FROM INABILITY TO USE THE  SERVICE, OR
+                                FROM THE INTERRUPTION, SUSPENSION, OR TERMINATION OF THE  SERVICE
+                                (INCLUDING SUCH DAMAGES INCURRED BY THIRD PARTIES). THIS LIMITATION SHALL
+                                ALSO APPLY WITH RESPECT TO DAMAGES INCURRED BY REASON OF OTHER SERVICES OR
+                                GOODS RECEIVED THROUGH OR ADVERTISED ON THE  SERVICE OR RECEIVED THROUGH
+                                ANY LINKS PROVIDED IN THE  SERVICE, AS WELL AS BY REASON OF ANY
+                                INFORMATION OR ADVICE RECEIVED THROUGH OR ADVERTISED ON THE  SERVICE OR
+                                RECEIVED THROUGH ANY LINKS PROVIDED IN THE  SERVICE. THIS LIMITATION
+                                SHALL ALSO APPLY, WITHOUT LIMITATION, TO THE COSTS OF PROCUREMENT OF
+                                SUBSTITUTE GOODS OR SERVICES, LOST PROFITS, OR LOST DATA. SUCH LIMITATION
+                                SHALL FURTHER APPLY WITH RESPECT TO THE PERFORMANCE OR NON-PERFORMANCE OF
+                                THE  SERVICE OR ANY INFORMATION OR MERCHANDISE THAT APPEARS ON, OR IS
+                                LINKED OR RELATED IN ANY WAY TO, THE  SERVICE. SUCH LIMITATION SHALL
+                                APPLY NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY
+                                AND TO THE FULLEST EXTENT PERMITTED BY LAW.
+                                </p>
+                                <p>Without limiting the foregoing, under no circumstances shall 
+                                WiFonic, its suppliers or their licensors be held liable for any delay or
+                                failure in performance resulting directly or indirectly from acts of nature,
+                                forces, or causes beyond its reasonable control, including, without
+                                limitation, Internet failures, computer equipment failures,
+                                telecommunication equipment failures, other equipment failures, electrical      
+                                power failures, strikes, labor disputes, riots, insurrections, civil
+                                disturbances, shortages of labor or materials, fires, floods, storms,
+                                explosions, acts of God, war, governmental actions, orders of domestic or
+                                foreign courts or tribunals, non-performance of third parties, or loss of or
+                                fluctuations in heat, light, or air conditioning.
+                                </p><p><b>Indemnity</b></p><p>You agree to hold harmless and indemnify WiFonic, its suppliers
+                                and licensors from and against any third party claim arising from or in any
+                                way related to your use of the service, including any liability or
+                                expense arising from all claims, losses, damages (actual and consequential),
+                                suits, judgments, litigation costs and attorneys&#44; fees, of every kind and
+                                nature. </p></div>
+                                </div><div style="clear:both; width:100%; height:30px;" id="foot"><p class="footer">Copyright (c) 2009 Wifonic Technologies Pvt Ltd - All rights reserved<br/><a href="wifonic_hotspot_tandc.htm">Terms of Service</a></p></div>
+                            ',
+        'Footer'=>'WiFonic HotSpot Admin v2.0, a secured way to internet',
+    )
+);
+?>

@@ -1,0 +1,111 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<?php
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+<?php echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Registered User',
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php $this->Paginator->options(array('url' => array("0"))); ?>
+        <!--hr-->
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php //echo $this->Session->read('user') ?>
+        <hr>
+        <?php //echo $this->element('search') ?>
+        <table id="registeredUsersTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('first_name', array(
+                            'asc' => __('First Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('First Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th ><?php
+                        echo $this->Paginator->sort('last_name', array(
+                            'asc' => __('Last Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Last Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('email', array(
+                            'asc' => __('Email') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Email') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                    <th ><?php
+                        echo $this->Paginator->sort('phone', array(
+                            'asc' => __('Phone') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Phone') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+
+                    <th><?php
+                        echo $this->Paginator->sort('dob', array(
+                            'asc' => __('DOB') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('DOB') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (count($registeredUsers) > 0) { ?>
+                    <?php foreach ($registeredUsers as $user) { ?>
+                        <tr>
+                            <td><?php echo $user['RegisteredUser']['first_name'] ?></td>
+                            <td><?php echo $user['RegisteredUser']['last_name'] ?></td>
+                            <td><?php echo $user['RegisteredUser']['email'] ?></td>
+                            <td><?php echo $user['RegisteredUser']['phone'] ?></td>
+                            <td><?php echo $user['RegisteredUser']['dob'] ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+            <?php } ?>
+        </table>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+            <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        </div><br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>

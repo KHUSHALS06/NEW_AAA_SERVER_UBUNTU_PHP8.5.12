@@ -1,0 +1,395 @@
+<?php
+
+/** CmsLoginpagesController class
+ * 
+ * This class consists of methods for login page CMS
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class CmsLoginpagesController extends AppController {
+
+    public $helpers = array('Js');
+
+    /**
+     * This is the default method for the CmsLoginpages controller, redirecting to the edit page.
+     * 
+     * @return void
+     */
+    public function index() {
+        $this->redirect(array('action' => 'edit'));
+    }
+
+    /**
+     * This method fetches the login CMS contents.
+     * If a particular location is set then it fetches the login CMS contents associated to that particular location.
+     * 
+     * @return void
+     */
+    public function edit() {
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            if ($this->request->data['cms_loginpages']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+                $this->set('emptyLocation', 'true');
+            } else {
+                $this->set('emptyLocation', 'false');
+            }
+        }
+        if ($this->Session->read('choosed_location_id') == '') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+            $this->set('emptyLocation', 'true');
+        } else {
+            $this->set('emptyLocation', 'false');
+        }
+        $condition = array();
+        if ($this->request->is('POST') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            //$tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            //$this->set('locationDomain', $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')]);
+            $condition[] = array(
+                'CmsLoginpage.location_id' => $this->request->data['cms_loginpages']['locations_id'],
+                    //'CmsLoginpage.location_domain' => $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')]
+            );
+        }
+        if ($this->Session->check('choosed_location_id') && $this->Session->read('choosed_location_id') != '') {
+            $condition[] = array('CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'));
+        }
+
+        if (count($condition) > 0) {
+            $content = $this->CmsLoginpage->find('first', array(
+                'fields' => array('CmsLoginpage.location_id', 'CmsLoginpage.header', 'CmsLoginpage.tariff', 'CmsLoginpage.footer', 'CmsLoginpage.advertisement'),
+                'conditions' => $condition
+                    )
+            );
+            if (count($content) == 0) {
+                $this->set('header', '');
+                $this->set('tariff', '');
+                $this->set('footer', '');
+                $this->set('advertisement', '');
+                //$this->set('emptyLocation', 'true');
+            } else {
+                if ($content['CmsLoginpage']['header'] == '') {
+                    $this->set('header', '');
+                } else {
+                    $this->set('header', $content['CmsLoginpage']['header']);
+                }
+
+                if ($content['CmsLoginpage']['tariff'] == '') {
+                    $this->set('tariff', '');
+                } else {
+                    $this->set('tariff', $content['CmsLoginpage']['tariff']);
+                }
+                if ($content['CmsLoginpage']['footer'] == '') {
+                    $this->set('footer', '');
+                } else {
+                    $this->set('footer', $content['CmsLoginpage']['footer']);
+                }
+                if ($content['CmsLoginpage']['advertisement'] == '') {
+                    $this->set('advertisement', '');
+                } else {
+                    $this->set('advertisement', $content['CmsLoginpage']['advertisement']);
+                }
+            }
+        } else {
+            $this->set('header', '');
+            $this->set('tariff', '');
+            $this->set('footer', '');
+            $this->set('advertisement', '');
+        }
+
+        $this->Session->write('link', 'edit');
+    }
+
+    /**
+     * TinyMCE editor
+     * 
+     * @return void
+     */
+    public function editor() {
+        if ($this->request->is('post') && isset($this->request->data['CmsLoginpage']['block_title'])) {
+            $this->set('login_block_title', $this->request->data['CmsLoginpage']['block_title']);
+        }
+        if ($this->request->is('post') && isset($this->request->data['CmsLoginpage']['block_title'])) {
+            $this->set('title', $this->request->data['CmsLoginpage']['content']);
+        }
+        if ($this->Session->read('choosed_location_id') != '') {
+            $this->set('locationId', $this->Session->read('choosed_location_id'));
+            $tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            $this->set('locationDomain', $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')]);
+        }
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            $this->set('locationId', $this->request->data['cms_loginpages']['locations_id']);
+            $tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            $this->set('locationDomain', $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')]);
+        }
+        if (count($this->request->data) == 0 && $this->Session->read('choosed_location_id') == '') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+        }
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            if ($this->request->data['cms_loginpages']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+            }
+        }
+        $this->Session->write('link', 'editor');
+    }
+
+    /**
+     * Display the edited contents
+     * 
+     * @return void
+     */
+    public function display() {
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+        }
+        if (count($this->request->data) == 0 && $this->Session->read('choosed_location_id') == '') {
+            $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+        }
+        if ($this->request->is('post') && isset($this->request->data['cms_loginpages']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['cms_loginpages']['locations_id']);
+            if ($this->request->data['cms_loginpages']['locations_id'] == '') {
+                $this->Session->setFlash(__('Please select a location first'), 'flash_info');
+            }
+        } else {
+
+            $this->request->data['CmsLoginpage']['location_id'] = $this->Session->read('choosed_location_id');
+            $tempLocationsDomainListArray = $this->Session->read('locations_domain_list');
+            $this->request->data['CmsLoginpage']['location_domain'] = $tempLocationsDomainListArray[$this->Session->read('choosed_location_id')];
+            //$this->request->data['CmsLoginpage']['header'] = $this->request->data['CmsLoginpage']['header'];
+            //pr($this->request->data);
+
+            if ($this->request->is('post') && isset($this->request->data['CmsLoginpage']['login_block_title'])) {
+
+                $LoginHeaderDetails = $this->CmsLoginpage->find('first', array(
+                    'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.header', 'CmsLoginpage.tariff', 'CmsLoginpage.footer', 'CmsLoginpage.advertisement'),
+                    'conditions' => array(
+                        'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                        'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                    )
+                        ));
+                if (count($LoginHeaderDetails) > 0) {
+                    $this->CmsLoginpage->updateAll(array(
+                        'CmsLoginpage.' . $this->request->data['CmsLoginpage']['login_block_title'] => '\'' . $this->request->data['CmsLoginpage'][$this->request->data['CmsLoginpage']['login_block_title']] . '\''
+                            ), array(
+                        'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                        'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                    ));
+                } else {
+                    $this->CmsLoginpage->save($this->request->data);
+                }
+
+                /*   switch ($this->request->data['CmsLoginpage']['login_block_title']) {
+                  case 'header':
+                  //pr('header');
+                  //pr('block title set');
+                  $LoginHeaderDetails = $this->CmsLoginpage->find('first', array(
+                  'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.header'),
+                  'conditions' => array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.header' => $this->request->data['CmsLoginpage']['header'],
+                  )
+                  ));
+                  //pr($LoginHeaderDetails);
+                  //pr(count($LoginHeaderDetails));
+                  if (count($LoginHeaderDetails) > 0) {
+                  $this->CmsLoginpage->updateAll(array(
+                  'CmsLoginpage.header' => '\'' . $this->request->data['CmsLoginpage']['header'] . '\''
+                  ), array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.block_title' => $this->request->data['CmsLoginpage']['block_title']
+                  ));
+                  } else {
+                  $this->CmsLoginpage->save($this->request->data);
+                  }
+                  break;
+
+                  case 'tariff':
+                  //pr('tariff');
+                  //pr('block title set');
+                  $LoginTariffDetails = $this->CmsLoginpage->find('first', array(
+                  'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.tariff'),
+                  'conditions' => array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.header' => $this->request->data['CmsLoginpage']['header'],
+                  )
+                  ));
+                  //pr($LoginTariffDetails);
+                  //pr(count($LoginTariffDetails));
+                  if (count($LoginTariffDetails) > 0) {
+                  $this->CmsLoginpage->updateAll(array(
+                  'CmsLoginpage.tariff' => '\'' . $this->request->data['CmsLoginpage']['tariff'] . '\''
+                  ), array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.block_title' => $this->request->data['CmsLoginpage']['block_title']
+                  ));
+                  } else {
+                  $this->CmsLoginpage->save($this->request->data);
+                  }
+                  break;
+
+                  case 'footer':
+                  //pr('tariff');
+                  //pr('block title set');
+                  $LoginFooterDetails = $this->CmsLoginpage->find('first', array(
+                  'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.footer'),
+                  'conditions' => array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.header' => $this->request->data['CmsLoginpage']['header'],
+                  )
+                  ));
+                  //pr($LoginTariffDetails);
+                  //pr(count($LoginTariffDetails));
+                  if (count($LoginFooterDetails) > 0) {
+                  $this->CmsLoginpage->updateAll(array(
+                  'CmsLoginpage.footer' => '\'' . $this->request->data['CmsLoginpage']['footer'] . '\''
+                  ), array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.block_title' => $this->request->data['CmsLoginpage']['block_title']
+                  ));
+                  } else {
+                  $this->CmsLoginpage->save($this->request->data);
+                  }
+                  break;
+
+                  case 'advertisement':
+                  //pr('tariff');
+                  //pr('block title set');
+                  $LoginAdvertisementDetails = $this->CmsLoginpage->find('first', array(
+                  'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.advertisement'),
+                  'conditions' => array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.header' => $this->request->data['CmsLoginpage']['header'],
+                  )
+                  ));
+                  //pr($LoginTariffDetails);
+                  //pr(count($LoginTariffDetails));
+                  if (count($LoginAdvertisementDetails) > 0) {
+                  $this->CmsLoginpage->updateAll(array(
+                  'CmsLoginpage.advertisement' => '\'' . $this->request->data['CmsLoginpage']['advertisement'] . '\''
+                  ), array(
+                  'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+                  'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+                  //'CmsLoginpage.block_title' => $this->request->data['CmsLoginpage']['block_title']
+                  ));
+                  } else {
+                  $this->CmsLoginpage->save($this->request->data);
+                  }
+                  break;
+                  } */
+            }
+
+
+
+            /*  $LoginHeaderDetails = $this->CmsLoginpage->find('first', array(
+              'fields' => array('CmsLoginpage.id', 'CmsLoginpage.location_id', 'CmsLoginpage.location_domain', 'CmsLoginpage.header'),
+              'conditions' => array(
+              'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+              'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+              'CmsLoginpage.header' => $this->request->data['CmsLoginpage']['header'],
+              )
+              ));
+              pr($LoginHeaderDetails);
+              pr(count($LoginHeaderDetails)); */
+            /* if (count($LoginHeaderDetails) > 0) {
+              $this->CmsLoginpage->updateAll(array(
+              'CmsLoginpage.header' => '\'' . $this->request->data['CmsLoginpage']['header'] . '\''
+              ), array(
+              'CmsLoginpage.location_id' => $this->Session->read('choosed_location_id'),
+              'CmsLoginpage.location_domain' => $this->request->data['CmsLoginpage']['location_domain'],
+              //'CmsLoginpage.block_title' => $this->request->data['CmsLoginpage']['block_title']
+              ));
+              } else {
+              $this->CmsLoginpage->save($this->request->data);
+              } */
+
+            unset($tempLocationsDomainListArray);
+
+            $this->redirect(array('action' => 'edit'));
+        }
+    }
+
+    public function imageBrowser() {
+        $dir = '../webroot/LogoImages';
+        $file_display = array('jpg', 'jpeg', 'png', 'gif');
+
+        if (file_exists($dir) == false) {
+            echo 'Directory "', $dir, '" not found!';
+        } else {
+            //var_dump($dir);
+            $dir_contents = scandir($dir);
+            //var_dump($dir_contents);
+            $filePath = array();
+            $i = 0;
+            foreach ($dir_contents as $file) {
+                $x = explode('.', $file);
+                $x = end($x);
+                $file_type = strtolower($x);
+                $displayString = '';
+
+
+                if ($file !== '.' && $file !== '..' && in_array($file_type, $file_display) == true) {
+                    $name = basename($file);
+                    //pr($dir.'.'.$name);
+                    $filePath[$i] = $dir . '/' . $name;
+                    $i++;
+                    //pr("<img class='thumnelImage' height='100px' width='100px' src='img.php?name={$name}' />");
+                    //$displayString = $displayString. "<img class='thumnelImage' height='100px' width='100px' src='img.php?name={$name}' />";
+                }
+            }
+            $this->set('filePaths', $filePath);
+        }
+        //pr($dir_contents);
+    }
+
+    public function uploadBackgroundImage($id = null) {
+        pr($this->request->data);
+        if ($this->request->is('post')) {
+            $fileArray = explode(".", $this->request->data['CmsLoginpage']['backgroundImage']['name']);
+            pr($fileArray[count($fileArray) - 1]);
+            
+            $filepath = WWW_ROOT.'Background/bg_' . $this->Session->read('choosed_location_id') . '.' . $fileArray[count($fileArray) - 1];
+            pr($filepath);
+            if ($this->CmsLoginpage->updateAll(array('CmsLoginpage.background' => '\''.$filepath.'\''), array('CmsLoginpage.location_id' => $this->Session->read('choosed_location_id')))) {
+                move_uploaded_file($this->data['CmsLoginpage']['backgroundImage']['tmp_name'], $filepath);
+                $this->Session->setFlash('User is created');
+                $this->redirect(array('action' => 'index'));
+            } else {
+                $this->Session->setFlash('Cannot register a user');
+            }
+            /*
+              $this->data['User']['doc_file'] = WWW_ROOT . DS .'bg_'.$this->Session->read('choosed_location_id');
+              if ($this->User->save($this->request->data)) {
+              move_uploaded_file($this->data['User']['new_doc_file']['tmp_name'], $this->data['User']['doc_file']);
+
+              $this->Session->setFlash('User is created');
+              $this->redirect(array('action' => 'index'));
+              } else {
+              $this->Session->setFlash('Cannot register a user');
+              }
+             * 
+             */
+        }
+    }
+
+}
+?>

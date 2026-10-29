@@ -1,0 +1,387 @@
+<?php
+/**
+ * This is the default page which displays the list of check-in
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        
+        // Validate the form with Bootstrap validator   
+        $('#UserAddForm').bootstrapValidator()
+
+        // Get the number of columns in a table and assign it to colspan attribute
+        var numberOfColumns = document.getElementById('checkInsTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan',numberOfColumns);
+        
+        // Tooltip for view action
+        $('.actionView').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "View"
+        });
+        
+        // Tooltip for edit action
+        $('.actionEdit').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Edit"
+        });
+        
+        // Tooltip for delete action
+        $('.actionDelete').tooltip({
+            'show': true,
+            'placement': 'bottom',
+            'title': "Delete"
+        });
+    });
+
+</script>
+
+<?php
+// Paginator for the table
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+<?php echo $this->element('locations_list') ?>
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Occupancy',
+        'link' => '/check_ins'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo $label       ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        //echo $this->Html->link(__('Add User'), '/users/add', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px')) 
+        echo $this->Html->link(__('Add Guest'), array('controller' => 'check_ins', 'action' => 'add'), array('class' => 'btn btn-default pull-right'));
+        ?>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+
+        <!--hr-->
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <hr>
+        <?php //pr($checkInDatas); ?>
+        <table id="checkInsTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('room_no', array(
+                            'asc' => __('Room') . ' <i class="fa fa-caret-up pull-right table-sorting"></i>',
+                            'desc' => __('Room') . ' <i class="fa fa-caret-down pull-right table-sorting"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th >
+                        <?php
+                        echo $this->Paginator->sort('title', array(
+                            'asc' => __('Title') . ' <i class="fa fa-caret-up pull-right"></i>',
+                            'desc' => __('Title') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('name', array(
+                            'asc' => __('F.Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('F.Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('middle_name', array(
+                            'asc' => __('M.Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('M.Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('last_name', array(
+                            'asc' => __('L.Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('L.Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('created', array(
+                            'asc' => __('Check-In') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Check-In') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('checkout_date', array(
+                            'asc' => __('Check-Out') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Check-Out') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('pin', array(
+                            'asc' => __('Pin') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Pin') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('total_coupon', array(
+                            'asc' => __('Coupons') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Coupons') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th>
+                        <?php
+                        echo $this->Paginator->sort('total_price', array(
+                            'asc' => __('Price') . '<i class="fa fa-caret-up  pull-right"></i>',
+                            'desc' => __('Price') . '<i class="fa fa-caret-down  pull-right"></i>'
+                                ), array(
+                            'escape' => false
+                        ))
+                        ?>
+                    </th>
+                    <th style="color: #428BCA"><?php echo __('Actions') ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?php echo $this->element('search', array('columnName' => 'room_no')) ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'title'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'name'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'middle_name'))    ?></td>
+                    <td><?php echo $this->element('search', array('columnName' => 'last_name')) ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'created'))     ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'checkout_date'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'pin'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'total_coupon'))    ?></td>
+                    <td><?php //echo $this->element('search', array('columnName' => 'total_price'))    ?></td>
+                </tr>
+                <?php if (count($checkInDatas) > 0) { ?>
+                    <?php foreach ($checkInDatas as $checkInData) { ?>
+                        <tr>
+                            <!--<td width="50px"><?php //echo $checkInData['CheckIn']['id']                 ?></td>-->
+                            <!-- inline edit javascript code written in the end -->
+                            <td><div class ="editRoomNo" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="room_no"><?php echo $checkInData['CheckIn']['room_no'] ?></div></td>
+                            <td><div class ="editTitle" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="title"><?php echo $checkInData['CheckIn']['title'] ?></div></td>
+                            <td><div class ="editName" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="name"><?php echo $checkInData['CheckIn']['name'] ?></div></td>
+                            <td><div class ="editMiddleName" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="middle_name"><?php echo $checkInData['CheckIn']['middle_name'] ?></div></td>
+                            <td><div class ="editLastName" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="last_name"><?php echo $checkInData['CheckIn']['last_name'] ?></div></td>
+                            <td><div class ="editCheckInDate" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="created"><?php echo $checkInData['CheckIn']['created'] ?></div></td>
+                            <td><div class ="editCheckOutDate" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="checkout_date"><?php echo $checkInData['CheckIn']['checkout_date'] ?></div></td>
+                            <td><div class ="editBPType" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['total_coupon'] ?>" data-name="type_bp"><?php echo $checkInData['CheckIn']['pin'] ?></div></td>
+                            <td><div class ="editBPPrice" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['total_price'] ?>" data-name="price_bp"><?php echo $checkInData['CheckIn']['total_coupon'] ?></div></td>
+                            <td><div class ="editBPType" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="type_bp"><?php echo $checkInData['CheckIn']['total_price'] ?></div></td>
+                            <td width="120px">
+                                <div class="row col-md-12 action-column action-link">
+                                    <div class="col-md-1 action-column">
+                                        <?php
+                                        echo $this->Form->create('CheckIn', array('action' => 'view'));
+                                        echo $this->Form->input('id', array('type' => 'hidden', 'value' => $checkInData['CheckIn']['id']));
+                                        //echo $this->Form->end('View', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/view_20by20.png'));
+                                        echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                        ?>
+
+                                    </div>
+                                    <div class="col-md-1 action-column"></div>
+                                    <div class="col-md-1 action-column">
+                                        <?php
+                                        echo $this->Form->create('CheckIn', array('action' => 'edit'));
+                                        echo $this->Form->input('id', array('type' => 'hidden', 'value' => $checkInData['CheckIn']['id']));
+                                        //echo $this->Form->end('Edit', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/edit_20by20.png'));
+                                        echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'action-button actionEdit'));
+                                        ?>
+                                    </div>
+                                    <div class="col-md-1 action-column"></div>
+                                    <div class="col-md-1 action-column">
+                                        <?php
+                                        echo $this->Html->link(
+                                                //$this->Html->tag('i', '', array('class' => 'fa fa-times')), '#UsersModalDeactivate', array(
+                                                $this->Html->image('crossout.png'), '#CheckInDelete', array(
+                                            'class' => 'btn-deleteCheckIn-modal actionDelete',
+                                            'data-toggle' => 'modal',
+                                            'role' => 'button',
+                                            'data-cid' => $checkInData['CheckIn']['id'],
+                                            'data-room' => $checkInData['CheckIn']['room_no'],
+                                            'data-title' => $checkInData['CheckIn']['title'],
+                                            'data-locationId' => $checkInData['CheckIn']['location_id'],
+                                            'data-lname' => $checkInData['CheckIn']['last_name'],
+                                            'escape' => false), false);
+                                        ?>
+                                        <?php
+                                       /* echo $this->Html->link(
+                                                //$this->Html->image('cross_20by20.png'), array('escape' => false),array(
+                                                $this->Html->tag('i', '', array('class' => 'fa fa-times')), '#CheckInDelete', array(
+                                            'class' => 'btn-deleteCheckIn-modal actionDelete',
+                                            'data-toggle' => 'modal',
+                                            'role' => 'button',
+                                            'data-cid' => $checkInData['CheckIn']['id'],
+                                            'data-room' => $checkInData['CheckIn']['room_no'],
+                                            'data-title' => $checkInData['CheckIn']['title'],
+                                            'data-locationId' => $checkInData['CheckIn']['location_id'],
+                                            'data-lname' => $checkInData['CheckIn']['last_name'],
+                                            'escape' => false), false);*/
+                                        ?>
+
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            <?php } else { ?>
+                <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+            <?php } ?>
+        </table>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+        </div> 
+        <br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>
+
+<div class="modal fade" id="CheckInDelete">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 id="myModalLabel"><?php echo __('Delete guest check-in details') ?></h4>
+            </div>
+            <div class="modal-body">
+                <p><?php echo __('Are you sure you want to delete the check-in details for ') ?>
+                    <span class="label-gtitle strong"></span><?php echo __('.') ?><span class="label-gname strong"></span> 
+                    <?php echo __(' in Room no. ') ?><span class="label-roomno strong"></span> ?</p>
+            </div>
+            <div class="modal-footer">
+                <?php
+                echo $this->Form->create('CheckIn', array('action' => 'delete'));
+                echo $this->Form->input('id', array('id' => 'checkInIdForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('room_no', array('id' => 'checkInRoomNoForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('title', array('id' => 'checkInTitleForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('location_id', array('id' => 'checkInLocationIdForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->input('last_name', array('id' => 'checkInLastNameForDelete', 'type' => 'hidden', 'value' => ''));
+                echo $this->Form->end('Delete', array('class' => 'btn btn-danger pull-left'));
+                ?>
+                <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo __('Cancel') ?></button>
+                <?php //echo $this->Html->link(__('Deactivate'), "/users/deactivate/#{uid}", array('class' => 'btn btn-danger deactivate-user-link')) ?>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<script>
+    // Inline editing
+    $(function() {
+        var newURL = window.location.protocol + "//" + window.location.host + "" + window.location.pathname;
+        $.fn.editable.defaults.mode = 'inline';
+        
+        $('.editRoomNo').editable({
+            url: newURL+'/update_room_no',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+        $('.editTitle').editable({
+            url: newURL+'/update_title',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z]*$/.test(value))) {
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editName').editable({
+            url: newURL+'/update_name',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+        $('.editMiddleName').editable({
+            url: newURL+'/update_middle_name',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+        $('.editLastName').editable({
+            url: newURL+'/update_last_name',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+    });
+</script>
+
+

@@ -1,0 +1,65 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of CustomEmailsController
+ *
+ * @author dev3
+ */
+App::uses('CakeEmail', 'Network/Email');
+
+class CustomEmailsController extends AppController {
+
+    //put your code here
+    public $uses = array('Location');
+
+    public function index() {
+        $this->Location->recursive = -1;
+        $emailAddress = $this->Location->find('list', array(
+            'fields' => array('email', 'email'),
+            'conditions' => array('email !=' => '')
+        ));
+        if ($this->request->is('post')) {
+            $to = '';
+            if ($this->request->data['CustomEmail']['to'] == 'all') {
+                $to = $this->request->data['CustomEmail']['toAll'];
+            } else {
+                $to = $this->request->data['CustomEmail']['to'];
+            }
+            $sent = $this->_sendEmail($to, $this->request->data['CustomEmail']['subject'], $this->request->data['CustomEmail']['message']);
+            if($sent == 'sent'){
+                $this->Session->setFlash(__('Email sent'), 'flash_success');
+            }else{
+                $this->Session->setFlash(__('Errot'), 'flash_fail');
+            }
+        }
+        $this->set('emailAddress', $emailAddress);
+    }
+    
+    
+    private function _sendEmail($to = null, $subject = null, $message = null) {
+        try {
+            $email = new CakeEmail('smtp');
+            $email->emailFormat('both');
+            $email->to($to);
+            //$email->from(array('abhayapatel@wifonic.com' => 'WiFonic Technologies Pvt. Ltd.'));
+//            if (empty($to) || $to == null) {
+//                $email->to('admin@wifonic.com');
+//            } else {
+//                $email->to($to);
+//            }
+            $email->subject($subject);
+            $email->send($message);
+        } catch (Exception $ex) {
+            return 'error';
+            //throwException($ex);
+        }
+        return 'sent';
+    }
+
+}

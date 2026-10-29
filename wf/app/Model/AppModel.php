@@ -1,0 +1,107 @@
+<?php
+/**
+ * Application model for CakePHP.
+ *
+ * This file is application-wide model file. You can put all
+ * application-wide model-related methods here.
+ *
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link          http://cakephp.org CakePHP(tm) Project
+ * @package       app.Model
+ * @since         CakePHP(tm) v 0.2.9
+ * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+
+App::uses('Model', 'Model');
+
+/**
+ * Application model for Cake.
+ *
+ * Add your application-wide methods in the class below, your models
+ * will inherit them.
+ *
+ * @package       app.Model
+ */
+class AppModel extends Model {
+     public function alphaNumericUnderscoreBlankspace($check) {
+        // $data array is passed using the form field name as the key
+        // have to extract the value to make the function generic
+        $value = array_values($check);
+        $value = $value[0];
+
+        return preg_match('|^[A-Za-z0-9_\s]*$|', $value);
+    }
+
+    var $specific = false;
+
+    public function __construct($id = false, $table = null, $ds = null) {
+
+
+        parent::__construct($id, $table, $ds);
+        App::uses('CakeSession', 'Model/Datasource');
+
+
+        $id = CakeSession::read('choosed_location_id');
+        App::import('Model', 'CakeSession');
+        $session = new CakeSession();      
+        if ($this->specific) {
+
+            $row = array();
+            try {
+                $res = ConnectionManager::getDataSource('default')->fetchRow('SELECT * FROM locations WHERE id = ' . (int) $id);
+                if (!empty($res)) {
+                    $row = reset($res);
+                }
+            } catch (Exception $ex) {
+                pr($ex->getMessage());
+            }
+
+                if (isset($row['router_address']) && ($row['router_address'])!= '') {
+                    // pr($row['router_address']);
+                    $dbName = "pmsinterfacing";
+                    $config = array();
+                    $config['datasource'] = 'Database/Mysql';
+                    // Set correct database name
+                    $config['driver'] = 'mysql';
+                    //$config['persistent'] = false;
+                    $config['host'] = 'localhost';//$row['router_address'];
+                    $config['login'] = "pms";
+                    $config['password'] = "pms@00WF";
+                    $config['database'] = $dbName;
+                    $config['prefix'] = '';
+                    // Add new config to registry
+                    ConnectionManager::create($dbName, $config);
+                    // Point model to new config
+                    $this->useDbConfig = $dbName;
+                    // pr($this->useDbConfig);
+                     //$session->write('re', 'yes');
+
+                    // pr($dbname);
+                } 
+                else{
+                   $dbName = "pmsinterfacing";
+                    $config = array();
+                    $config['datasource'] = 'Database/Mysql';
+                    // Set correct database name
+                    $config['driver'] = 'mysql';
+                    //$config['persistent'] = false;
+                    $config['host'] = '1.111.2.1';
+                    $config['login'] = "root";
+                    $config['password'] = "root";
+                    $config['database'] = $dbName;
+                    $config['prefix'] = '';
+                    // Add new config to registry
+                    ConnectionManager::create($dbName, $config);
+                    // Point model to new config
+                    $this->useDbConfig = $dbName;
+                }
+        }
+    }    
+}

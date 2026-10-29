@@ -1,0 +1,164 @@
+<style>
+</style>
+<script>
+    $(document).ready(function() {
+
+        var docHeight = $(window).height();
+        var footerHeight = $('#footer').height();
+        var footerTop = $('#footer').position().top + footerHeight;
+
+        if (footerTop < docHeight) {
+            $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+        }
+
+        $('ul.tabs li').click(function() {
+            var tab_id = $(this).attr('data-tab');
+
+            $('ul.tabs li').removeClass('current');
+            $('.tab-content').removeClass('current');
+
+            $(this).addClass('current');
+            $("#" + tab_id).addClass('current');
+        });
+        $('#walking_guest_link').click(function() {
+            $('#room_guest').hide();
+            $('#walkong_guest').show();
+        });
+        $('#room_guest_link').click(function() {
+            $('#room_guest').show();
+            $('#walkong_guest').hide();
+        });
+        $("#tmc_room").on("click", function() {
+            if ($("#tmc_room").is(':checked')) {
+                $('#submit_room_guest').attr('disabled', false);
+                $('#submit_room_guest').unbind('click', false);
+            } else {
+                $('#submit_room_guest').attr('disabled', true);
+                $('#submit_room_guest').bind('click', false);
+            }
+        });
+        $("#tmc_walkin").on("click", function() {
+            if ($("#tmc_walkin").is(':checked')) {
+                $('#submit_room_walkin').attr('disabled', false);
+                //$('#submit_room_guest').unbind('click', false);
+            } else {
+                $('#submit_room_walkin').attr('disabled', true);
+                //$('#submit_room_walkin').bind('click', false);
+            }
+        });
+        $(".showTnC").on("click", function() {
+            $('#sign-in-area').hide();
+            //$('#walkong_guest').hide();
+            $('#termsandconditions').show('slow');
+            if (footerTop < docHeight) {
+                $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+            }
+        });
+        $("#closeTnC").on("click", function() {
+            $('#termsandconditions').hide('slow');
+            $('#sign-in-area').show('slow');
+            if (footerTop < docHeight) {
+                $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+            }
+        });
+        $('form').submit(function() {
+            //alert('hello');
+            return false;
+        });
+    });
+
+</script>
+
+<?php //echo $loginCms['0']['CmsLoginpage']['terms_and_conditions']; ?>
+<?php //pr($loginCms['0']['CmsLoginpage']['terms_and_conditions']);?>
+<?php $bgurl = $this->request->webroot . 'cms_loginpages/displayBackGround/' . $loginCms['0']['CmsLoginpage']['id'] . '/'; ?>
+<div style="background-image: url('<?php echo $bgurl ?>');">
+    <div class="wf-header">
+        <div class="container"> 
+            <div class="col-sm-12 navbar-inverse">
+                <marquee behavior="scroll" direction="left" scrollamount="4" class="wf-font20x-floralwhite"><?php echo $loginCms['0']['CmsLoginpage']['notice'] ?></marquee>
+            </div>
+        </div>
+    </div>
+    <div id="center_div">
+        <section id="sign-in-area">
+
+            <div class="container">
+
+                <div class="row">
+                    <div class="col-sm-offset-4 col-sm-4 col-sm-offset-4 text-center">
+                        <?php $logourl = $this->request->webroot . 'cms_loginpages/displayLogo/' . $loginCms['0']['CmsLoginpage']['id'] . '/'; ?>
+                        <h1 style="visibility: visible;" class="title-big wow zoomIn animated animated"><img  width="200" src="<?php echo $logourl ?>/"></h1> <br> 
+                    </div>
+                    <?php
+                    $bPlans = $this->Session->read('locations_business_plan_list');
+                    if ($bPlans[$loginCms['0']['Location']['id']] != 'silver') {
+                        ?>
+                        <div class='text-center form-control'>
+                            <ul class="tabs" >
+                                <li class="tab-link current wow zoomIn animated" data-tab="tab-1" id="room_guest_link" style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;">Room Guest</li>
+                                <li class="tab-link wow zoomIn animated" data-tab="tab-2" id="walking_guest_link" style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;">Walking Guest</li>
+                            </ul>
+                        </div>
+                        <?php
+                    }
+                    ?>
+
+                    <div class="text-center" id="room_guest">
+                        <form role="form" action="#" class="">
+                            <div style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay=".5s">
+                                <input  class="form-control" id="signinemail" placeholder="Username" type="text">
+                            </div>
+                            <div style="visibility: visible;-webkit-animation-delay: 1s; -moz-animation-delay: 1s; animation-delay: 1s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input class="form-control" id="signinpassword" placeholder="Password" type="password">
+                            </div>
+                            <div style="margin-bottom:20px;  visibility: visible;-webkit-animation-delay: 1.5s; -moz-animation-delay: 1.5s; animation-delay: 1.5s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input type="checkbox" id='tmc_room' name="termsAndCondition" value="1" checked><font class="wf-font15x-floralwhite">  &nbsp;&nbsp;&nbsp;I agree to the <a class='showTnC' href="#">Terms and Conditions</a>.</font><br>
+                                <!--<input class="form-control" id="signinpassword" placeholder="Password" type="checkbox"><font class="wf-font15x-white"> I agree to the Terms and Privacy.</font></br>--> 
+                            </div>
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4"> 
+                                <input type="submit" id='submit_room_walkin' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class=" btn btn-danger btn-size col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" value="Log In">
+                                <!--<a id='submit_room_guest' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size btn btn-danger col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" href="#">Log in</a>-->
+                            </div>
+                        </form>
+                    </div>
+                    <div class="text-center" id="walkong_guest" style="display:none">
+                        <form role="form" action="#" class="">
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay=".5s">
+                                <input  class="form-control" id="signinemail" placeholder="Walking Username" type="text">
+                            </div>
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input class="form-control" id="signinpassword" placeholder="Password" type="password">
+                            </div>
+                            <div style="margin-bottom:20px;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input id='tmc_walkin' type="checkbox" name="termsAndCondition" value="1" checked><font class="wf-font15x-floralwhite">  &nbsp;&nbsp;&nbsp;I agree to the <a class='showTnC' href="#">Terms and Conditions</a>.</font><br>
+                                <!--<input class="form-control" id="signinpassword" placeholder="Password" type="checkbox"><font class="wf-font15x-white"> I agree to the Terms and Privacy.</font></br>--> 
+                            </div>
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4"> 
+                                <input type="submit" id='submit_room_walkin' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size btn btn-danger col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" value="Log In">
+                                <!--<a id='submit_room_walkin' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size btn btn-danger col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" href="#">Log in</a>-->
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </div>
+    <div id="termsandconditions" style="display:none">
+        <br>
+        <div class="col-lg-6"><a id='closeTnC' class="btn-size btn btn-danger pull-right" href="#" style="height:25px; width:80px">&#60;&#60;BACK</a></div>
+        <div class="col-lg-6" style="padding-top:35px"><?php echo $loginCms['0']['CmsLoginpage']['terms_and_conditions']; ?></div>
+    </div>
+    <div class="wf-footer" id="footer">
+        <div class="container"> 
+            <div class="col-sm-12 text-center wf-font15x-floralwhite">
+                <?php echo $loginCms['0']['CmsLoginpage']['footer']; ?>
+            </div>
+            
+            <div class="col-sm-12 text-center wf-font15x-floralwhite">
+                <a href="http://wifonic.com" target="_blank"><font color='black' >Powered by © <?php echo date('Y') ?>  Wifonic Technologies Pvt. Ltd.</font></a>
+            </div>
+        </div>
+    </div>
+</div>

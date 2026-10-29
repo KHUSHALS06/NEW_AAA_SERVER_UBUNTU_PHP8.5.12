@@ -1,0 +1,438 @@
+<style>
+    h1 {
+        font-size:     72px;
+        line-height:   1.5;
+        color: #2c3e50;
+        font-weight:   100;
+    }
+
+    /*#container {
+        width:  100%;
+        //margin: 0 auto;
+    }*/
+
+    section {
+        min-height:450px;
+        //margin: 60px 0;
+    }
+
+    .section--purple {
+        background-color: #9b59b6;
+    }
+
+    .section--blue {
+        background-color: #3498db;
+    }
+
+    .section--green {
+        background-color: #2ecc71;
+    }
+
+    #main {
+        text-align: center;
+    }
+
+    #more {
+        margin: 20px auto 48px;
+    }
+    #termsandconditions{
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;
+        min-height: 450px;
+    }
+    .wf-header{
+        background-color:<?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        background-image: none;
+        background-repeat: repeat;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        background-clip: border-box;
+        background-origin: padding-box;
+        background-size: auto auto;
+        height: 50px;
+        padding-top: 20px;
+        //padding-bottom: 20px
+        //border-bottom: 20px;
+        //border-bottom-style: solid;
+        //border-bottom-color: red;
+        //border-bottom-style: groove;
+        //border-bottom:#2ecc71;
+        //border-bottom-color: red;
+    }
+
+    .wf-footer{
+        background-color:<?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        min-height: 40px;
+        padding-top: 5px;
+        //padding-bottom: 20px
+        /*    border-top:20px;
+            border-top-style: solid;
+            border-top-color: red;*/
+    }
+
+    input[type="text"]
+    {
+        background-color: transparent;
+        background-image: none;
+        background-repeat: repeat;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        background-clip: border-box;
+        background-origin: padding-box;
+        background-size: auto auto;
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;
+        border-top-width: 2px;
+        border-right-width: 2px;
+        border-bottom-width: 2px;
+        border-left-width: 2px;
+        border-top-style: solid;
+        border-right-style: solid;
+        border-bottom-style: solid;
+        border-left-style: solid;
+        border-top-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-right-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-bottom-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-left-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        -moz-border-top-colors: none;
+        -moz-border-right-colors: none;
+        -moz-border-bottom-colors: none;
+        -moz-border-left-colors: none;
+        border-image-source: none;
+        border-image-slice: 100% 100% 100% 100%;
+        border-image-width: 1 1 1 1;
+        border-image-outset: 0 0 0 0;
+        border-image-repeat: stretch stretch;
+        height: 25px;
+        width: 250px;
+        margin-bottom: 20px;
+
+
+        /*    background: transparent;
+            width: 250px;
+            height: 30px;
+            border: 2px solid <?php //echo $loginCms['0']['CmsLoginpage']['bg_color']     ?>;
+            font-size: 20px;
+            font-family: sans-serif;*/
+    }
+    input[type="password"]
+    {
+        background-color: transparent;
+        background-image: none;
+        background-repeat: repeat;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        background-clip: border-box;
+        background-origin: padding-box;
+        background-size: auto auto;
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;
+        border-top-width: 2px;
+        border-right-width: 2px;
+        border-bottom-width: 2px;
+        border-left-width: 2px;
+        border-top-style: solid;
+        border-right-style: solid;
+        border-bottom-style: solid;
+        border-left-style: solid;
+        border-top-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-right-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-bottom-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-left-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        -moz-border-top-colors: none;
+        -moz-border-right-colors: none;
+        -moz-border-bottom-colors: none;
+        -moz-border-left-colors: none;
+        border-image-source: none;
+        border-image-slice: 100% 100% 100% 100%;
+        border-image-width: 1 1 1 1;
+        border-image-outset: 0 0 0 0;
+        border-image-repeat: stretch stretch;
+        height: 25px;
+        width: 250px;
+        margin-bottom: 20px;
+        /*    color: <?php //echo $loginCms['0']['CmsLoginpage']['bg_color']     ?>
+            background: transparent;
+            width: 250px;
+            height: 30px;
+            border: 2px solid <?php //echo $loginCms['0']['CmsLoginpage']['bg_color']     ?>;
+            font-size: 20px;
+            font-family: sans-serif;*/
+    }
+
+    .wf-font15x-floralwhite{
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;; 
+        font-size: 15px;
+
+    }
+
+    .wf-font20x-floralwhite{
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;; 
+        font-size: 20px;
+
+    }
+
+    .btn-size a:hover { 
+        background-color: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border: none;
+    }
+
+    input[type=submit] {
+        background: transparent none repeat scroll 0% 0%;
+        border: 2px solid <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        border-radius: 5px;
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;//#AAA;
+        font-size: 20px;
+        width: 150px;
+        height: 35px;
+        //padding-top: 2px;
+    }
+
+    .btn-size{
+        background: transparent none repeat scroll 0% 0%;
+        border: 2px solid <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        color: <?php echo $loginCms['0']['CmsLoginpage']['font_color'] ?>;;//#AAA;
+        font-size: 20px;
+        width: 150px;
+        height: 25px;
+        //padding-top: 2px;
+        /*    font-size: 20px;
+            font-family: sans-serif;
+            width: 150px;
+            height: 30px;
+            background: transparent;
+            border: 2px solid <?php //echo $loginCms['0']['CmsLoginpage']['bg_color']     ?>;
+            padding-top: 10px;*/
+    }
+    .wf-swap-link{
+        display: block;
+        font-weight: bold;
+        color: #ffffff;
+        background-color: #98bf21;
+        width: 120px;
+        padding: 4px;
+        text-decoration: none;
+    }
+
+    ul.tabs{
+        margin: 0px;
+        padding: 0px;
+        list-style: none;
+    }
+    ul.tabs li{
+        background: #ededed;
+        color: #222;
+        display: inline-block;
+        padding: 10px 15px;
+        border-top:2px solid;
+        border-left:2px solid;
+        border-right:2px solid;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        cursor: pointer;
+    }
+
+    ul.tabs li.current{
+        background: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+        color: #222;
+    }
+
+    .tab-content{
+        display: none;
+        background: #ededed;
+        padding: 15px;
+    }
+
+    .tab-content.current{
+        display: inherit;
+    }
+    input[type="submit"]:hover {
+        background: <?php echo $loginCms['0']['CmsLoginpage']['bg_color'] ?>;
+    }
+</style>
+<script>
+    $(document).ready(function() {
+
+        var docHeight = $(window).height();
+        var footerHeight = $('#footer').height();
+        var footerTop = $('#footer').position().top + footerHeight;
+        //alert(footerHeight);
+        //alert(docHeight)
+        if (footerTop < docHeight) {
+            //alert($(window).height());
+            $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+        }
+
+        $('ul.tabs li').click(function() {
+            var tab_id = $(this).attr('data-tab');
+
+            $('ul.tabs li').removeClass('current');
+            $('.tab-content').removeClass('current');
+
+            $(this).addClass('current');
+            $("#" + tab_id).addClass('current');
+            var docHeight = $(window).height();
+            var footerHeight = $('#footer').height();
+            var footerTop = $('#footer').position().top + footerHeight;
+            if (footerTop < docHeight) {
+                $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+            }
+        });
+        $('#walking_guest_link').click(function() {
+            $('#room_guest').hide();
+            $('#walkong_guest').show();
+        });
+        $('#room_guest_link').click(function() {
+            $('#room_guest').show();
+            $('#walkong_guest').hide();
+        });
+        $("#tmc_room").on("click", function() {
+            if ($("#tmc_room").is(':checked')) {
+                $('#submit_room_guest').attr('disabled', false);
+                $('#submit_room_guest').unbind('click', false);
+            } else {
+                $('#submit_room_guest').attr('disabled', true);
+                $('#submit_room_guest').bind('click', false);
+            }
+        });
+        $("#tmc_walkin").on("click", function() {
+            if ($("#tmc_walkin").is(':checked')) {
+                $('#submit_room_walkin').attr('disabled', false);
+                //$('#submit_room_guest').unbind('click', false);
+            } else {
+                $('#submit_room_walkin').attr('disabled', true);
+                //$('#submit_room_walkin').bind('click', false);
+            }
+        });
+        $(".showTnC").on("click", function() {
+            $('#sign-in-area').hide();
+            $('#termsandconditions').show('slow');
+            var docHeight = $(window).height();
+            var footerHeight = $('#footer').height();
+            var footerTop = $('#footer').position().top + footerHeight;
+            if (footerTop < docHeight) {
+                $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+            }
+        });
+        $("#closeTnC").on("click", function() {
+            $('#termsandconditions').hide('slow');
+            $('#sign-in-area').show('slow');
+            var docHeight = $(window).height();
+            var footerHeight = $('#footer').height();
+            var footerTop = $('#footer').position().top + footerHeight;
+            if (footerTop < docHeight) {
+                $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+            }
+        });
+        $('form').submit(function() {
+            //alert('hello');
+            return false;
+        });
+    });
+
+    function setlayout() {
+        var docHeight = $(window).height();
+        var footerHeight = $('#footer').height();
+        var footerTop = $('#footer').position().top + footerHeight;
+        if (footerTop < docHeight) {
+            $('#footer').css('margin-top', (docHeight - footerTop) - 5 + 'px');
+        }
+    }
+
+</script>
+<?php //echo $loginCms['0']['CmsLoginpage']['bg_color']; ?>
+
+
+
+<?php //pr($loginCms['0']['CmsLoginpage']['terms_and_conditions']);?>
+<?php $bgurl = $this->request->webroot . 'cms_loginpages/displayBackGround/' . $loginCms['0']['CmsLoginpage']['id'] . '/'; ?>
+<body style="background-image: url('<?php echo $bgurl ?>;'); background-position: center top; position:absolute; width:100%; margin-left: 0px; margin-right: 0px; padding-left: 0px; padding-right: 0px;" onload="setlayout()">
+    <div class="wf-header" style="position:relative;  width:100%">
+        <div class="container"> 
+            <div class="col-sm-12 navbar-inverse">
+                <marquee behavior="scroll" direction="left" scrollamount="4" class="wf-font20x-floralwhite"><?php echo $loginCms['0']['CmsLoginpage']['notice'] ?></marquee>
+            </div>
+        </div>
+    </div>
+    <div id="center_div">
+        <section id="sign-in-area">
+
+            <div class="container">
+
+                <div class="row">
+                    <div class="col-sm-offset-4 col-sm-4 col-sm-offset-4 text-center" style="margin-top:20px">
+                        <?php $logourl = $this->request->webroot . 'cms_loginpages/displayLogo/' . $loginCms['0']['CmsLoginpage']['id'] . '/'; ?>
+                        <img style="visibility: visible; height: 100px; width: 250px " class="wow zoomIn animated animated"  src="<?php echo $logourl ?>"><br> 
+                    </div>
+                    <?php
+                    $bPlans = $this->Session->read('locations_business_plan_list');
+                    if ($bPlans[$loginCms['0']['Location']['id']] != 'silver') {
+                        ?>
+                        <div class='text-center form-control'>
+                            <ul class="tabs" >
+                                <li class="tab-link current wow zoomIn animated" data-tab="tab-1" id="room_guest_link" style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;">Room Guest</li>
+                                <li class="tab-link wow zoomIn animated" data-tab="tab-2" id="walking_guest_link" style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;">Walk-In Guest</li>
+                            </ul>
+                        </div>
+                        <?php
+                    }
+                    ?>
+
+                    <div class="text-center" id="room_guest">
+                        <form role="form" action="#" class="">
+                            <div style="visibility: visible;-webkit-animation-delay: .5s; -moz-animation-delay: .5s; animation-delay: .5s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay=".5s">
+                                <input  class="form-control" id="signinemail" placeholder="Username" type="text">
+                            </div>
+                            <div style="visibility: visible;-webkit-animation-delay: 1s; -moz-animation-delay: 1s; animation-delay: 1s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input class="form-control" id="signinpassword" placeholder="Password" type="password">
+                            </div>
+                            <div style="margin-bottom:20px;  visibility: visible;-webkit-animation-delay: 1.5s; -moz-animation-delay: 1.5s; animation-delay: 1.5s;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input type="checkbox" id='tmc_room' name="termsAndCondition" value="1" checked><font class="wf-font15x-floralwhite">  &nbsp;&nbsp;&nbsp;I agree to the <a class='showTnC' href="#">Terms and Conditions</a>.</font><br>
+                                <!--<input class="form-control" id="signinpassword" placeholder="Password" type="checkbox"><font class="wf-font15x-white"> I agree to the Terms and Privacy.</font></br>--> 
+                            </div>
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4"> 
+                                <input type="submit" id='submit_room_walkin' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" value="Log In">
+                                <!--<a id='submit_room_guest' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size btn btn-danger col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" href="#">Log in</a>-->
+                            </div>
+                        </form>
+                    </div>
+                    <div class="text-center" id="walkong_guest" style="display:none">
+                        <form role="form" action="#" class="">
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay=".5s">
+                                <input  class="form-control" id="signinemail" placeholder="Walking Username" type="text">
+                            </div>
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input class="form-control" id="signinpassword" placeholder="Password" type="password">
+                            </div>
+                            <div style="margin-bottom:20px;" class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4 wow zoomIn animated" data-wow-delay="1s">
+                                <input id='tmc_walkin' type="checkbox" name="termsAndCondition" value="1" checked><font class="wf-font15x-floralwhite">  &nbsp;&nbsp;&nbsp;I agree to the <a class='showTnC' href="#">Terms and Conditions</a>.</font><br>
+                                <!--<input class="form-control" id="signinpassword" placeholder="Password" type="checkbox"><font class="wf-font15x-white"> I agree to the Terms and Privacy.</font></br>--> 
+                            </div>
+                            <div class="form-group col-sm-offset-4 col-sm-4 col-sm-offset-4"> 
+                                <input type="submit" id='submit_room_walkin'  class="btn-size col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" value="Log In">
+                                <!--<a id='submit_room_walkin' style="visibility: visible;-webkit-animation-delay: 2s; -moz-animation-delay: 2s; animation-delay: 2s;" class="btn-size btn btn-danger col-sm-offset-3 col-sm-6 col-sm-offset-3 wow zoomIn animated" data-wow-delay="1.5s" href="#">Log in</a>-->
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </div>
+    <div id="termsandconditions" style="display:none;">
+        <br>
+        <div class="col-lg-6"><a id='closeTnC' class="btn-size btn btn-danger pull-right" href="#" style="height:25px; width:80px">&#60;&#60;BACK</a></div>
+        <div class="col-lg-6" style="padding-top:35px; padding-left: 5px; padding-right: 5px; padding-bottom: 30px"><?php echo $loginCms['0']['CmsLoginpage']['terms_and_conditions']; echo '<br><br>'; ?></div>
+    </div>
+    <div class="wf-footer" id="footer" style="position:relative;  width:100%">
+        <div class="container"> 
+            <div class="col-sm-12 text-center wf-font15x-floralwhite">
+                <?php 
+                echo $loginCms['0']['CmsLoginpage']['footer']; 
+                
+                ?>
+            </div>
+
+            <div class="col-sm-12 text-center wf-font15x-floralwhite">
+                <a href="http://wifonic.com" target="_blank"><font color='black' >Powered by © <?php echo date('Y') ?>  Wifonic Technologies Pvt. Ltd.</font></a>
+            </div>
+        </div>
+    </div>
+</body>

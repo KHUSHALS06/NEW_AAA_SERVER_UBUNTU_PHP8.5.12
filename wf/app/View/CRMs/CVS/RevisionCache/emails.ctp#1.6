@@ -1,0 +1,128 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    tinymce.init({
+    selector: "textarea",
+    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent",
+    setup: function(email_message) {
+        email_message.on('focus', function(e) {
+            $("#email_messageErrorIcon").attr('style', 'display:none');
+            $("#email_messageError").attr('style', 'display:none');
+            $('input[type="submit"]').removeAttr('disabled');
+        });
+    }});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#crm_email').bootstrapValidator();
+    $('#crm_email').submit(function(e) {
+        var txtarea = tinyMCE.get('email_message').getContent();//$('#').val();
+        //alert(txtarea);
+        if ((txtarea == "") || (txtarea == null)) {
+            //$("#email_message").attr('style', 'border-color: #953B39');
+            $("#email_messageErrorIcon").attr('style', 'display:inline');
+            $("#email_messageError").attr('style', 'display:inline;color:#B94A48');
+            $('input[type="submit"]').attr('disabled', 'disabled');
+            return false;
+        } else {
+            $("#email_messageErrorIcon").attr('style', 'display:none');
+            $("#email_messageError").attr('style', 'display:none');
+            $('input[type="submit"]').removeAttr('disabled');
+            return true;
+        }
+    });
+});
+</script>
+<?php
+    echo $this->element('locations_list');
+?>
+
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Email',
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+//pr($emailAddress);
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        echo $this->Form->create('CRM', array(
+            'action' => 'emails',
+            'method' => 'post',
+            'id' => 'crm_email',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+
+            <?php
+            $toEmailAddress['all'] = 'all';
+            $toEmailAddress[] = $emailAddress;
+            echo $this->Form->input('to', array(
+                'label' => __('To'),
+                'multiple' => 'multiple',
+                'type' => 'select',
+                'options' => $toEmailAddress,
+                'selected' => ($to != '') ? $to : 'all'
+            ));
+            echo $this->Form->input('toAll', array(
+                'type' => 'hidden',
+                'value' => implode(", ", $emailAddress)
+            ));
+
+            echo $this->Form->input('subject', array(
+                'label' => __('Subject'),
+                'autocomplete' => 'off',
+                'id' => 'email_subject',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Please enter a subject",
+                    //'data-bv-regexp' => "true",
+                    //'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                    //'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            echo $this->Form->input('message', array(
+                'label' => __('Message'),
+                'type' => 'textArea',
+                'autocomplete' => 'off',
+                'id' => 'email_message',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Please enter a message",
+//                'data-bv-regexp' => "true",
+//                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+//                'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            ?>
+            <i id="email_messageErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display: none"> </i>
+            <br><small id ="email_messageError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none"> Please write a message</small>
+
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+
+                <?php
+                echo '<br/>';
+                echo $this->Form->end(__("Send", array('id' => 'sendEmail')));
+                ?>
+            </div>
+        </div>
+
+    </div>
+</div>
+

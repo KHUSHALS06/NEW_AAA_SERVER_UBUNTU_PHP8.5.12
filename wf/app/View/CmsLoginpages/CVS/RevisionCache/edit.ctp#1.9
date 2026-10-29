@@ -1,0 +1,170 @@
+<?php
+//pr($loginPageDetails);
+?>
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $('#CmsLoginpageEditForm').bootstrapValidator();
+        tinymce.init({
+            selector: "textarea",
+            toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent",
+//    setup: function(email_message) {
+//        email_message.on('focus', function(e) {
+//            $("#email_messageErrorIcon").attr('style', 'display:none');
+//            $("#email_messageError").attr('style', 'display:none');
+//            $('input[type="submit"]').removeAttr('disabled');
+//        });
+        });
+//        $('#CmsLoginpageEditForm').submit(function(e){
+//            alert('x');
+//            return false;
+//        });
+//        $('#logoFile').click(function(e){
+//            alert('x');
+//            return false;
+//        });
+    });
+
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Login Page',
+        'link' => '/cms_loginpages'
+    ),
+    array(
+        'label' => "Edit"
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('CmsLoginpage', array('action' => 'edit', 'method' => 'post', 
+            'enctype' => 'multipart/form-data',
+            'id'=>'CmsLoginpageEditForm',
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-8">
+            <?php
+            echo $this->Form->input('id', array(
+                'type' => 'hidden',
+                'value' => $loginPageDetails['0']['CmsLoginpage']['id']
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('logo_file', array(
+                'label' => __('Logo'),
+                'id' => 'logoFile',
+                'type' => 'file',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "\.(bmp|gif|jpg|jpeg|jpe|png|BMP|GIF|JPG|JPEG|JPE|PNG)$",
+                'data-bv-regexp-message' => "The image format is incorrect."
+            ));
+            ?>
+        </div>
+        <div class="col-md-8">
+            <img src="<?php echo $this->request->webroot ?>cms_loginpages/displayLogo/<?php echo $loginPageDetails['0']['CmsLoginpage']['id']?>/" width="50" height="50">
+        </div>
+        <div class="col-md-8"><?php
+            echo $this->Form->input('background_file', array(
+                'label' => __('Background Image'),
+                'type' => 'file',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "\.(bmp|gif|jpg|jpeg|jpe|png|BMP|GIF|JPG|JPEG|JPE|PNG)$",
+                'data-bv-regexp-message' => "The image format is incorrect."
+            ));
+            //pr($loginPageDetails);
+            ?>
+        </div>
+        <div class="col-md-8">
+            <img src="<?php echo $this->request->webroot ?>cms_loginpages/displayBackGround/<?php echo $loginPageDetails['0']['CmsLoginpage']['id']?>/" width="50" height="50">
+        </div>
+        <div class="col-md-8">
+            <?php
+            echo $this->Form->input('tariff_display', array(
+                'label' => __('Tariff display on login page'),
+                'id' => 'tariff_display',
+                'type' => 'select',
+                'options' => array('1' => 'Yes', '0' => 'No'),
+                'selected' => $loginPageDetails['0']['CmsLoginpage']['tariff_display']
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('notice', array(
+                'label' => __('Notice'),
+                'type' => 'text',
+                'value' => $loginPageDetails['0']['CmsLoginpage']['notice'],
+                'autocomplete' => 'off',
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('terms_and_conditions', array(
+                'label' => __('Terms and Conditions'),
+                'type' => 'textarea',
+                'value' => $loginPageDetails['0']['CmsLoginpage']['terms_and_conditions'],
+                'autocomplete' => 'off',
+                'id' => 'terms_and_conditions',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Please enter a message",
+//                'data-bv-regexp' => "true",
+//                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+//                'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('footer', array(
+                'label' => __('Footer'),
+                'type' => 'textarea',
+                'value' => $loginPageDetails['0']['CmsLoginpage']['footer'],
+                'autocomplete' => 'off',
+                'id' => 'terms_and_conditions',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "Please enter a message",
+//                'data-bv-regexp' => "true",
+//                'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+//                'data-bv-regexp-message' => "Name can only consist of alphabets and numbers",
+            ));
+            ?>
+            
+
+            <?php
+//            echo $this->Form->textarea($loginPageDetails['0']['CmsLoginpage']['footer'], array(
+//                'id' => 'content',
+//                'default' => 'footer'
+//            ));
+            ?>
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+                <?php
+//                if (AuthComponent::user('Group.name') == Configure::read('Application.wf_admin') || AuthComponent::user('Group.name') == Configure::read('Application.admin')) {
+//                    echo $this->Form->end(__("Submit"), array('id' => 'submitUserEditForm'));
+//                } else {
+                echo $this->Form->end(__("Submit"));
+                //}
+                ?>
+            </div>
+        </div>
+    </div>
+</div>

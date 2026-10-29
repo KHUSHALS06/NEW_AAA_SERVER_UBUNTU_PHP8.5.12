@@ -1,0 +1,145 @@
+<?php
+/**
+ * This ctp displays the check-in details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Occupancy',
+        'link' => '/check_ins'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<hr>
+<p style="font-style: italic; color: red">(Click on the values to edit.)</p>
+<br/>
+<div class="media">
+    <a class="pull-left" href="#">
+        <img class="media-object" src="https://secure.gravatar.com/avatar/<?php echo md5($user['email']) ?>?s=80&d=mm">
+    </a>
+    <div class="media-body col-lg-6 col-md-5">
+        <h4 class="media-heading"><?php ?></h4>
+        <table class="table table-striped">
+            <tr>
+                <td><strong>Room No: </strong></td>
+                <td><div class ="editRoomNo00" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="room_no"><?php echo $checkInData['CheckIn']['room_no'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Title: </strong></td>
+                <td><div class ="editTitle00" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="title"><?php echo $checkInData['CheckIn']['title'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Name: </strong></td>
+                <td><div class ="editName00" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="name"><?php echo $checkInData['CheckIn']['name'] ?></div></td>
+            </tr>
+
+            <tr>
+                <td><strong>Middle Name: </strong></td>
+                <td><div class ="editMiddleName00" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="middle_name"><?php echo $checkInData['CheckIn']['middle_name'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Last Name: </strong></td>
+                <td><div class ="editLastName00" data-type="text" data-pk="<?php echo $checkInData['CheckIn']['id'] ?>" data-name="last_name"><?php echo $checkInData['CheckIn']['last_name'] ?></div></td>
+            </tr>
+            <tr>
+                <td><strong>Location: </strong></td>
+                <td><?php echo __($checkInData['Location']['location_name']); ?></td>
+            </tr>
+            <tr>
+                <td><strong>Check In Date: </strong></td>
+                <td><?php echo __($checkInData['CheckIn']['created']); ?></td>
+            </tr>
+            <tr>
+                <td><strong>Check Out Date: </strong></td>
+                <td><?php echo __($checkInData['CheckIn']['checkout_date']); ?></td>
+            </tr>
+            <tr>
+                <td><strong>Coupons: </strong></td>
+                <td><?php echo __($checkInData['CheckIn']['total_coupon']); ?></td>
+            </tr><tr>
+                <td><strong>Status: </strong></td>
+                <td><?php //echo __($checkInData['CheckIn']['checkout_date']);     ?></td>
+            </tr>
+        </table>
+
+    </div>
+</div>
+<script>
+    $(function() {
+        var newURL = window.location.protocol + "//" + window.location.host + "" + window.location.pathname;
+        $.fn.editable.defaults.mode = 'inline';
+
+        $('.editRoomNo').editable({
+            url: newURL + '/update_room_no',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+        $('.editTitle').editable({
+            url: newURL + '/update_title',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z]*$/.test(value))) {
+                    return 'Only alphabets allowed';
+                }
+            }
+        });
+        $('.editName').editable({
+            url: newURL + '/update_name',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+        $('.editMiddleName').editable({
+            url: newURL + '/update_middle_name',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+        $('.editLastName').editable({
+            url: newURL + '/update_last_name',
+            validate: function(value) {
+                if ($.trim(value) == '') {
+                    return 'This field is required';
+                }
+                if (!(/^[a-zA-Z0-9\s]*$/.test(value))) {
+                    return 'Only alphabets and numbers allowed';
+                }
+            }
+        });
+    });
+
+</script>
+

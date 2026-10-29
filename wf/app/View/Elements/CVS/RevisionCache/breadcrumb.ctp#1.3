@@ -1,0 +1,26 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+ ?>
+
+
+<ul class="breadcrumb">
+	<?php foreach($links as $link): ?>
+	<li class="<?php echo ( $link['link']=='' ? 'active' : '' ); ?>">
+		<?php if (($link['link']!='')): ?>
+			<?php echo $this->Html->link(
+				$link['label'],
+				$link['link']
+			); ?>
+		<?php else: ?>
+			<?php echo $link['label'] ?>
+		<?php endif; ?>
+	</li>
+	<?php endforeach; ?>
+</ul>

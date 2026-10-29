@@ -1,0 +1,248 @@
+<?php
+/**
+ * This ctp consist of form to edit an exisiting billing plan
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        // Validate the form with Bootstrap validator
+        $('#BillingPlanEditForm').bootstrapValidator();
+
+        // JQuery datepicker for expiration date
+        $('#expiration_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true
+                    //showOn: "button",
+                    //buttonImage: "../img/datepicker.png",
+                    //buttonImageOnly: true
+        });
+
+        // Revalidate the date when user change it
+        /*$('#expiration_date')
+         .change(function(e) { 
+         $('#BillingPlanEditForm').bootstrapValidator('revalidateField', 'data[BillingPlan][expiration_date_bp]');
+         });*/
+    });
+
+</script>
+
+<?php
+// To display the breadcrumb. 'label' is the label to be displayed and 'link' redirects to a particular page
+$breadcrumb = array(
+    array(
+        'label' => 'Billing Plans',
+        'link' => '/billing_plans'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <?php
+        // Create form and define validation icons for the form
+        echo $this->Form->create('BillingPlan', array('action' => 'edit', 'method' => 'post', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php
+            echo $this->Form->input('id', array(
+                'type' => 'hidden',
+                'value' => $billingPlan['id'],
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('cat_bp', array(
+                'label' => __('Category'),
+                'type' => 'text',
+                'readOnly' => true,
+                'value' => ($billingPlan['cat_bp'] != '') ? $billingPlan['cat_bp'] : ''
+            ));
+            ?>
+
+            <?php
+            //pr($billingPlan['name_bp']);
+            echo $this->Form->input('name_bp', array(
+                'label' => __('Name'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The name is required and cannot be empty",
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "^[A-Za-z0-9_\s]{1,}[\.]{0,1}[A-Za-z0-9_\s]{0,}$",
+                'data-bv-regexp-message' => "The name can only consist of alphabets, numbers and underscore",
+                'value' => ($billingPlan['name_bp'] != '') ? $billingPlan['name_bp'] : ''
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('time_bp', array(
+                'label' => __('Duration'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The duration is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The duration can only consist of numbers',
+                'value' => ($billingPlan['time_bp'] != '') ? $billingPlan['time_bp'] : ''
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('type_bp', array(
+                'label' => __('Type'),
+                'options' => array('time' => 'Time', 'data' => 'Data'),
+                'selected' => ($billingPlan['type_bp'] != '') ? $billingPlan['type_bp'] : '',
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('price_dp', array(
+                'label' => __('Price'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The price is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The price can only consist of numbers',
+                'value' => ($billingPlan['price_bp'] != '') ? $billingPlan['price_bp'] : ''
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('timetofinish_bp', array(
+                'label' => __('From Activation'),
+                'options' => array('0' => 'No', '1' => 'Yes'),
+                'selected' => ($billingPlan['timetofinish_bp'] != '') ? $billingPlan['timetofinish_bp'] : '',
+                'data-bv-notempty-message' => "The plan duration is required and cannot be empty",
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('simultanous_bp', array(
+                'label' => __('Simultanious Use'),
+                'options' => array('0' => 'No', '1' => 'Yes'),
+                'selected' => ($billingPlan['simultanous_bp'] != '') ? $billingPlan['simultanous_bp'] : '',
+                    //'data-bv-notempty-message' => "The plan duration is required and cannot be empty",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('redirection_url_bp', array(
+                'label' => __('Redirection URL'),
+                'type' => 'url',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "false",
+                'data-bv-uri-allowlocal' => 'false',
+                'data-bv-uri-message' => "The URL is not valid. Start with http://",
+                'value' => ($billingPlan['redirection_url_bp'] != '') ? $billingPlan['redirection_url_bp'] : ''
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('maximum_time_bp', array(
+                'label' => __('Maximum Time'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The maximum time is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The maximum time can only consist of numbers',
+                'value' => ($billingPlan['maximum_time_bp'] != '') ? $billingPlan['maximum_time_bp'] : ''
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('maximum_octet_bp', array(
+                'label' => __('Maximum Data'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The maximum data is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The maximum data can only consist of numbers',
+                'value' => ($billingPlan['maximum_octet_bp'] != '') ? $billingPlan['maximum_octet_bp'] : ''
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('expiration_date_bp', array(
+                'label' => __('Expiration Data'),
+                'type' => 'text',
+                'id' => 'expiration_date',
+                'readOnly' => true,
+                'value' => ($billingPlan['expiration_date_bp'] != '') ? $billingPlan['expiration_date_bp'] : ''
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('bandwidth_upload_bp', array(
+                'label' => __('Upload Speed'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The upload speed is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The upload speed can only consist of numbers',
+                'value' => ($billingPlan['bandwidth_upload_bp'] != '') ? $billingPlan['bandwidth_upload_bp'] : '',
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('bandwidth_download_bp', array(
+                'label' => __('Download Speed'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => true,
+                'data-bv-notempty-message' => "The download speed is required and cannot be empty",
+                'data-bv-numeric' => 'true',
+                'data-bv-numeric-message' => 'The download speed can only consist of numbers',
+                'value' => ($billingPlan['bandwidth_download_bp'] != '') ? $billingPlan['bandwidth_download_bp'] : ''
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('publish_bp', array(
+                'label' => __('Publish'),
+                'options' => array('0' => 'No', '1' => 'Yes'),
+                'selected' => ($billingPlan['publish_bp'] != '') ? $billingPlan['publish_bp'] : ''
+                    //'data-bv-notempty-message' => "The plan duration is required and cannot be empty",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('currency_bp', array(
+                'label' => __('Currency'),
+                'options' => array('INR' => 'INR'),
+                'selected' => ($billingPlan['currency_bp'] != '') ? $billingPlan['currency_bp'] : ''
+                    //'data-bv-notempty-message' => "The currency is required and cannot be empty",
+            ));
+            ?>
+
+            <?php
+            echo $this->Form->input('login_display', array(
+                'label' => __('Login Display'),
+                'options' => array('0' => 'No', '1' => 'Yes'),
+                'selected' => ($billingPlan['currency_bp'] != '') ? $billingPlan['currency_bp'] : ''
+                    //'data-bv-notempty-message' => "The plan duration is required and cannot be empty",
+            ));
+            ?>                      
+            <div class="col-xs-12 wf-div-right-pad12">
+                <br>
+                <?php echo $this->Form->end(__("Submit")); ?>
+            </div>
+        </div>
+    </div>
+</div>
+

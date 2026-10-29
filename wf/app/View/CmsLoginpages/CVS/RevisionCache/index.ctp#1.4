@@ -1,0 +1,98 @@
+<!--<img src="<?php echo $this->request->webroot ?>cms_loginpages/displayLogo/" width="50" height="50">-->
+<?php echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Login Page',
+        'link' => '/cms_loginpages'
+    ),
+    array(
+        'label' => 'Login Page List'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php $this->Paginator->options(array('url' => array("0"))); ?>
+        <!--hr-->
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>'))));  ?>
+        <hr>
+        <div class="table-responsive">
+            <table id="locationsTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th >
+                            <?php
+                            echo $this->Paginator->sort('Location.location_name', array(
+                                'asc' => __('Location Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Location Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?>
+                        </th>
+                        <th >
+                            <?php
+                            echo $this->Paginator->sort('CmsLoginpage.tariff_display', array(
+                                'asc' => __('Tariff Display') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Tariff Display') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?>
+                        </th>
+                        <th style="color: #428BCA"><?php echo __('Actions') ?></th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($login_pages) > 0) { ?>
+                        <?php foreach ($login_pages as $page) { //pr($location); ?>
+                            <tr>
+                                <!-- inline edit javascript code written in the end -->
+                                <td><?php echo $page['Location']['location_name'] ?></td>
+                                <td><?php echo $page['CmsLoginpage']['tariff_display']=='1'?'Yes':'No' ?></div></td>
+                                <td width="120px">
+                                    <div class="row col-md-12 action-column">
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Form->create('CmsLoginpage', array('action' => 'preview', 'target'=>'_blank'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $page['CmsLoginpage']['id']));
+//echo $this->Form->end('View', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/view_20by20.png'));
+                                            echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                            ?>
+                                            </form>
+                                        </div>
+                                        <div class="col-md-1 action-column"></div>
+                                        <div class="col-md-1 action-column">
+
+                                            <?php
+                                            if (AuthComponent::user('Group.name') == Configure::read('Application.wf_admin') || AuthComponent::user('Group.name') == Configure::read('Application.admin')) {
+                                                echo $this->Form->create('CmsLoginpage', array('action' => 'edit'));
+                                                echo $this->Form->input('id', array('type' => 'hidden', 'value' => $page['CmsLoginpage']['id']));
+//echo $this->Form->end('Edit', array('class' => 'btn-xs text', 'type' => 'image', 'src' => 'img/edit_20by20.png'));
+                                                echo $this->Form->end('edit_20by20.png', array('div' => false, 'class' => 'action-button actionEdit'));
+                                            }
+                                            ?>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                <?php } else { ?>
+                    <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+                <?php } ?>
+            </table>
+        </div>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+        </div>
+        <br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>

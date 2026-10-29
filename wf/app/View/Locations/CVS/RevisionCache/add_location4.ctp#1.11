@@ -1,0 +1,183 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#LocationAddLocation4Form').bootstrapValidator();
+
+//        $('#live_date').datepicker({
+//            dateFormat: 'yy-mm-dd',
+//            showButtonPanel: true,
+//            changeMonth: true,
+//            changeYear: true,
+//            showOn: "button",
+//            buttonImage: "../img/datepicker.png",
+//            buttonImageOnly: true
+//        });
+//
+//        $('#live_date')
+//                .change(function(e) {
+//                    $('#LocationAddLocation1Form').bootstrapValidator('revalidateField', 'data[Location][live_date]');
+//                });
+//
+//    });
+</script>
+<?php //echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Location Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Commercial Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Contact Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Billing Details',
+        'link' => '#'
+    ),
+    array(
+        'label' => 'Configuration Details'
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+?>
+<div class="row">
+    <div class="col-md-12">
+        <?php
+        echo $this->Form->create('Location', array('action' => 'addLocation4', 'method' => 'post', 'enctype' => "multipart/form-data",
+            'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+            'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+            'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"
+        ));
+        ?>
+
+        <hr>
+        <div class="col-md-5">
+            <?php
+            //echo $this->Form->input('');
+            echo $this->Form->input('logo_file', array(
+                'label' => __('Logo'),
+                'type' => 'file',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "\.(bmp|gif|jpg|jpeg|jpe|png|BMP|GIF|JPG|JPEG|JPE|PNG)$",
+                'data-bv-regexp-message' => "The image format is incorrect."
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('nas', array(
+                'label' => __('NAS(Device)'),
+                'autocomplete' => 'off',
+                'value' => 'Mikrotik'));
+            ?>
+            <?php
+            //$timeArray = ['00' => '12 Midnight', '01' => '01 AM', '02' => '02 AM', '03' => '03 AM', '04' => '04 AM', '05' => '05 AM', '06' => '06 AM', '07' => '07 AM', '08' => '08 AM', '09' => '09  AM', '10' => '10  AM', '11' => '11  AM', '12' => '12  Noon', '13' => '01  PM', '14' => '02  PM', '15' => '03  PM', '16' => '04  PM', '17' => '05  PM', '18' => '06 PM', '19' => '07 PM', '20' => '08 PM', '21' => '09 PM', '22' => '10 PM', '23' => '11 PM'];
+            echo $this->Form->input('service_start_time', array(
+                'label' => __('Service Start Time(24 Hours Format)'),
+                'id' => 'service_start_time',
+                'type' => 'text',
+                'readOnly' => 'true'
+            ));
+            ?>
+            <script>
+                $(function() {
+                    $('#service_start_time').timepicker({'timeFormat': 'HH:mm:00'});
+                });
+            </script>
+            <?php
+            echo $this->Form->input('service_end_time', array(
+                'type' => 'text',
+                'id' => 'service_end_time',
+                'readOnly' => 'true'
+                    //'options' => $timeArray,
+                    //'selected' => array('01')
+            ));
+            ?>
+            <script>
+                $(function() {
+                    $('#service_end_time').timepicker({'timeFormat': 'HH:mm:00'});
+                });
+            </script>
+            <?php
+            echo $this->Form->input('router_management', array(
+                'label' => __('Router Management'),
+                'type' => 'select',
+                'options' => $router_management));
+            ?>
+            <?php
+            echo $this->Form->input('router_address', array(
+                'label' => __('Router Address'),
+                'type' => 'text',
+                'autocomplete' => 'off',
+                'data-bv-notempty' => "true",
+                'data-bv-notempty-message' => "The router adress is required and cannot be empty",
+                    //'data-bv-regexp' => "true",
+                    //'data-bv-regexp-regexp' => "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+                    //'data-bv-regexp-message' => "The router address is incorrect"
+            ));
+            ?> 
+
+
+            <?php
+            echo $this->Form->input('config_file', array(
+                'label' => __('Configuration File'),
+                'type' => 'file',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "\.(jpg|jpeg|jpe|doc|docx|xls|xlsx|JPG|JPEG|JPE|DOC|DOCX|XLS|XLSX)$",
+                'data-bv-regexp-message' => "The configuration file format is incorrect."
+            ));
+            ?>
+            <?php
+            echo $this->Form->input('backup_file', array(
+                'label' => __('Backup File'),
+                'type' => 'file',
+                'data-bv-regexp' => "true",
+                'data-bv-regexp-regexp' => "\.(zip|rar|ZIP|RAR)$",
+                'data-bv-regexp-message' => "The backup file format is incorrect."
+            ));
+            ?>
+            <?php
+            /* echo $this->Form->input('sms_password', array(
+              'label' => __('SMS Password'),
+              'type' => 'password',
+              'autocomplete' => 'off',
+              'data-bv-notempty' => "true",
+              'data-bv-notempty-message' => "The password is required and cannot be empty",
+              )); */
+            ?>
+            <?php
+            echo $this->Form->input('type', array(
+                'label' => __('Type'),
+                'type' => 'select',
+                'options' => $type
+            ));
+            ?>
+            <div class="row">
+                <div class="col-xs-8"><?php echo $this->Form->end(__("Done")); ?></div>
+                <div class="col-xs-2"> &nbsp;</div>
+                <div class="col-xs-2"><?php echo $this->Html->link('Back', array('controller' => 'locations', 'action' => 'addLocation3'), array('class' => 'btn btn-default')); ?></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

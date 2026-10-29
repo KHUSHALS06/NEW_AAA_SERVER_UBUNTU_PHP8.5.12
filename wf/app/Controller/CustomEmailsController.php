@@ -1,0 +1,74 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of CustomEmailsController
+ *
+ * @author dev3
+ */
+App::uses('CakeEmail', 'Network/Email');
+
+class CustomEmailsController extends AppController {
+
+    //put your code here
+    public $uses = array('Location');
+
+    public function index() {
+         if (!$this->Acl->check(AuthComponent::user('Group.name'), $this->request->params['action']))
+            $this->redirect(array('controller' => 'permission_errors', 'action' => 'unauthorized'));
+         
+        $this->Location->recursive = -1;
+        $emailAddress = $this->Location->find('list', array(
+            'fields' => array('email', 'email'),
+            'conditions' => array('email !=' => '')
+        ));
+        if ($this->request->is('post')) {
+            $to = '';
+            if ($this->request->data['CustomEmail']['to'] == 'all') {
+                $to = $this->request->data['CustomEmail']['toAll'];
+            } else {
+                $to = $this->request->data['CustomEmail']['to'];
+            }
+            $sent = $this->_sendEmail($to, $this->request->data['CustomEmail']['subject'], $this->request->data['CustomEmail']['message']);
+            if($sent == 'sent'){
+                $this->Session->setFlash(__('Email sent'), 'flash_success');
+            }else{
+                $this->Session->setFlash(__('Error'), 'flash_fail');
+            }
+        }
+        $this->set('emailAddress', $emailAddress);
+        
+        if(array_key_exists('CustomEmail', $this->request->data) && $this->request->data['CustomEmail']['to'] !=''){
+        $this->set('to', $this->request->data['CustomEmail']['to']);
+        }  else {
+            $this->set('to', '');
+        }
+    }
+    
+    
+    private function _sendEmail($to = null, $subject = null, $message = null) {
+        try {
+            $email = new CakeEmail('smtp');
+            $email->emailFormat('both');
+            $email->to($to);
+            $email->from(array('info@wifonic.com' => 'WiFonic Technologies Pvt. Ltd.'));
+//            if (empty($to) || $to == null) {
+//                $email->to('admin@wifonic.com');
+//            } else {
+//                $email->to($to);
+//            }
+            $email->subject($subject);
+            //$email->send($message);NO SEND EMAIL uncomment on production server
+        } catch (Exception $ex) {
+            return 'error';
+            //throwException($ex);
+        }
+        return 'sent';
+    }
+
+}

@@ -1,0 +1,151 @@
+<?php
+
+/** InvoicesController class
+ * 
+ * This class consists of methods for invoice details
+ * 
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<?php
+
+App::uses('AppController', 'Controller');
+
+class InvoicesController extends AppController {
+
+    public $uses = array('Invoice', 'Location', 'InvoiceTrack', 'InvoiceExtra', 'Cheque');
+
+    /**
+     * Helpers
+     *
+     * @var array
+     */
+    public $helpers = array('Js');
+
+    /**
+     * Components
+     *
+     * @var array
+     */
+    public $components = array('Paginator', 'RequestHandler');
+
+    function beforeFilter() {
+        parent::beforeFilter();
+    }
+
+    public function index() {
+        $this->redirect(array('action'=>'individual_payment'));
+    }
+
+    /**
+     * It fetches the overall invoices list for a particular invoice period.
+     * 
+     * @return void
+     */
+    public function overall_payment() {
+        $condition = array();
+        if (isset($this->request->data['invoices']['invoice_period']) && ($this->request->data['invoices']['invoice_period'] != '')) {
+            $condition[] = array(
+                'month' => date("n", strtotime($this->request->data['invoices']['invoice_period'])),
+                'year' => date("Y", strtotime($this->request->data['invoices']['invoice_period']))
+            );
+        } else {
+            $condition[] = array(
+                'month' => date("n", strtotime("-1 month")),
+                'year' => date("Y", strtotime("-1 month"))
+            );
+        }
+
+        $this->Paginator->settings = array(
+            'limit' => 10,
+            'order' => array('Invoice.id' => 'ASC'),
+            'conditions' => $condition,
+        );
+
+        $this->set('overallPaymentDatas', $this->Paginator->paginate('InvoiceTrack'));
+        $this->set('breadcrumbLabel', 'Overall Payment');
+        $this->Session->write('link', 'overallPayment');
+    }
+
+    /**
+     * It fetches the invoices list for a particular location.
+     * 
+     * @return void
+     */
+    public function individual_payment() {
+        if ($this->request->is('POST') && isset($this->request->data['invoices']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['invoices']['locations_id']);
+        }
+        $this->Invoice->bindModel(array('hasOne' => array('InvoiceTrack')), false);
+        $this->Paginator->settings = array(
+            'limit' => 10,
+            'order' => array('Invoice.id' => 'ASC'),
+            'conditions' => array(
+                'Invoice.location_id' => $this->Session->read('choosed_location_id'),
+            ),
+            'contain' => 'InvoiceTrack'
+        );
+        $this->Invoice->bindModel(array('hasOne' => array('InvoiceTrack')), false);
+        $this->set('individualPaymentDatas', $this->Paginator->paginate('Invoice'));
+        $this->set('breadcrumbLabel', 'Individual Payment');
+        $this->Session->write('link', 'individualPayment');
+    }
+
+    /**
+     * Display the instrument
+     * 
+     * @param string $instNumAndDesc
+     * @return void
+     */
+    public function displayInstrument($instNumAndDesc) {
+        $splitInstrumentNumberAndDescription = explode('#', $instNumAndDesc);
+        $instrument = $this->Cheque->find('first', array(
+            'conditions' => array('Cheque.instrument_number' => $splitInstrumentNumberAndDescription[0]),
+            'recursive' => -1
+                ));
+
+        if ($instrument['Cheque']['scan'] == '') {
+            $this->Session->setFlash(__('No scanned copy uploaded for this instrument'), 'flash_info');
+            $this->redirect(array('action' => 'individual_payment'));
+        } else {
+
+            $file = $instrument['Cheque']['scan'];
+            $size = $instrument['Cheque']['scan_size'];
+            $type = $instrument['Cheque']['scan_type'];
+            $name = $instrument['Cheque']['scan_name'];
+            ob_clean();
+            header("Content-Length: $size");
+            header("Content-Type: $type");
+            header("Content-Disposition:attachment;filename=$name");
+            echo $file;
+        }
+    }
+
+    /**
+     * Print the invoice
+     * 
+     * @param integer $id
+     * @return void
+     */
+    public function printInvoice($id) {
+        $this->Invoice->recursive = -1;
+        $challan = $this->Invoice->findById($id);
+        $file = $challan['Invoice']['invoices'];
+        $size = $challan['Invoice']['size'];
+        $type = $challan['Invoice']['type'];
+        $name = $challan['Invoice']['invoice_name'];
+        ob_clean();
+        header("Content-Length: $size");
+        header("Content-Type: $type");
+        header("Content-Disposition:attachment;filename=$name");
+        echo $file;
+    }
+
+}
+?>

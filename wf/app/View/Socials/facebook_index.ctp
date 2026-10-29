@@ -1,0 +1,147 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var numberOfColumns = document.getElementById('registeredUsersTable').rows[0].cells.length;
+        $("#emptyTableMessage").attr('colspan', numberOfColumns);
+    });
+</script>
+<?php
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'before' => $this->Js->get('#spinner')->effect(
+            'fadeIn', array('buffer' => false)
+    ),
+    'complete' => $this->Js->get('#spinner')->effect(
+            'fadeOut', array('buffer' => false)
+    ),
+    'evalScripts' => TRUE
+));
+?>
+<?php echo $this->element('locations_list') ?>
+<?php
+$breadcrumb = array(
+    array(
+        'label' => 'Facebook User',
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+echo $this->Paginator->options(array(
+    'update' => '#page-wrapper',
+    'evalScripts' => TRUE
+));
+?>
+<div class="row">
+    <div class="col-md-10"><!--h3><?php //echo __('Users')     ?></h3--></div>
+    <div class="col-md-2">
+        <?php
+        echo $this->Html->link(__('Reporting'), '/socials/facebookReporting', array('class' => 'btn btn-default pull-right', 'style' => 'margin-top: 15px'))
+        ?>
+    </div>
+</div>
+<div class="row">
+
+    <div class="col-12">
+        <?php echo $this->Session->flash() ?>
+        <?php $this->Paginator->options(array('url' => array("0"))); ?>
+        <!--hr-->
+        <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php //echo $this->Session->read('user')  ?>
+        <hr>
+        <?php //echo $this->element('search') ?>
+        <div class="table-responsive">
+            <table id="registeredUsersTable" class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th >
+                            <?php
+                            echo $this->Paginator->sort('name', array(
+                                'asc' => __('Name') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Name') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?>
+                        </th>
+                        <th ><?php
+                            echo $this->Paginator->sort('gender', array(
+                                'asc' => __('Gender') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Gender') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?></th>
+                        <th ><?php
+                            echo $this->Paginator->sort('date_of_birth', array(
+                                'asc' => __('DOB') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('DOB') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?></th>
+                        <th ><?php
+                            echo $this->Paginator->sort('email', array(
+                                'asc' => __('Email') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Address') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?></th>
+
+                        <th><?php
+                            echo $this->Paginator->sort('contact_no', array(
+                                'asc' => __('Phone') . ' <i class="fa fa-caret-up  pull-right"></i>',
+                                'desc' => __('Phone') . ' <i class="fa fa-caret-down  pull-right"></i>'
+                                    ), array(
+                                'escape' => false
+                            ))
+                            ?></th>
+                        <th style="color: #428BCA"><?php echo __('Actions') ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($registeredUsers) > 0) { ?>
+                        <?php foreach ($registeredUsers as $user) { ?>
+                            <tr>
+                                <td><?php echo $user['RegisteredUser']['name'] ?></td>
+                                <td><?php echo $user['RegisteredUser']['gender'] ?></td>
+                                <td><?php echo date('d-m-Y',strtotime($user['RegisteredUser']['date_of_birth'])); ?></td>
+                                <td><?php echo $user['RegisteredUser']['email'] ?></td>
+                                <td><?php echo $user['RegisteredUser']['contact_no'] ?></td>
+                                <td><div class="row col-md-12 action-column">
+                                        <div class="col-md-1 action-column">
+                                            <?php
+                                            echo $this->Form->create('Social', array('action' => 'view_user'));
+                                            echo $this->Form->input('calling_action', array('type' => 'hidden', 'value' => 'facebook'));
+                                            echo $this->Form->input('id', array('type' => 'hidden', 'value' => $user['RegisteredUser']['id']));
+                                            echo $this->Form->end('view_20by20.png', array('div' => false, 'class' => 'action-button actionView'));
+                                            ?>
+
+                                        </div>
+                                </td>
+
+                                </div>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                <?php } else { ?>
+                    <tr><td id="emptyTableMessage" align="center"><i><?php echo __("No record found") ?></i></td></tr>
+                <?php } ?>
+            </table>
+        </div>
+        <div class="paginator">
+            <?php echo $this->Paginator->numbers(); ?>
+            <?php //echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>'))));  ?>
+        </div><br/>
+        <?php echo $this->Html->para(null, $this->Paginator->counter(array('format' => __('<i>Page</i> <b> %page% </b> of <b> %pages% </b>, showing <b> %current% </b> <i>records</i> out of <b> %count% </b> total, starting on <i> record </i> <b> %start% </b>, ending on <b> %end% </b>')))); ?>
+        <?php echo $this->Js->writeBuffer(); ?>
+    </div>
+</div>

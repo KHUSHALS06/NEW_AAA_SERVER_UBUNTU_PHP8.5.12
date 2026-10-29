@@ -1,0 +1,222 @@
+<?php
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ * Description of FeedbacksController
+ *
+ * @author dev3
+ */
+class FeedbackFormsController extends AppController {
+
+//put your code here
+    //var $helpers = array('Fck'); 
+    public $uses = array('FeedbackForm', 'ElementType', 'Feedback', 'ArchiveFeedbackForm', 'ArchiveFeedback');
+    public $components = array('Paginator');
+
+    public function index() {
+        if ($this->request->is('post') && isset($this->request->data['feedback_forms']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['feedback_forms']['locations_id']);
+        }
+//pr($this->request->data);
+        $this->Paginator->recursive = 0;
+        $this->Paginator->settings = array(
+            'limit' => 20,
+            'conditions' => array('location_id' => $this->Session->read('choosed_location_id')), //$condition//array('BillingPlan.location_id' => $locationIdArray),
+            'order' => array('FeedbackForm.order_priority' => 'ASC')
+
+//'contain' => 'BillingPlansLocation'
+        );
+        $this->set('feedbacks', $this->Paginator->paginate());
+    }
+
+    public function add() {
+        if ($this->request->is('post') && isset($this->request->data['feedback_forms']['locations_id'])) {
+            $this->Session->write('choosed_location_id', $this->request->data['feedback_forms']['locations_id']);
+        }
+        $this->set('element_types', $this->ElementType->find('list'));
+        $ocupied_column_name = $this->FeedbackForm->find('list', array(
+            'fields' => array('colum_name', 'colum_name'),
+            'conditions' => array('location_id' => $this->Session->read('choosed_location_id'))
+        ));
+        $questionNumbers = $this->enumToSelectField('FeedbackForm', 'feedback_forms', 'colum_name');
+        $questionNumbers = array_diff($questionNumbers, $ocupied_column_name);
+        foreach ($questionNumbers as $val) {
+            $this->set('question_number', $val);
+            break;
+        }
+        //pr($this->request->data);
+        if ($this->request->is('post') && array_key_exists('FeedbackForm', $this->request->data)) {
+//pr($this->request->data);
+            if (array_key_exists('options', $this->request->data['FeedbackForm']) && count($this->request->data['FeedbackForm']['options']) > 0) {
+                $this->request->data['FeedbackForm']['value'] = serialize($this->request->data['FeedbackForm']['options']);
+            }else{
+                $this->request->data['FeedbackForm']['number_options']=0;
+            }
+            $this->request->data['FeedbackForm']['location_id'] = $this->Session->read('choosed_location_id');
+            $locationDomainArray = $this->Session->read('locations_domain_list');
+            $this->request->data['FeedbackForm']['location_domain'] = $locationDomainArray[$this->Session->read('choosed_location_id')];
+            $this->request->data['FeedbackForm']['order_priority'] = str_ireplace('c_', '', $this->request->data['FeedbackForm']['colum_name']);
+            //pr($this->request->data);
+            if ($this->FeedbackForm->save($this->request->data)) {
+                $this->Session->setFlash('Feedback fields added successfully!', 'flash_success');
+                $this->redirect(array('action' => 'index'));
+            }
+        }
+    }
+
+    public function feedback() {
+        if ($this->request->is('post') && count($this->request->data['Feedback']) > 0) {
+//foreach ($this->request->data['Feedback'] as $key => $value) {
+//$data = array();
+//$data['Feedback']['feedback_form_id']=$key;
+//$data['Feedback']['feedback']=$value;
+            $this->request->data['Feedback']['location_id'] = $this->Session->read('choosed_location_id');
+            $this->Feedback->create();
+            $this->Feedback->save($this->request->data);
+            $this->Feedback->clear();
+//}
+        }
+        $formDetails = $this->FeedbackForm->find('all', array(
+            'conditions' => array('location_id' => $this->Session->read('choosed_location_id')),
+            'order' => array('FeedbackForm.order_priority' => 'ASC')
+        ));
+        $this->set('form_details', $formDetails);
+    }
+
+    public function changePriority() {
+        if ($this->request->is('post')) {
+            $conditions = '';
+            $order = '';
+            if ($this->request->data['FeedbackForm']['move'] == 'up') {
+                $conditions = array('location_id' => $this->request->data['FeedbackForm']['location_id'], 'order_priority <' => $this->request->data['FeedbackForm']['order_priority']);
+                $order = 'DESC';
+            } else {
+                $conditions = array('location_id' => $this->request->data['FeedbackForm']['location_id'], 'order_priority >' => $this->request->data['FeedbackForm']['order_priority']);
+                $order = 'ASC';
+            }
+            $targetedRow = $this->FeedbackForm->find('all', array(
+                'fields' => array('id', 'order_priority'),
+                'conditions' => $conditions,
+                'limit' => 1,
+                'order' => array('FeedbackForm.order_priority' => $order)
+            ));
+            if (count($targetedRow) > 0) {
+
+                $this->FeedbackForm->create();
+                $this->FeedbackForm->id = $targetedRow[0]['FeedbackForm']['id'];
+                $this->FeedbackForm->saveField('order_priority', $this->request->data['FeedbackForm']['order_priority']);
+                $this->FeedbackForm->clear();
+
+                $this->FeedbackForm->create();
+                $this->FeedbackForm->id = $this->request->data['FeedbackForm']['id'];
+                $this->FeedbackForm->saveField('order_priority', $targetedRow[0]['FeedbackForm']['order_priority']);
+                $this->FeedbackForm->clear();
+            }
+        }
+        $this->redirect(array('action' => 'index'));
+    }
+
+    public function editFeedbackQuestion() {
+        if ($this->request->is('post')) {
+            //pr($this->request->data);
+            if (array_key_exists('colum_name', $this->request->data['FeedbackForm'])) {
+                $isArchived = $this->_archiveFeedBack($this->request->data['FeedbackForm']['location_id']);
+                if ($isArchived == true) {
+                    
+                    if ($this->Feedback->query('DELETE  FROM feedbacks where location_id=' . $this->request->data['FeedbackForm']['location_id'])) {
+                        $this->request->data['FeedbackForm']['location_id'];
+                        if(array_key_exists('options', $this->request->data['FeedbackForm']) && count($this->request->data['FeedbackForm']['options'])>0){
+                            $this->request->data['FeedbackForm']['value'] = serialize($this->request->data['FeedbackForm']['options']);
+                        }else{
+                            $this->request->data['FeedbackForm']['value']='';
+                            $this->request->data['FeedbackForm']['number_options']=0;
+                        }
+                        $this->FeedbackForm->create();
+                        $this->FeedbackForm->id = $this->request->data['FeedbackForm']['id'];
+                        $this->FeedbackForm->save($this->request->data);
+                        $this->FeedbackForm->clear();
+                        $this->Session->setFlash('Changed successfully!', 'flash_success');
+                    }
+                }
+                $this->redirect(array('action' => 'index'));
+            }
+            $feedbackField = $this->FeedbackForm->findById($this->request->data['FeedbackForm']['id']);
+            //pr($feedbackField);
+            $this->set('q_id', $this->request->data['FeedbackForm']['id']);
+            $this->set('question_number', $feedbackField['FeedbackForm']['colum_name']);
+            $this->set('title', $feedbackField['FeedbackForm']['name']);
+            $this->set('priority', $feedbackField['FeedbackForm']['order_priority']);
+            $this->set('type_id', $feedbackField['FeedbackForm']['element_type_id']);
+            $this->set('number_of_options', $feedbackField['FeedbackForm']['number_options']);
+            $this->set('options', unserialize($feedbackField['FeedbackForm']['value']));        
+            $this->set('element_types', $this->ElementType->find('list'));
+            $this->render('edit');
+        }else{
+            $this->redirect(array('action' => 'index'));
+        }
+        
+    }
+
+    public function deleteFeedbackQuestion() {
+        if ($this->request->is('post')) {
+            //pr($this->request->data);
+            $isArchived = $this->_archiveFeedBack($this->request->data['FeedbackForm']['location_id']);
+            if ($isArchived == true) {
+                if ($this->Feedback->query('DELETE  FROM feedbacks where location_id=' . $this->request->data['FeedbackForm']['location_id'])) {
+                    $this->FeedbackForm->create();
+                    $this->FeedbackForm->delete($this->request->data['FeedbackForm']['id']);
+                    $this->FeedbackForm->clear();
+                    $this->Session->setFlash('field deleted successfully!', 'flash_success');
+                }
+            }
+        }
+        $this->redirect(array('action' => 'index'));
+    }
+
+    private function _archiveFeedBack($locationId = null) {
+        if ($locationId != null) {
+            try {
+                $feedbackQuestions = array();
+                $feedbackAnswers = array();
+                $feedbackAnswers = $this->Feedback->find('all', array('conditions' => array('location_id' => $locationId)));
+                if (count($feedbackAnswers) > 0) {
+                    $feedbackQuestions = $this->FeedbackForm->find('all', array('conditions' => array('location_id' => $locationId)));
+                    if (count($feedbackQuestions) > 0) {
+                        $archiveId = $locationId . '/' . time();
+                        $qFormFields = '';
+                        foreach ($feedbackQuestions[0]['FeedbackForm'] as $key => $value) {
+                            if ($key != 'id') {
+                                $qFormFields = $qFormFields . '`' . $key . '`,';
+                            }
+                        }
+                        $qFormFields = substr($qFormFields, 0, -1);
+//pr("INSERT INTO archive_feedback_forms (" . $qFormFields . ",`archive_id`)  SELECT ($qFormFields), 'archive_id' as archive_id  FROM feedback_forms where location_id=" . $locationId);
+                        $this->ArchiveFeedbackForm->create();
+                        $this->ArchiveFeedbackForm->query("INSERT INTO archive_feedback_forms (" . $qFormFields . ",`archive_id`)  SELECT $qFormFields, '$archiveId' as archive_id  FROM feedback_forms where location_id=" . $locationId);
+                        $this->ArchiveFeedbackForm->clear();
+                        $qFormFields = '';
+                        foreach ($feedbackQuestions as $key => $value) {
+//if ($key != 'id') {
+                            $qFormFields = $qFormFields . '`' . $value['FeedbackForm']['colum_name'] . '`,';
+//}
+                            //pr($qFormFields);
+                        }
+                        $qFormFields = substr($qFormFields, 0, -1);
+                        $this->ArchiveFeedback->create();
+                        $this->ArchiveFeedback->query("INSERT INTO archive_feedbacks (`location_id`," . $qFormFields . ",`archive_id`)  SELECT `location_id`, $qFormFields, '$archiveId' as archive_id  FROM feedbacks where location_id=" . $locationId);
+                        $this->ArchiveFeedback->clear();
+                    }
+                }
+            } catch (Exception $ex) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+}

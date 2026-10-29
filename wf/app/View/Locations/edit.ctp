@@ -1,0 +1,1163 @@
+<?php
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+?>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        //$('#basicExample').timepicker();
+        $('#EditLocationDetailsForm').bootstrapValidator();
+        $('#EditCommercialDetailsForm').bootstrapValidator();
+        $('#EditContactDetailsForm').bootstrapValidator();
+        $('#EditBillingDetailsForm').bootstrapValidator();
+        $('#EditConfigurationDetailsForm').bootstrapValidator();
+
+        $('#one_time_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true
+                    //showOn: "button",
+                    //buttonImage: "../img/datepicker.png",
+                    //buttonImageOnly: true
+        });
+
+        $('#valid_till').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true,
+            onClose: function(dateText, inst) {
+                var incrementDate = $("#increment_date").datepicker("getDate")
+                var validTill = $("#valid_till").datepicker("getDate")
+                var difference = (validTill - incrementDate) / (86400000 * 7);
+                if (difference < 0) {
+                    $("#valid_till").attr('style', 'border-color: #953B39');
+                    $("#validTillDateErrorIcon").attr('style', 'display:inline');
+                    $("#validTillDateError").attr('style', 'display:inline;color:#B94A48');
+                    return false;
+                } else {
+                    $("#valid_till").attr('style', '');
+                    $("#validTillDateErrorIcon").attr('style', 'display:none');
+                    $("#validTillDateError").attr('style', 'display:none');
+                    $("#increment_date").attr('style', '');
+                    $("#incrementDateErrorIcon").attr('style', 'display:none');
+                    $("#incrementDateError").attr('style', 'display:none');
+                }
+            }
+        });
+
+        $('#increment_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true,
+            //showOn: "button",
+            //buttonImage: "../img/datepicker.png",
+            //buttonImageOnly: true,
+            onClose: function(dateText, inst) {
+                //var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                //var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                //$(this).datepicker('setDate', new Date(year, month, 1));
+                var incrementDate = $("#increment_date").datepicker("getDate")
+                var validTill = $("#valid_till").datepicker("getDate")
+                var difference = (validTill - incrementDate) / (86400000 * 7);
+                if (difference < 0) {
+                    $("#increment_date").attr('style', 'border-color: #953B39');
+                    $("#incrementDateErrorIcon").attr('style', 'display:inline');
+                    $("#incrementDateError").attr('style', 'display:inline;color:#B94A48');
+                    return false;
+                } else {
+                    $("#valid_till").attr('style', '');
+                    $("#validTillDateErrorIcon").attr('style', 'display:none');
+                    $("#validTillDateError").attr('style', 'display:none');
+                    $("#increment_date").attr('style', '');
+                    $("#incrementDateErrorIcon").attr('style', 'display:none');
+                    $("#incrementDateError").attr('style', 'display:none');
+                }
+            }
+        });
+        /*
+         $('#increment_date').blur(function() {
+         var incrementDate = $("#increment_date").datepicker("getDate")
+         var validTill = $("#valid_till").datepicker("getDate")
+         var difference = (validTill - incrementDate) / (86400000 * 7);
+         if (difference < 0) {
+         $("#increment_date").attr('style', 'border-color: #953B39');
+         $("#incrementDateErrorIcon").attr('style', 'display:inline');
+         $("#incrementDateError").attr('style', 'display:inline;color:#B94A48');
+         return false;
+         } else {
+         $("#valid_till").attr('style', '');
+         $("#validTillDateErrorIcon").attr('style', 'display:none');
+         $("#validTillDateError").attr('style', 'display:none');
+         $("#increment_date").attr('style', '');
+         $("#incrementDateErrorIcon").attr('style', 'display:none');
+         $("#incrementDateError").attr('style', 'display:none');
+         }
+         });
+         
+         $('#valid_till').blur(function() {
+         var incrementDate = $("#increment_date").datepicker("getDate")
+         var validTill = $("#valid_till").datepicker("getDate")
+         var difference = (validTill - incrementDate) / (86400000 * 7);
+         if (difference < 0) {
+         $("#increment_date").attr('style', 'border-color: #953B39');
+         $("#incrementDateErrorIcon").attr('style', 'display:inline');
+         $("#incrementDateError").attr('style', 'display:inline;color:#B94A48');
+         return false;
+         } else {
+         $("#valid_till").attr('style', '');
+         $("#validTillDateErrorIcon").attr('style', 'display:none');
+         $("#validTillDateError").attr('style', 'display:none');
+         $("#increment_date").attr('style', '');
+         $("#incrementDateErrorIcon").attr('style', 'display:none');
+         $("#incrementDateError").attr('style', 'display:none');
+         }
+         });
+         */
+        $('#live_date').datepicker({
+            dateFormat: 'dd-mm-yy',
+            showButtonPanel: true,
+            changeMonth: true,
+            changeYear: true
+                    //showOn: "button",
+                    //buttonImage: "../img/datepicker.png",
+                    //buttonImageOnly: true
+        });
+
+        // Revalidate the date when user changes it
+        /*
+         $('#one_time_date').change(function(e) {
+         $('#EditCommercialDetailsForm').bootstrapValidator('revalidateField', 'data[Location][one_time_date]');
+         });
+         
+         $('#valid_till').change(function(e) {
+         $('#EditCommercialDetailsForm').bootstrapValidator('revalidateField', 'data[Location][valid_till]');
+         });
+         
+         $('#increment_date').change(function(e) {
+         $('#EditCommercialDetailsForm').bootstrapValidator('revalidateField', 'data[Location][increment_date]');
+         });
+         
+         $('#live_date').change(function(e) {
+         $('#EditConfigurationDetailsForm').bootstrapValidator('revalidateField', 'data[Location][live_date]');
+         });
+         */
+
+        if ($("#LocationRevenueType option[value='r']").attr('selected')) {
+            $("#revenueShare").attr('style', 'display:block');
+            $("#monthly").attr('style', 'display:none');
+            $("#amc").attr('style', 'display:none');
+        } else if ($("#LocationRevenueType option[value='m']").attr('selected')) {
+            $("#revenueShare").attr('style', 'display:none');
+            $("#monthly").attr('style', 'display:block');
+            $("#amc").attr('style', 'display:none');
+        } else {
+            $("#revenueShare").attr('style', 'display:none');
+            $("#monthly").attr('style', 'display:none');
+            $("#amc").attr('style', 'display:block');
+        }
+
+        $("#LocationRevenueType").change(function() {
+            var revenueType = $("#LocationRevenueType").val();
+            //alert(revenueType)
+            if (revenueType == 'r') {
+                $("#revenueShare").attr('style', 'display:block');
+                $("#monthly").attr('style', 'display:none');
+                $("#amc").attr('style', 'display:none');
+            } else if (revenueType == 'a') {
+                $("#revenueShare").attr('style', 'display:none');
+                $("#monthly").attr('style', 'display:none');
+                $("#amc").attr('style', 'display:block');
+            } else if (revenueType == 'm') {
+                $("#revenueShare").attr('style', 'display:none');
+                $("#monthly").attr('style', 'display:block');
+                $("#amc").attr('style', 'display:none');
+            } else {
+                $("#revenueShare").attr('style', 'display:none');
+                $("#monthly").attr('style', 'display:none');
+                $("#amc").attr('style', 'display:none');
+            }
+        });
+
+        if ($('#LocationRadioButtonYes').is(":checked"))
+        {
+            //alert('chkd');
+            $('#installationAddress').attr('style', 'display: inline');
+            $('#LocationInstallationName').val($('#LocationName').val());
+            $('#LocationInstallationAddress1').val($('#LocationAddress1').val());
+            $('#LocationInstallationAddress2').val($('#LocationAddress2').val());
+            $('#LocationInstallationCity').val($('#LocationCity').val());
+            $('#LocationInstallationState').val($('#LocationState').val());
+            $('#LocationInstallationState option[value='+$('#LocationState').val()+']').attr("selected", "selected");
+            $('#LocationInstallationPostcode').val($('#LocationPostCode').val());
+        }
+
+        $('#LocationRadioButtonYes').click(function() {
+            if ($('#LocationRadioButtonYes').is(":checked"))
+            {
+                //alert('chkd');
+                $('#installationAddress').attr('style', 'display: inline');
+                $('#LocationInstallationName').val($('#LocationName').val());
+                $('#LocationInstallationAddress1').val($('#LocationAddress1').val());
+                $('#LocationInstallationAddress2').val($('#LocationAddress2').val());
+                $('#LocationInstallationCity').val($('#LocationCity').val());
+                //$('#LocationInstallationState').val($('#LocationState').val());
+                $('#LocationInstallationState option[value='+$('#LocationState').val()+']').attr("selected", "selected");
+                $('#LocationInstallationPostcode').val($('#LocationPostCode').val());
+            } else {
+                //alert('not chkd');
+                $('#LocationInstallationName').val("");
+                $('#LocationInstallationAddress1').val("");
+                $('#LocationInstallationAddress2').val("");
+                $('#LocationInstallationCity').val("");
+                $('#LocationInstallationState').val("");
+                $('#LocationInstallationPostcode').val("");
+            }
+        });
+
+    });
+
+</script>
+<?php echo $this->element('locations_list') ?>
+<?php
+// $breadcrumbLabel;
+$breadcrumb = array(
+    array(
+        'label' => 'Locations',
+        'link' => '/locations'
+    ),
+    array(
+        'label' => $breadcrumbLabel
+    )
+);
+echo $this->element('breadcrumb', array('links' => $breadcrumb));
+//pr(CakeSession::read('Auth.User.Group.name') . "/" . Configure::read('Application.wf_admin'));
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <ul class="nav nav-tabs">
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li class="active"><a href="#tabLocationDetails" data-toggle="tab"><i class="fa fa-map-marker"></i> Location Details</a></li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <li><a href="#tabCommercialDetails" data-toggle="tab"><i class="fa fa-money"></i> Commercial Details</a></li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account')) { ?>
+                <li class="<?php echo CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') ? 'active' : '' ?>"><a href="#tabContactDetails" data-toggle="tab"><i class="fa fa-phone"></i> Contact Details</a></li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account')) { ?>
+                <li>
+                    <a href="#tabBillingDetails" data-toggle="tab"><i class="fa fa-ticket"></i> Billing & Installation Details</a>
+                </li>
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc')) { ?>
+                <li class="<?php echo ((CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer')) || (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc'))) ? 'active' : '' ?>">
+                    <a href="#tabConfigurationDetails" data-toggle="tab"><i class="fa fa-cogs"></i> Configuration Details</a>
+                </li>
+            <?php } ?>
+        </ul>
+        <div class="tab-content">
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) {
+                ?>
+                <!-- tab 1: tabLocationDetails -->
+                <div class="tab-pane active in fade" id="tabLocationDetails">
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <?php
+                            echo $this->Form->create('Location', array('method' => 'post', 'action' => 'edit', 'id' => 'EditLocationDetailsForm', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+                            ?>
+
+                            <hr>
+                            <?php echo $this->Form->input('edit_location_token', array('type' => 'hidden', 'value' => '1')); ?>
+                            <?php echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+                            <div class="col-md-5">
+                                <?php
+                                echo $this->Form->input('location_name', array(
+                                    'label' => __('Customer Name'),
+                                    'data-bv-notempty' => "true",
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty-message' => "The location name is required and cannot be empty",
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^[A-Za-z0-9]{1,}[\.]{0,1}[A-Za-z0-9]{0,}$",
+                                    'data-bv-regexp-message' => "The location name can only consist of alphanumeric characters, with no white space"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('username_length', array(
+                                    'label' => __('Username Length'),
+                                    'type' => 'select',
+                                    'options' => array('16' => '16', '4' => '4'),
+                                    'selected' => $this->request->data('Location.username_length') != '' ? $this->request->data('Location.username_length') : '16'
+                                ));
+                                ?>
+                                <?php
+                                /*
+                                  echo $this->Form->input('location_state', array(
+                                  'label' => __('State'),
+                                  'autocomplete' => 'off',
+                                  'value' => 'MH'));
+                                 * 
+                                 */
+                                ?>
+                                <?php
+                                /*
+                                  echo $this->Form->input('location_city', array(
+                                  'label' => __('City'),
+                                  'autocomplete' => 'off',
+                                  'value' => 'Mumbai'));
+                                 * 
+                                 */
+                                ?> 
+
+                                <?php
+                                /*
+                                  echo $this->Form->input('location_country', array(
+                                  'label' => __('Country'),
+                                  'autocomplete' => 'off',
+                                  'value' => 'IN'));
+                                 * 
+                                 */
+                                ?>
+                                <?php
+                                echo $this->Form->input('installation_city', array(
+                                    'label' => __('City'),
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                                    'data-bv-regexp-message' => "The location organisation can only consist of alphabets"
+                                ));
+                                ?>
+
+                                <?php
+                                echo $this->Form->input('installation_state', array(
+                                    'label' => __('State'),
+                                    'autocomplete' => 'off',
+                                    'type' => 'select',
+                                    'options' => $states
+//                                    'data-bv-regexp' => "true",
+//                                    'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+//                                    'data-bv-regexp-message' => "The location name can only consist of alphabets and numbers"
+                                ));
+                                echo $this->Form->input('router_address', array(
+                                    'label' => __('Router Address'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The router adress is required and cannot be empty",
+//                                    'data-bv-regexp' => "true",
+//                                    'data-bv-regexp-regexp' => "^[A-Za-z0-9]{1,}[\.]{0,1}[A-Za-z0-9]{0,}$",
+//                                    'data-bv-regexp-message' => "Only consist of alphanumeric characters"
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+                                    'data-bv-regexp-message' => "The router address is incorrect"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('nas', array(
+                                    'label' => __('NAS(Device)'),
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The NAS(Divice) name is required, cannot be empty",
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^[A-Za-z0-9]{1,}[\.]{0,1}[A-Za-z0-9]{0,}$",
+                                    'data-bv-regexp-message' => "Only alphanumeric characters are allowed"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('devices_per_occupancy', array(
+                                    'label' => __('Devices Per Occupancy'),
+                                    'autocomplete' => 'off',
+                                    'min' => '0',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "Devices per occupancy cannot be empty",
+                                    'data-bv-numeric' => 'true',
+                                    'data-bv-numeric-message' => 'Devices per occupancy can only consist of numbers'
+                                ));
+                                ?>
+                                <?php
+                                $typeOtions = array(
+                                    array('name' => 'WiFi', 'value' => 'WiFi'),
+                                    array('name' => 'Hosting', 'value' => 'Hosting'),
+                                    array('name' => 'CCTV', 'value' => 'CCTV'),
+                                    array('name' => 'DMS', 'value' => 'DMS')
+                                );
+                                echo $this->Form->input('type', array(
+                                    'label' => __('Type'),
+                                    'type' => 'select',
+                                    'options' => $typeOtions
+                                ));
+                                ?>
+                                <?php
+                                /*
+                                  echo $this->Form->input('location_street', array(
+                                  'label' => __('Street'),
+                                  'autocomplete' => 'off',
+                                  'data-bv-regexp' => "true",
+                                  'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]*$",
+                                  'data-bv-regexp-message' => "The location street name can only consist of alphabets and numbers",
+                                  'value' => 'Link Road'));
+                                 * 
+                                 */
+                                ?>
+
+                                <div class="col-xs-12 wf-div-right-pad12">
+                                    <br><?php echo $this->Form->end(__("Save")); ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- tabLocationDetails -->
+            <?php } ?>
+
+            <?php if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) { ?>
+                <!-- tab 2: tabCommercialDetails -->
+                <div class="tab-pane fade" id="tabCommercialDetails">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <?php
+                            echo $this->Form->create('Location', array('method' => 'post', 'action' => 'edit', 'id' => 'EditCommercialDetailsForm', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+                            ?>
+
+                            <hr>
+                            <?php echo $this->Form->input('edit_location_token', array('type' => 'hidden', 'value' => '1')); ?>
+                            <?php echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+                            <div class="col-md-5">
+                                <?php
+                                echo $this->Form->input('revenue_type', array(
+                                    'label' => __('Revenue Type*'),
+                                    'type' => 'select',
+                                    'required' => 'true',
+                                    'options' => array('a' => 'AMC', 'm' => 'Monthly', 'r' => 'Revenue Share'),
+                                        //'empty' => 'Select revenue type',
+                                        //'selected' => 'r'
+                                ));
+                                echo $this->Form->input('business_plan_id', array(
+                                    'label' => __('Business Plan*'),
+                                    'autocomplete' => 'off',
+                                    'type' => 'select',
+                                    'options' => $business_type,
+                                ));
+                                ?>
+
+
+                                <div id="revenueShare" style="display:none">
+                                    <?php
+                                    echo $this->Form->input('committed_revenue', array(
+                                        'label' => __('Committed Revenue'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The committed revenue value is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The committed revenue value can only consist of numbers'
+                                    ));
+                                    ?> 
+                                    <?php
+                                    echo $this->Form->input('revenue_percent', array(
+                                        'label' => __('Revenue Percent'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The revenue percent is required and cannot be empty",
+                                        'data-bv-regexp' => "true",
+                                        'data-bv-regexp-regexp' => "(^(?:100|\d{1,2})$)",
+                                        //'data-bv-regexp-regexp' => "(^(100(?:\.0{1,2})?))|(?!^0*$)(?!^0*\.0*$)^\d{1,2}(\.\d{1,2})?$",
+                                        'data-bv-regexp-message' => "The percentage value entered is incorrect. Should be between 0-100"
+                                    ));
+                                    ?>
+                                </div>
+
+                                <div id="monthly" style="display:none">
+                                    <?php
+                                    echo $this->Form->input('monthly_fixed', array(
+                                        'label' => __('Monthly Fixed'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "false",
+                                        'data-bv-integer' => 'true',
+                                        'data-bv-integer-message' => 'The monthly fixed amount can only consist of numbers'
+                                    ));
+                                    ?>
+                                    <?php
+//                                    echo $this->Form->input('business_plan_id', array(
+//                                        'label' => __('Business Plan*'),
+//                                        'autocomplete' => 'off',
+//                                        'type' => 'select',
+//                                        'options' => $business_type,
+//                                    ));
+                                    ?> 
+                                    <?php
+                                    echo $this->Form->input('annual_increment', array(
+                                        'label' => __('Annual Increment'),
+                                        'type' => 'text',
+                                        'value' => '7.00',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The annual increment amount is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The annual increment amount can only consist of numbers'
+                                    ));
+                                    ?>
+                                    <?php
+//                                    echo $this->Form->input('annual_increment', array(
+//                                        'label' => __('Annual Increment'),
+//                                        'type' => 'text',
+//                                        'autocomplete' => 'off',
+//                                        'data-bv-notempty' => "true",
+//                                        'data-bv-notempty-message' => "The annual increment amount is required and cannot be empty",
+//                                        'data-bv-numeric' => 'true',
+//                                        'data-bv-numeric-message' => 'The annual increment amount can only consist of numbers'
+//                                    ));
+//                                    
+                                    ?>
+                                    <?php
+                                    echo $this->Form->input('scratch_card_price', array(
+                                        'label' => __('Scratch Card Price'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The scratch card price is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The scratch card price can only consist of numbers'
+                                    ));
+                                    ?>
+                                </div>
+
+                                <div id="amc" style="display:none">
+                                    <?php
+                                    echo $this->Form->input('amc', array(
+                                        'label' => __('AMC'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The AMC amount is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The AMC amount can only consist of numbers'
+                                    ));
+                                    ?>
+                                    <?php
+//                                    echo $this->Form->input('business_plan_id', array(
+//                                        'label' => __('Business Plan*'),
+//                                        'autocomplete' => 'off',
+//                                        'type' => 'select',
+//                                        'options' => $business_type,
+//                                    ));
+                                    ?> 
+                                    <?php
+                                    echo $this->Form->input('one_time_cost', array(
+                                        'label' => __('One Time Cost'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The one time cost is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The one time cost  can only consist of numbers'
+                                    ));
+                                    ?>
+                                    <?php
+                                    echo $this->Form->input('one_time_date', array(
+                                        'label' => __('One Time Date'),
+                                        'type' => 'text',
+                                        'id' => 'one_time_date',
+                                        'readOnly' => true,
+                                    ));
+                                    ?>
+                                    <?php
+                                    echo $this->Form->input('scratch_card_price', array(
+                                        'label' => __('Scratch Card Price'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The scratch card price is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The scratch card price can only consist of numbers'
+                                    ));
+                                    ?>
+                                </div>
+
+                                <?php
+                                echo $this->Form->input('internet_provided', array(
+                                    'label' => __('Internet Provided'),
+                                    'type' => 'select',
+                                    'options' => array('0' => 'No', '1' => 'Yes'),
+                                        //'selected' => !empty($billingPlan['currency_bp']) ? $billingPlan['currency_bp'] : '' 
+                                ));
+                                ?>
+
+                                <?php
+                                echo $this->Form->input('service_tax_included', array(
+                                    'label' => __('Service Tax Included'),
+                                    'type' => 'select',
+                                    'options' => array('0' => 'No', '1' => 'Yes'),
+                                ));
+                                ?>
+
+                                <?php
+                                echo $this->Form->input('invoice_day', array(
+                                    'label' => __('Invoice Day'),
+                                    'type' => 'select',
+                                    'options' => $invoice_day
+                                ));
+                                ?> 
+
+                                <?php
+                                echo $this->Form->input('credit_limit', array(
+                                    'label' => __('Credit Limit'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The credit limit is required and cannot be empty",
+                                    'data-bv-numeric' => 'true',
+                                    'data-bv-numeric-message' => 'The credit limit can only consist of numbers'
+                                ));
+                                ?>
+
+                                <?php
+                                echo $this->Form->input('complementary', array(
+                                    'label' => __('Complementary'),
+                                    'type' => 'select',
+                                    'options' => array('0' => 'No', '1' => 'Yes'),
+                                ));
+                                ?>
+
+                                <?php
+                                //pr($this->request->data('Location.valid_till'));
+                                echo $this->Form->input('valid_till', array(
+                                    'label' => __('Valid Till'),
+                                    'type' => 'text',
+                                    'id' => 'valid_till',
+                                    'readOnly' => true
+                                ));
+                                ?> 
+                                <span id="error" style="display:none;"><i class="fa fa-times"></i>Valid Till date should be greater than Increment date</span>
+                                <i id="validTillDateErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+                                <br>
+                                <small id ="validTillDateError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none">Valid Till date should be greater than Increment date</small>
+                                <?php
+                                echo $this->Form->input('increment_date', array(
+                                    'label' => __('Increment Date'),
+                                    'type' => 'text',
+                                    'id' => 'increment_date',
+                                    'readOnly' => true
+                                ));
+                                ?>
+                                <span id="error" style="display:none;"><i class="fa fa-times"></i>Increment date should be less than Valid Till date</span>
+                                <i id="incrementDateErrorIcon" data-bv-icon-for="data[CommissionChallan][to]" class="form-control-feedback glyphicon glyphicon-remove" style="display:none"></i>
+                                <br>
+                                <small id ="incrementDateError" data-bv-result="VALID" data-bv-for="data[CommissionChallan][to]" data-bv-validator="notEmpty" class="help-block" style="display: none">Increment date must be less than Valid Till date</small>
+
+                                <?php
+                                echo $this->Form->input('auto_renew', array(
+                                    'label' => __('Auto Renew'),
+                                    'type' => 'select',
+                                    'options' => array('0' => 'No', '1' => 'Yes'),
+                                ));
+                                ?>
+
+                                <?php
+                                echo $this->Form->input('contract_period', array(
+                                    'label' => __('Contract Period'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The contract period is required and cannot be empty",
+                                    'data-bv-integer' => 'true',
+                                    'data-bv-integer-message' => 'The contract period value can only consist of numbers'
+                                ));
+                                ?>
+                                <!--                                <div class="row">
+                                                                        <div class="col-xs-3"><?php echo $this->Form->end(__("Save")); ?></div>
+                                                                    </div>-->
+                                <div class="col-xs-12 wf-div-right-pad12">
+                                    <br><?php echo $this->Form->end(__("Save")); ?>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <!-- tab 2 end -->
+            <?php } ?>
+
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account')) {
+                ?>
+                <!-- tab 3: tabContactDetails -->
+                <div class="<?php echo CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account') ? 'tab-pane active in fade' : 'tab-pane fade' ?>" id="tabContactDetails">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <?php
+                            echo $this->Form->create('Location', array('method' => 'post', 'action' => 'edit', 'id' => 'EditContactDetailsForm', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+                            ?>
+
+                            <hr>
+                            <?php echo $this->Form->input('edit_location_token', array('type' => 'hidden', 'value' => '1')); ?>
+                            <?php echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+                            <div class="col-md-5">
+                                <div class="row">
+                                    <div class="col-md-12">
+
+
+                                        <h4><i><?php echo __('Contact Person 1') ?></i></h4>
+                                        <hr>
+                                        <?php
+                                        echo $this->Form->input('contact_persons1', array(
+                                            'label' => __('Name'),
+                                            'autocomplete' => 'off',
+                                            'data-bv-notempty' => "true",
+                                            'data-bv-notempty-message' => "The contact person name is required and cannot be empty",
+                                            'data-bv-regexp' => "true",
+                                            'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                                            'data-bv-regexp-message' => "The contact person name can only consist of alphabets"
+                                        ));
+                                        ?>
+
+                                        <?php
+                                        echo $this->Form->input('contact_person_post1', array(
+                                            'label' => __('Post'),
+                                            'autocomplete' => 'off',
+                                            'data-bv-notempty' => "true",
+                                            'data-bv-notempty-message' => "The contact person post is required and cannot be empty",
+                                            'data-bv-regexp' => "true",
+                                            'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                                            'data-bv-regexp-message' => "The contact person post can only consist of alphabets"
+                                        ));
+                                        ?>
+
+                                        <?php
+                                        echo $this->Form->input('contact_person_mob1', array(
+                                            'label' => __('Mobile'),
+                                            'autocomplete' => 'off',
+                                            'data-bv-notempty' => "true",
+                                            'data-bv-notempty-message' => "The contact person mobile number is required and cannot be empty",
+                                            'data-bv-regexp' => "true",
+                                            'data-bv-regexp-regexp' => "^(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$",
+                                            'data-bv-regexp-message' => "The contact person mobile can only consist of 10 digits"
+                                        ));
+                                        ?>
+
+                                        <?php
+                                        echo $this->Form->input('email', array(
+                                            'label' => __('Email'),
+                                            'autocomplete' => 'off',
+                                            'data-bv-notempty' => "true",
+                                            'data-bv-notempty-message' => "The contact person email is required and cannot be empty"
+                                        ));
+                                        ?>
+                                    </div>
+                                </div>
+
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h4><i><?php echo __('Contact Person 2') ?></i></h4>
+                                        <hr>
+                                        <?php
+                                        echo $this->Form->input('contact_persons2', array(
+                                            'label' => __('Name'),
+                                            'autocomplete' => 'off',
+                                            'data-bv-notempty' => "false",
+                                                //'data-bv-notempty-message' => "The contact person name is required and cannot be empty",
+//                                            'data-bv-regexp' => "true",
+//                                            'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+//                                            'data-bv-regexp-message' => "The contact person name can only consist of alphabets"
+                                        ));
+                                        ?>
+
+                                        <?php
+                                        echo $this->Form->input('contact_person_post2', array(
+                                            'label' => __('Post'),
+                                            'autocomplete' => 'off',
+                                            //'data-bv-notempty' => "true",
+                                            //'data-bv-notempty-message' => "The contact person post is required and cannot be empty",
+                                            'data-bv-regexp' => "true",
+                                            'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                                            'data-bv-regexp-message' => "The contact person post can only consist of alphabets"
+                                        ));
+                                        ?>
+
+                                        <?php
+                                        echo $this->Form->input('contact_person_mob2', array(
+                                            'label' => __('Mobile'),
+                                            'autocomplete' => 'off',
+                                            //'data-bv-notempty' => "true",
+                                            //'data-bv-notempty-message' => "The contact person mobile number is required and cannot be empty",
+                                            'data-bv-regexp' => "true",
+                                            'data-bv-regexp-regexp' => "^(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$",
+                                            'data-bv-regexp-message' => "The contact person mobile can only consist of 10 digits"
+                                        ));
+                                        ?>
+
+                                        <?php
+                                        echo $this->Form->input('email2', array(
+                                            'label' => __('Email'),
+                                            'autocomplete' => 'off',
+                                                //'data-bv-notempty' => "true",
+                                                //'data-bv-notempty-message' => "The contact person email is required and cannot be empty"
+                                        ));
+                                        ?>
+
+                                    </div>
+                                    <div class="col-xs-12 wf-div-right-pad12">
+                                        <br><?php echo $this->Form->end(__("Save")); ?>
+                                    </div>
+                                </div>                               
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- tabContactDetails -->
+            <?php } ?>
+
+
+            <!-- tab 4: tabBillingDetails -->
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_account')) {
+                ?>
+                <div class="tab-pane fade" id="tabBillingDetails">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <?php
+                            echo $this->Form->create('Location', array('method' => 'post', 'action' => 'edit', 'id' => 'EditBillingDetailsForm', 'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+                            ?>
+
+                            <hr>
+                            <?php echo $this->Form->input('edit_location_token', array('type' => 'hidden', 'value' => '1')); ?>
+                            <?php echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+                            <div class="col-md-5">
+                                <?php
+                                echo $this->Form->input('name', array(
+                                    'label' => __('Name'),
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The name is required and cannot be empty",
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                                    'data-bv-regexp-message' => "The name can only consist of alphabets"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('phone1', array(
+                                    'label' => __('Phone 1'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The phone number is required and cannot be empty",
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$",
+                                    'data-bv-regexp-message' => "The phone number can only consist of numbers"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('phone2', array(
+                                    'label' => __('Phone 2'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "false",
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$",
+                                    'data-bv-regexp-message' => "The phone number can only consist of numbers"
+                                ));
+                                ?> 
+                                <?php
+                                echo $this->Form->input('fax', array(
+                                    'label' => __('Fax'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    //'data-bv-notempty' => "true",
+                                    //'data-bv-notempty-message' => "The fax is required and cannot be empty",
+                                    'data-bv-numeric' => 'true',
+                                    'data-bv-numeric-message' => 'The fax can only consist of numbers'
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('web', array(
+                                    'label' => __('Website'),
+                                    'autocomplete' => 'off',
+                                    //'type' => 'url',
+                                    'data-bv-notempty' => "false",
+                                    'data-bv-uri-allowlocal' => 'false',
+                                    //'data-fv-uri-allowemptyprotocol' => 'false',
+                                    //'data-bv-uri-message' => 'Enter a valid url',
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^(http:\\\\)|                                                                 (www\.)([a-zA-Z0-9\-\.]+\.[a-zA-Z]{1,4}(?:\??)[a-zA-Z0-9\-\._]+)",
+                                    'data-bv-regexp-message' => "Provide a valid web url"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('address1', array(
+                                    'label' => __('Address'),
+                                    'type' => 'text',
+                                    'maxlength' => '50',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The address is required and cannot be empty"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('address2', array(
+                                    'label' => __('Street'),
+                                    'type' => 'text',
+                                    'maxlength' => '50',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The street name is required and cannot be empty"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('state', array(
+                                    'label' => __('State'),
+                                    'type' => 'select',
+                                    'options' => $states,
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The state is required and cannot be empty",
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                                    'data-bv-regexp-message' => "The state can only consist of alphabets"
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('post_code', array(
+                                    'label' => __('Post Code'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                    'data-bv-notempty' => "true",
+                                    'data-bv-notempty-message' => "The postal code is required and cannot be empty",
+                                    'data-bv-numeric' => 'true',
+                                    'data-bv-numeric-message' => 'The postal code can only consist of numbers'
+                                ));
+                                ?>
+                                <?php
+                                if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin')) {
+                                    $liveOptions = array('0' => 'No', '1' => 'Yes');
+                                    echo $this->Form->input('live', array(
+                                        'label' => __('Live'),
+                                        'type' => 'select',
+                                        'options' => $liveOptions
+                                    ));
+                                    ?>
+                                    <?php
+                                    echo $this->Form->input('live_date', array(
+                                        'label' => __('Live Date'),
+                                        'type' => 'text',
+                                        'id' => 'live_date',
+                                        'readOnly' => true,
+                                        'data-bv-date' => 'true',
+                                        'data-bv-date-format' => 'DD-MM-YYYY',
+                                        'data-bv-date-message' => 'This is not a valid date. Please use DD-MM-YY format'
+                                    ));
+                                }
+                                ?>
+                                <p>Is installation address same as billing address?</p>
+                                <input type="checkbox" name="data[Location][check_button]" id="LocationRadioButtonYes" class="" placeholder="false" value="yes"
+                                       <?php if ($installAddSameAsBillAdd == 'true') { ?>  <?php } else { ?> <?php } ?> />
+                                <label for="LocationRadioButtonYes">Yes</label>
+                                <div id="installationAddress" style="">
+                                    <?php
+                                    echo $this->Form->input('location_city', array(
+                                        'type' => 'hidden',
+                                        'value' => $location_city,
+                                        'id' => 'LocationCity'
+                                    ));
+                                    ?>
+                                    <?php
+                                    echo $this->Form->input('installation_name', array(
+                                        'label' => __('Name'),
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The name is required and cannot be empty",
+                                        'data-bv-regexp' => "true",
+                                        'data-bv-regexp-regexp' => "^[A-Za-z0-9\s]{1,}[\.]{0,1}[A-Za-z0-9\s]{0,}$",
+                                        'data-bv-regexp-message' => "The name can only consist of alphabets and numbers"
+                                    ));
+                                    ?>
+                                    <?php
+                                    echo $this->Form->input('installation_address1', array(
+                                        'label' => __('Address'),
+                                        'type' => 'text',
+                                        'maxlength' => '50',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The address is required and cannot be empty"
+                                    ));
+                                    ?>
+
+                                    <?php
+                                    echo $this->Form->input('installation_address2', array(
+                                        'label' => __('Street'),
+                                        'type' => 'text',
+                                        'maxlength' => '50',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The street name is required and cannot be empty"
+                                    ));
+                                    ?>
+
+                                    <?php
+                                    echo $this->Form->input('installation_city', array(
+                                        'label' => __('City'),
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "Please enter a city name",
+                                        'data-bv-regexp' => "true",
+                                        'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                                        'data-bv-regexp-message' => "The city can only consist of alphabets"
+                                    ));
+                                    ?>
+
+                                    <?php
+                                    echo $this->Form->input('installation_state', array(
+                                        'label' => __('State'),
+                                        'type' => 'select',
+                                        'options' => $states,
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "Please enter a state",
+                                        'data-bv-regexp' => "true",
+                                        'data-bv-regexp-regexp' => "^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$",
+                                        'data-bv-regexp-message' => "The state can only consist of alphabets"
+                                    ));
+                                    ?>
+
+                                    <?php
+                                    echo $this->Form->input('installation_postcode', array(
+                                        'label' => __('Post Code'),
+                                        'type' => 'text',
+                                        'autocomplete' => 'off',
+                                        'data-bv-notempty' => "true",
+                                        'data-bv-notempty-message' => "The postal code is required and cannot be empty",
+                                        'data-bv-numeric' => 'true',
+                                        'data-bv-numeric-message' => 'The postal code can only consist of numbers'
+                                    ));
+                                    ?>
+                                </div>
+                                <div class="col-xs-12 wf-div-right-pad12">
+                                    <br><?php echo $this->Form->end(__("Save")); ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+
+            <?php
+            if (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_admin') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc')) {
+                ?>   
+                <!-- tab 5: tabConfigurationDetails -->
+                <div class="<?php echo (CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_engineer') || CakeSession::read('Auth.User.Group.name') == Configure::read('Application.wf_noc')) ? 'tab-pane active in fade' : 'tab-pane fade' ?>" id="tabConfigurationDetails">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <?php
+                            echo $this->Form->create('Location', array('method' => 'post', 'action' => 'edit', 'enctype' => "multipart/form-data",
+                                'id' => 'EditConfigurationDetailsForm',
+                                'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+                                'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+                                'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+                            ?>
+
+                            <hr>
+                            <?php echo $this->Form->input('edit_location_token', array('type' => 'hidden', 'value' => '1')); ?>
+                            <?php echo $this->Form->input('id', array('type' => 'hidden', 'value' => $location_id)); ?>
+                            <div class="col-md-5">
+                                <?php
+                                echo $this->Form->input('logo_file', array(
+                                    'label' => __('Logo'),
+                                    'type' => 'file',
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "\.(bmp|gif|jpg|jpeg|jpe|png|BMP|GIF|JPG|JPEG|JPE|PNG)$",
+                                    'data-bv-regexp-message' => "The image format is incorrect."
+                                ));
+                                ?>
+
+                                <?php
+                                //$timeArray = ['00' => '12 Midnight', '01' => '01 AM', '02' => '02 AM', '03' => '03 AM', '04' => '04 AM', '05' => '05 AM', '06' => '06 AM', '07' => '07 AM', '08' => '08 AM', '09' => '09  AM', '10' => '10  AM', '11' => '11  AM', '12' => '12  Noon', '13' => '01  PM', '14' => '02  PM', '15' => '03  PM', '16' => '04  PM', '17' => '05  PM', '18' => '06 PM', '19' => '07 PM', '20' => '08 PM', '21' => '09 PM', '22' => '10 PM', '23' => '11 PM'];
+                                echo $this->Form->input('service_start_time', array(
+                                    'label' => __('Service Start Time(24 Hours Format)'),
+                                    'id' => 'service_start_time',
+                                    'type' => 'text',
+                                    'readOnly' => 'true'
+                                ));
+                                ?>
+                                <script>
+                                    $(function() {
+                                        $('#service_start_time').timepicker({'timeFormat': 'HH:mm:00'});
+                                    });
+                                </script>
+                                <?php
+                                echo $this->Form->input('service_end_time', array(
+                                    'label' => __('Srevice End Time (24 Hours Format)'),
+                                    'type' => 'text',
+                                    'id' => 'service_end_time',
+                                    'readOnly' => 'true'
+                                        //'options' => $timeArray,
+                                ));
+                                ?>
+                                <script>
+                                    $(function() {
+                                        $('#service_end_time').timepicker({'timeFormat': 'HH:mm:00'});
+                                    });
+                                </script>
+                                <?php
+                                echo $this->Form->input('router_address', array(
+                                    'label' => __('Router Address'),
+                                    'type' => 'text',
+                                    'autocomplete' => 'off',
+                                ));
+                                ?> 
+                                <?php
+                                echo $this->Form->input('config_file', array(
+                                    'label' => __('Configuration File'),
+                                    'type' => 'file',
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "\.(zip|rar|ZIP|RAR)$",
+                                    'data-bv-regexp-message' => "The configuration file format is incorrect."
+                                ));
+                                ?>
+                                <?php
+                                echo $this->Form->input('backup_file', array(
+                                    'label' => __('Backup File'),
+                                    'type' => 'file',
+                                    'data-bv-regexp' => "true",
+                                    'data-bv-regexp-regexp' => "\.(zip|rar|ZIP|RAR)$",
+                                    'data-bv-regexp-message' => "The backup file format is incorrect."
+                                ));
+                                ?>
+
+
+
+                                <!--<div class="row">-->
+                                <div class="col-xs-12 wf-div-right-pad12">
+                                    <br><?php echo $this->Form->end(__("Save")); ?>
+                                </div>
+                                <!--</div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+        </div><!-- tab content -->
+    </div><!-- end of container -->
+
+</div><!-- /.row -->

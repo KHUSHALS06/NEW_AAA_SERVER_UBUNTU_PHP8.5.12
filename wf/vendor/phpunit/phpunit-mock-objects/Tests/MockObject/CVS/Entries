@@ -1,0 +1,27 @@
+/class.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_call_parent_clone.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_dont_call_parent_clone.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_dont_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_implementing_interface_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_implementing_interface_dont_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/class_partial.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/interface.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/invocation_object_clone_object.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/invocation_static_clone_object.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_call_parent_clone.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_dont_call_parent_clone.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_dont_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_implementing_interface_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_implementing_interface_dont_call_parent_constructor.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_class_partial.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/namespaced_interface.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/nonexistent_class.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/nonexistent_class_with_namespace.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/nonexistent_class_with_namespace_starting_with_separator.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/wsdl_class.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/wsdl_class_namespace.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+/wsdl_class_partial.phpt/1.1.1.1/Wed Jun 04 11:15:47 2014//
+D/Invocation////

@@ -1,0 +1,42 @@
+
+<!-- The form is placed inside the body of modal -->
+<div class="col-md-12">
+    <?php
+    echo $this->Form->create('Coupon', array('id' => 'BatchCouponForm',
+        'method' => 'post',
+        'action' => 'add',
+        'class' => 'form-horizontal',
+        'data-bv-feedbackicons-valid' => "glyphicon glyphicon-ok",
+        'data-bv-feedbackicons-invalid' => "glyphicon glyphicon-remove",
+        'data-bv-feedbackicons-validating' => "glyphicon glyphicon-refresh"));
+    ?>
+    <div class="col-md-8">
+        <?php
+        echo $this->Form->input('desboard', array(
+            'type' =>'hidden',
+            'value' => 1
+        ));
+        echo $this->Form->input('no_of_coupons', array(
+            'label' => __('No. of Coupons'),
+            'data-bv-notempty' => 'true',
+            'data-bv-notempty-message' => "Please enter number of coupons",
+            'data-bv-integer' => 'true',
+            'data-bv-integer-message' => 'Only numbers'
+        ));
+        ?>
+
+
+        <?php
+        echo $this->Form->input('billing_plan_id', array(
+            'id' => 'add_user_location_id',
+            'label' => __('Billing Plan'),
+            'type' => 'select',
+            'title' => "Choose a billing plan",
+            'options' => $billing_plans,
+                )
+        );
+        ?>
+        <?php echo $this->Form->end(__("Submit"), array('class' => 'btn btn-primary')); ?>
+
+    </div>
+</div>

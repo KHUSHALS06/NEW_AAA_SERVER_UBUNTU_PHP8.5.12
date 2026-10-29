@@ -1,0 +1,323 @@
+
+/**
+ * @copyright     Copyright 2013-2014, WiFonic Technologies Pvt. Ltd. (http://wifonic.com)
+ * @link          http://wifonic.com
+ * @license       WiFonic Technologies Pvt. Ltd.
+ * 
+ * @author Abhaya Patel<abhayapatel@wifonic.com>
+ * @author Preeti Joseph<preeti@wifonic.com>
+ */
+
+
+/**
+* This script is automatically called when the modal for a particular action is called in any view file
+*/
+;
+(function() {
+    var App,
+    __bind = function(fn, me){
+        return function(){
+            return fn.apply(me, arguments);
+        };    
+    };
+
+    App = (function() {
+        // Constructor
+        function App() {
+            this.initialize();
+        }
+
+        App.prototype.initialize = function() {
+            // Allow to delete users using twitter bootstrap modal
+            this.deleteUserModal();
+        }
+
+        // Delete users modal
+        App.prototype.deleteUserModal = function() {
+
+            // Changes the URL to delete on each user click
+            $('.btn-deactivate-modal').live('click',function(e) {
+                var uid,name,$label;
+            
+                $label  = $('.label-uname');
+                //$link   = $('.deactivate-user-link');
+                uid     = $(this).attr('data-uid');
+                name    = $(this).attr('data-uname');
+                //href    = $link.attr('href');
+                $userIdForDeactivate  = $('#userIdForDeactivate');
+                $userIdForDeactivate.attr('value', uid);
+                //alert($userIdForDeactivate.val());
+                $userNameForDeactivate  = $('#userNameForDeactivate');
+                $userNameForDeactivate.attr('value', name);
+                // Changes modal label
+                $label.html(name);
+            });
+      
+            $('.btn-activate-modal').live('click',function(e) {
+                var uid,name,$label;
+
+                $label  = $('.label-uname');
+                //$link   = $('.activate-user-link');
+                uid     = $(this).attr('data-uid');
+                name    = $(this).attr('data-uname');
+                //href    = $link.attr('href');
+                $userIdForActivate  = $('#userIdForActivate');
+                $userIdForActivate.attr('value', uid);
+                //alert($userIdForDeactivate.val());
+                $userNameForDeactivate  = $('#userNameForActivate');
+                $userNameForDeactivate.attr('value', name);
+                // Changes modal label
+                $label.html(name);
+            });
+            
+            $('.btn-location-activate-modal').live('click',function(e) {
+                var locid,locname,$label;
+                //alert();
+                $label  = $('.label-locname');
+                //$link   = $('.activate-user-link');
+                locid     = $(this).attr('data-locid');
+                locname    = $(this).attr('data-locname');
+                //href    = $link.attr('href');
+                $locationIdForActivate  = $('#locationIdForActivate');
+                $locationIdForActivate.attr('value', locid);
+                //alert($userIdForDeactivate.val());
+                $locationNameForDeactivate  = $('#locationNameForActivate');
+                $locationNameForDeactivate.attr('value', locname);
+                // Changes modal label
+                $label.html(locname);
+            });
+            
+            $('.btn-location-deactivate-modal').live('click',function(e) {
+                var locid,locname,$label;
+                //alert();
+                $label  = $('.label-locname');
+                //$link   = $('.deactivate-user-link');
+                locid     = $(this).attr('data-locid');
+                locname    = $(this).attr('data-locname');
+                
+                //href    = $link.attr('href');
+                $locationIdForDeactivate  = $('#locationIdForDeactivate');
+                $locationIdForDeactivate.attr('value', locid);
+                //alert($userIdForDeactivate.val());
+                $locationNameForDeactivate  = $('#locationNameForDeactivate');
+                $locationNameForDeactivate.attr('value', locname);
+                // Changes modal label
+                $label.html(locname);
+            });
+            
+            $('.btn-deleteFeedbackField-modal').live('click',function(e) {
+                var fId,lId,title,$label;
+                //alert();
+                $label  = $('.label-title');
+                //$link   = $('.deactivate-user-link');
+                fId     = $(this).attr('data-fid');
+                lId    = $(this).attr('data-fid');
+                title = $(this).attr('data-title');
+                //href    = $link.attr('href');
+                $feedbackQId  = $('#feedbackQId');
+                $feedbackQId.attr('value', fId);
+                //alert($userIdForDeactivate.val());
+                $feedbackLId  = $('#feedbackLId');
+                $feedbackLId.attr('value', lId);
+                
+                $feedbackName  = $('#feedbackName');
+                $feedbackName.attr('value', title);
+                
+                // Changes modal label
+                $label.html(locname);
+            });
+            
+            $('.btn-deleteCheckIn-modal').live('click',function(e) {
+                var cid,room,lname,title,locationId,$labelName,$labelRoomNo,$labelTitle;
+
+                $labelName  = $('.label-gname');
+                $labelRoomNo  = $('.label-roomno');
+                $labelTitle  = $('.label-gtitle');
+                //$link   = $('.activate-user-link');
+                cid     = $(this).attr('data-cid');
+                room    =  $(this).attr('data-room');
+                lname    = $(this).attr('data-lname');
+                title    = $(this).attr('data-title');
+                locationId    = $(this).attr('data-locationId');
+                //href    = $link.attr('href');
+                $checkInIdForDelete  = $('#checkInIdForDelete');
+                $checkInIdForDelete.attr('value', cid);
+                
+                $checkInRoomNoForDelete  = $('#checkInRoomNoForDelete');
+                $checkInRoomNoForDelete.attr('value', room);
+                
+                $checkInTitleForDelete  = $('#checkInTitleForDelete');
+                $checkInTitleForDelete.attr('value', title);
+                
+                $checkInLocationIdForDelete  = $('#checkInLocationIdForDelete');
+                $checkInLocationIdForDelete.attr('value', locationId);
+                
+                $checkInLastNameForDelete  = $('#checkInLastNameForDelete');
+                $checkInLastNameForDelete.attr('value', lname);
+                // Changes modal label
+                $labelName.html(lname);
+                $labelRoomNo.html(room);
+                $labelTitle.html(title);
+            });
+            
+            $('.btn-agentDeactivate-modal').live('click',function(e) { 
+                var agentId,fname,lname,$labelFName,$labelLName;
+
+                $labelFName  = $('.label-fname');
+                $labelLName  = $('.label-lname');
+                
+                agentId     = $(this).attr('data-agentid');
+                
+                fname    = $(this).attr('data-fname');
+                lname    = $(this).attr('data-lname');
+                //alert(agentId);
+                
+                $commissionAgentIdForDeactivate  = $('#commissionAgentIdForDeactivate');
+                $commissionAgentIdForDeactivate.attr('value', agentId);
+                
+                $commissionAgentLastNameForDeactivate  = $('#commissionAgentLastNameForDeactivate');
+                $commissionAgentLastNameForDeactivate.attr('value', lname);
+                
+                $commissionAgentFirstNameForDeactivate  = $('#commissionAgentFirstNameForDeactivate');
+                $commissionAgentFirstNameForDeactivate.attr('value', fname);
+                
+                
+                // Changes modal label
+                $labelFName.html(fname);
+                $labelLName.html(lname);
+                
+            });
+            
+            $('.btn-agentActivate-modal').live('click',function(e) { 
+                var agentId,fname,lname,$labelFName,$labelLName;
+
+                $labelFName  = $('.label-fname');
+                $labelLName  = $('.label-lname');
+                
+                agentId     = $(this).attr('data-agentid');
+                
+                fname    = $(this).attr('data-fname');
+                lname    = $(this).attr('data-lname');
+                //alert(agentId);
+                
+                $commissionAgentIdForActivate  = $('#commissionAgentIdForActivate');
+                $commissionAgentIdForActivate.attr('value', agentId);
+                
+                $commissionAgentLastNameForActivate  = $('#commissionAgentLastNameForActivate');
+                $commissionAgentLastNameForActivate.attr('value', lname);
+                
+                $commissionAgentFirstNameForActivate  = $('#commissionAgentFirstNameForActivate');
+                $commissionAgentFirstNameForActivate.attr('value', fname);
+                
+                
+                // Changes modal label
+                $labelFName.html(fname);
+                $labelLName.html(lname);
+                
+            }); 
+            
+            $('.btn-chequebounce-modal').live('click',function(e) { 
+                var invoiceId, receiveDate, chequeAmount, chequeid;
+                invoiceId   = $(this).attr('data-invoiceid');
+                receiveDate   = $(this).attr('data-recvdate');
+                chequeAmount = $(this).attr('data-amount');
+                chequeid = $(this).attr('data-id');
+                $idForChequeBounce  = $('#idForChequeBounce');
+                $idForChequeBounce.attr('value', chequeid);
+                $invoiceIdForChequeBounce  = $('#invoiceIdForChequeBounce');
+                $invoiceIdForChequeBounce.attr('value', invoiceId);
+                $receiveDateForChequeBounce  = $('#receiveDateForChequeBounce');
+                $receiveDateForChequeBounce.attr('value', receiveDate);
+                $chequeAmountForChequeBounce  = $('#chequeAmountForChequeBounce');
+                $chequeAmountForChequeBounce.attr('value', chequeAmount);
+            });
+            
+            $('.btn-editLoginPage-modal').live('click',function(e) { 
+                //alert();
+                /*var locationId, locationDomain;
+                locationId   = $(this).attr('data-locid');
+                locationDomain   = $(this).attr('data-locdomain');*/
+                var htmlcontent;
+                var content = tinymce.get('editTitle').getContent();
+                $htmlcontent = $('#htmlcontent');
+                $htmlcontent.attr('value', htmlcontent);
+                alert(content);
+                /*$idForChequeBounce  = $('#idForChequeBounce');
+                $idForChequeBounce.attr('value', chequeid);
+                $invoiceIdForChequeBounce  = $('#invoiceIdForChequeBounce');
+                $invoiceIdForChequeBounce.attr('value', invoiceId);
+                $receiveDateForChequeBounce  = $('#receiveDateForChequeBounce');
+                $receiveDateForChequeBounce.attr('value', receiveDate);
+                $chequeAmountForChequeBounce  = $('#chequeAmountForChequeBounce');
+                $chequeAmountForChequeBounce.attr('value', chequeAmount);*/
+                });
+            
+            $('#submitChanges').live('click',function(e) {
+                //alert("hi");
+                /*var htmlcontent;
+                var content = tinymce.get('editTitle').getContent();
+                $htmlcontent = $('#htmlcontent');
+                $htmlcontent.attr('value', htmlcontent);
+                alert(content);*/
+            });
+            
+            $("#closeSingleCouponFormModal").live('click',function(e) { 
+                $('#SingleCouponForm')[0].reset();
+                location.reload();
+                
+            });
+            
+            $("#closeBatchCouponFormModal").live('click',function(e) { 
+                $('#BatchCouponForm')[0].reset();
+                location.reload();
+                
+            });
+    
+            $('.btn-add-modal').bind('click',function(e) {
+                var uid,name,href,pattern1,$label,$link;
+
+                $label  = $('.label-uname');
+                $link   = $('.add-user-link');
+                uid     = $(this).attr('data-uid');
+                name    = $(this).attr('data-uname');
+                href    = $link.attr('href');
+                pattern1 = '#{uid}';
+
+                // Find the last ID in URL
+                aux     = href.replace(pattern1,uid);
+
+                $link.attr('href', aux );
+
+                // Changes modal label
+                $label.html(name);
+            });
+      
+            $('.btn-edit-modal').bind('click',function(e) {
+                var uid,name,href,pattern1,$label,$link;
+
+                $label  = $('.label-uname');
+                $link   = $('.edit-user-link');
+                uid     = $(this).attr('data-uid');
+                name    = $(this).attr('data-uname');
+                href    = $link.attr('href');
+                pattern1 = '#{uid}';
+
+                // Find the last ID in URL
+                aux     = href.replace(pattern1,uid);
+
+                $link.attr('href', aux );
+
+                // Changes modal label
+                $label.html(name);
+            });
+        }
+
+        return App;
+
+    })();
+
+    $(function() {
+        return App = new App();
+    });
+
+}).call(this);
